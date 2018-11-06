@@ -1,0 +1,9 @@
+data/**
+config*.toml
+**.pdf
+**.png
+
+data.dat
+model
+src/model.c
+src/test.c

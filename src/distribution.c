@@ -1,0 +1,183 @@
+#include "distribution.h"
+
+#include <math.h>
+#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_integration.h>
+
+void generate_maxwell_juttner(double *population, double *energy,
+        double theta, unsigned int size)
+{
+    unsigned int i;
+    double norm = 1 / (theta * gsl_sf_bessel_Kn(2, 1 / theta));
+
+    for(i = 0; i < size; i++)
+    {
+        double aux0 = energy[i] * sqrt(energy[i] * energy[i] - 1);
+
+        population[i] = aux0 * norm * exp(-energy[i] / theta);
+    }
+}
+
+void generate_power_law(double *population, double *energy,
+        double p, unsigned int size)
+{
+    unsigned int i;
+    double energy_min = energy[0];
+    double energy_max = energy[size - 1];
+
+    if(p == 1)
+    {
+        double norm = log(energy_min / energy_max);
+
+        for(i = 0; i < size; i++)
+            population[i] = norm / energy[i];
+    }
+    else
+    {
+        double norm = (1 - p) / (pow(energy_max, 1-p) - pow(energy_min, 1-p));
+        for(i = 0; i < size; i++)
+            population[i] = norm * pow(energy[i], -p);
+    }
+}
+
+void generate_broken_power_law(double *population, double *energy,
+        double gc, double p1, double p2, unsigned int size)
+{
+    unsigned int i;
+    double energy_min = energy[0];
+    double energy_max = energy[size - 1];
+
+    double norm1 = p1 == 1 ?
+                    log(energy_min / gc) :
+                    (pow(gc, 1-p1) - pow(energy_min, 1-p1)) / (1 - p1);
+
+    double norm2 = p2 == 1 ?
+                    log(gc / energy_max) :
+                    (pow(energy_max, 1-p2) - pow(gc, 1-p2)) / (1 - p2);
+
+    double aux  = pow(gc, p2 - p1);
+    double norm = 1/(norm1 + aux * norm2);
+
+    for(i = 0; i < size && energy[i] < gc; i++)
+        population[i] = norm * pow(energy[i], -p1);
+    for(     ; i < size                  ; i++)
+        population[i] = aux * norm * pow(energy[i], -p2);
+}
+
+void generate_power_law_with_exponential_cutoff(double *population, double *energy,
+        double p, double e, unsigned int size)
+{
+    unsigned int i;
+    double energy_min = energy[0];
+    double energy_max = energy[size - 1];
+
+    if(p == 1)
+    {
+        double norm = log(energy_min / energy_max);
+
+        for(i = 0; i < size; i++)
+            population[i] = norm / energy[i] * exp(-energy[i] / e);
+    }
+    else
+    {
+        double norm = (1 - p) / (pow(energy_max, 1-p) - pow(energy_min, 1-p));
+        for(i = 0; i < size; i++)
+            population[i] = norm * pow(energy[i], -p) * exp(-energy[i] / e);
+    }
+}
+
+struct hybrid_norm_mj_params { double theta; };
+static double hybrid_norm_mj(double x, void *params)
+{
+    struct hybrid_norm_mj_params p = *(struct hybrid_norm_mj_params *)params;
+
+    return x * sqrt(x*x - 1) * exp(-x/p.theta);
+}
+
+void generate_hybrid(double *population, double *energy,
+        double theta, unsigned int size)
+{
+    unsigned int i;
+    double e;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(256);
+
+    gsl_function F;
+    F.function = &hybrid_norm_mj;
+    F.params = &theta;
+
+    double g_c = theta < 0.73262 ?
+                    1 + 1.2 * theta + 1.9 * theta*theta
+                 :
+                    4 * theta - 1/(8*theta) + 7/(128*theta*theta*theta);
+
+    double p = (g_c*g_c*g_c - 2 * theta * g_c*g_c - g_c + theta) /
+               (theta * (g_c*g_c - 1));
+
+    double norm_mj;
+    gsl_integration_qags(&F, 1, g_c, 0, 1e-7, 256, w, &norm_mj, &e);
+    norm_mj = 1 / norm_mj;
+
+    double norm_pl = (1 - p) / (pow(energy[size - 1], 1-p) - pow(g_c, 1-p));
+
+    double a_mj = 1 / ((1 - pow(g_c / energy[size - 1], p-1)) * g_c * g_c * sqrt(g_c * g_c - 1) * norm_mj/((p-1)*exp(g_c/theta)) + 1);
+    double a_pl = 1 - a_mj;
+
+    for(i = 0; i < size && energy[i] < g_c; i++)
+    {
+        double g = energy[i];
+        population[i] = a_mj * g * sqrt(g*g - 1) * exp(-g / theta) * norm_mj;
+    }
+
+    for(     ; i < size; i++)
+    {
+        double g = energy[i];
+        population[i] = a_pl * norm_pl * pow(g, -p);
+    }
+
+    gsl_integration_workspace_free(w);
+}
+
+struct cpl_norm_params { double p1, p2; };
+static double cpl_norm_lo(double x, void *params)
+{
+    struct cpl_norm_params p = *(struct cpl_norm_params *)params;
+
+    return pow(x, p.p1) / (1 + pow(x, p.p1 + p.p2));
+}
+static double cpl_norm_hi(double x, void *params)
+{
+    struct cpl_norm_params p = *(struct cpl_norm_params *)params;
+
+    return pow(x, p.p2 - 2) / (1 + pow(x, p.p1 + p.p2));
+}
+
+void generate_connected_power_law(double *population, double *energy,
+        double g_c, double p1, double p2, unsigned int size)
+{
+    unsigned int i;
+
+    double e;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(256);
+    struct cpl_norm_params params = {p1, p2};
+
+    gsl_function F;
+    F.function = &cpl_norm_lo;
+    F.params = &params;
+
+    double norm_lo, norm_hi;
+
+    gsl_integration_qags(&F, energy[0] / g_c,        1, 0, 1e-7, 256, w, &norm_lo, &e);
+    F.function = &cpl_norm_hi;
+    gsl_integration_qags(&F, g_c / energy[size - 1], 1, 0, 1e-7, 256, w, &norm_hi, &e);
+
+    double norm = g_c * (norm_lo + norm_hi);
+
+    for(i = 0; i < size; i++)
+    {
+        double g = energy[i] / g_c;
+        population[i] = pow(g, p1) / (norm * (1 + pow(g, p1 + p2)));
+    }
+
+    gsl_integration_workspace_free(w);
+}
+

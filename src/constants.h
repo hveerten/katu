@@ -1,0 +1,56 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+#pragma once
+
+#include <math.h>
+
+#define ELECTRON_MASS       9.109e-28           // g
+#define PROTON_MASS         1.672615e-24        // g
+#define NEUTRON_MASS        1.672615e-24        // g
+#define LIGHT_SPEED         2.99792458e10       // cm/s
+#define ELECTRON_CHARGE     4.8032045e-10       // esu
+#define PLANCK_CONSTANT     6.626e-27           // erg·s
+#define PLANCK_CONSTANT_EV  4.1356676e-15       // eV·s
+#define BOLTZMANN_CONSTANT  1.3806503e-16       // cm^2·g/s^2·K
+#define FINE_STRUCTURE_CONSTANT (1/137.035999)
+
+/*
+#define CHARGED_PION_MASS   2.4880644e-25       // g
+#define NEUTRAL_PION_MASS   2.406176e-25        // g
+*/
+
+// Assume that the mass is equal to the neutral pion
+#define CHARGED_PION_MASS   2.406176e-25        // g
+#define NEUTRAL_PION_MASS   2.406176e-25        // g
+#define PION_MASS           2.406176e-25        // g
+
+#define CHARGED_PION_LIFETIME 2.6033e-8         // s
+#define NEUTRAL_PION_LIFETIME 8.4e-17           // s
+
+#define MUON_MASS           1.8835315e-25       // g
+#define MUON_LIFETIME       2.1969811e-6        // s
+
+#define ELECTRON_ENERGY (ELECTRON_MASS * LIGHT_SPEED * LIGHT_SPEED)
+#define ELECTRON_RADIUS (ELECTRON_CHARGE * ELECTRON_CHARGE / ELECTRON_ENERGY)
+#define THOMSON_CROSS_SECTION   (8 * M_PI / 3 * ELECTRON_RADIUS * ELECTRON_RADIUS)
+#define PROTON_ENERGY (PROTON_MASS * LIGHT_SPEED * LIGHT_SPEED)
+#define NEUTRON_ENERGY (NEUTRON_MASS * LIGHT_SPEED * LIGHT_SPEED)
+#define NEUTRAL_PION_ENERGY (NEUTRAL_PION_MASS * LIGHT_SPEED * LIGHT_SPEED)
+#define CHARGED_PION_ENERGY (CHARGED_PION_MASS * LIGHT_SPEED * LIGHT_SPEED)
+#define MUON_ENERGY (MUON_MASS * LIGHT_SPEED * LIGHT_SPEED)
+
+#define ERG_TO_EV(X) ((X) * 6.2415e11)
+
+#define ELECTRON_ENERGY_EV     ERG_TO_EV(ELECTRON_ENERGY)
+#define PROTON_ENERGY_EV       ERG_TO_EV(PROTON_ENERGY)
+#define NEUTRON_ENERGY_EV      ERG_TO_EV(NEUTRON_ENERGY)
+#define CHARGED_PION_ENERGY_EV ERG_TO_EV(CHARGED_PION_ENERGY)
+#define NEUTRAL_PION_ENERGY_EV ERG_TO_EV(NEUTRAL_PION_ENERGY)
+#define MUON_ENERGY_EV         ERG_TO_EV(MUON_ENERGY)
+
+
+
+#define EPSILON_TO_GEV(X) ((X) * ELECTRON_ENERGY_EV / 1e9)
+#define GEV_TO_EPSILON(X) ((X) / ELECTRON_ENERGY_EV * 1e9)
+
+#endif /* end of include guard: CONSTANTS_H */
