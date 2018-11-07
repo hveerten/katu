@@ -487,6 +487,7 @@ void state_save_state_to_file(state_t *st, char *filename)
     fwrite(&st->R,       sizeof(double), 1, fout);
     fwrite(&st->density, sizeof(double), 1, fout);
     fwrite(&st->dt,      sizeof(double), 1, fout);
+    fwrite(&st->dt_max,  sizeof(double), 1, fout);
 
 #define WRITE_POPULATION(X) \
     fwrite(&st->X.size,       sizeof(unsigned int), 1,          fout); \
@@ -535,6 +536,7 @@ void state_load_state_from_file(state_t *st, char *filename)
     fread(&st->R,       sizeof(double), 1, fin);
     fread(&st->density, sizeof(double), 1, fin);
     fread(&st->dt,      sizeof(double), 1, fin);
+    fread(&st->dt_max,  sizeof(double), 1, fin);
 
 #define READ_POPULATION(X) \
     fread(&st->X.size,       sizeof(unsigned int), 1,          fin); \
