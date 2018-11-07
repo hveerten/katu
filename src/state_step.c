@@ -866,54 +866,6 @@ static void step_experimental_update_populations(state_t *st, double dt)
     }
 }
 
-static void step_accept_temporary_population(state_t *st)
-{
-    double *temp_population;
-#define SWAP_POP(X) \
-    temp_population = st->X.population; \
-    st->X.population = st->X.tentative_population; \
-    st->X.tentative_population = temp_population;
-#define STEP_INTERNAL_FUNCTION(X) SWAP_POP(X)
-    APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES;
-#undef STEP_INTERNAL_FUNCTION
-#undef SWAP_POP
-}
-
-static void step_log_populations(state_t *st)
-{
-    unsigned int i;
-
-#define LOG_POPULATION(X) \
-    for(i = 0; i < st->X.size; i++) \
-        st->X.log_population[i] = log(st->X.population[i]);
-#define STEP_INTERNAL_FUNCTION(X) LOG_POPULATION(X)
-    APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES;
-#undef STEP_INTERNAL_FUNCTION
-#undef LOG_POPULATION
-}
-
-static void step_propagate_new_dt(state_t *st, double dt)
-{
-    st->dt = dt;
-
-    update_acceleration(st, &st->proton_acceleration,   st->proton_acceleration.t);
-    update_acceleration(st, &st->electron_acceleration, st->electron_acceleration.t);
-    update_escape(st,       &st->photon_escape,         st->photon_escape.t);
-    update_escape(st,       &st->electron_escape,       st->electron_escape.t);
-
-    calculate_muon_decay_LUT_lifetime(st);
-    calculate_pion_decay_LUT_lifetime(st);
-
-    synchrotron_update_dt(&st->electron_synchrotron, dt);
-    synchrotron_update_dt(&st->proton_synchrotron, dt);
-    synchrotron_update_dt(&st->positive_pion_synchrotron, dt);
-    synchrotron_update_dt(&st->negative_pion_synchrotron, dt);
-    synchrotron_update_dt(&st->negative_left_muon_synchrotron, dt);
-    synchrotron_update_dt(&st->negative_right_muon_synchrotron, dt);
-    synchrotron_update_dt(&st->positive_left_muon_synchrotron, dt);
-    synchrotron_update_dt(&st->positive_right_muon_synchrotron, dt);
-}
-
 /* Check that the new populations are sensible.
  *
  * Hence, what we do is first check for infinities, and in those cases
@@ -967,6 +919,54 @@ static void step_fix_tentative_zeros(state_t *st)
     APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES;
 #undef STEP_INTERNAL_FUNCTION
 #undef FIX_ZEROS_BODY
+}
+
+static void step_accept_temporary_population(state_t *st)
+{
+    double *temp_population;
+#define SWAP_POP(X) \
+    temp_population = st->X.population; \
+    st->X.population = st->X.tentative_population; \
+    st->X.tentative_population = temp_population;
+#define STEP_INTERNAL_FUNCTION(X) SWAP_POP(X)
+    APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES;
+#undef STEP_INTERNAL_FUNCTION
+#undef SWAP_POP
+}
+
+static void step_log_populations(state_t *st)
+{
+    unsigned int i;
+
+#define LOG_POPULATION(X) \
+    for(i = 0; i < st->X.size; i++) \
+        st->X.log_population[i] = log(st->X.population[i]);
+#define STEP_INTERNAL_FUNCTION(X) LOG_POPULATION(X)
+    APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES;
+#undef STEP_INTERNAL_FUNCTION
+#undef LOG_POPULATION
+}
+
+static void step_propagate_new_dt(state_t *st, double dt)
+{
+    st->dt = dt;
+
+    update_acceleration(st, &st->proton_acceleration,   st->proton_acceleration.t);
+    update_acceleration(st, &st->electron_acceleration, st->electron_acceleration.t);
+    update_escape(st,       &st->photon_escape,         st->photon_escape.t);
+    update_escape(st,       &st->electron_escape,       st->electron_escape.t);
+
+    calculate_muon_decay_LUT_lifetime(st);
+    calculate_pion_decay_LUT_lifetime(st);
+
+    synchrotron_update_dt(&st->electron_synchrotron, dt);
+    synchrotron_update_dt(&st->proton_synchrotron, dt);
+    synchrotron_update_dt(&st->positive_pion_synchrotron, dt);
+    synchrotron_update_dt(&st->negative_pion_synchrotron, dt);
+    synchrotron_update_dt(&st->negative_left_muon_synchrotron, dt);
+    synchrotron_update_dt(&st->negative_right_muon_synchrotron, dt);
+    synchrotron_update_dt(&st->positive_left_muon_synchrotron, dt);
+    synchrotron_update_dt(&st->positive_right_muon_synchrotron, dt);
 }
 
 void step(state_t *st)
