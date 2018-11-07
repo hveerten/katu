@@ -921,7 +921,7 @@ static void step_fix_tentative_zeros(state_t *st)
 #undef FIX_ZEROS_BODY
 }
 
-static void step_accept_temporary_population(state_t *st)
+static void step_accept_tentative_population(state_t *st)
 {
     double *temp_population;
 #define SWAP_POP(X) \
@@ -977,7 +977,7 @@ void step(state_t *st)
     if(step_check_tentative_populations(st))
         assert(0);
     step_fix_tentative_zeros(st);
-    step_accept_temporary_population(st);
+    step_accept_tentative_population(st);
 
     step_log_populations(st);
 
@@ -1018,13 +1018,13 @@ abort:
     return;
 
 end:;
-    step_accept_temporary_population(st);
+    step_accept_tentative_population(st);
     step_log_populations(st);
 
     st->t += st->dt;
 }
 
-static void step_accept_temporary_population_RK(state_t *st)
+static void step_accept_tentative_population_RK(state_t *st)
 {
     double *temp_population;
 #define SWAP_POP(X) \
@@ -1200,7 +1200,7 @@ void step_heun(state_t *st)
     step_calculate_processes(st);
     step_calculate_deltas_RK(st, 0);
     step_update_populations(st, st->dt);
-    step_accept_temporary_population_RK(st);
+    step_accept_tentative_population_RK(st);
 
     // Second step
     step_calculate_processes(st);
@@ -1208,7 +1208,7 @@ void step_heun(state_t *st)
 
     // Combination step
     step_update_populations_heun(st, st->dt);
-    step_accept_temporary_population(st);
+    step_accept_tentative_population(st);
 
     st->t += st->dt;
 }
@@ -1235,7 +1235,7 @@ void step_heun_tentative(state_t *st, bool try_new_step)
     step_fix_tentative_zeros(st);
 
     step_calculate_deltas_RK(st, 0);
-    step_accept_temporary_population_RK(st);
+    step_accept_tentative_population_RK(st);
     step_log_populations(st);
 
     // Second step
@@ -1249,7 +1249,7 @@ void step_heun_tentative(state_t *st, bool try_new_step)
         goto abort;
     step_fix_tentative_zeros(st);
 
-    step_accept_temporary_population(st);
+    step_accept_tentative_population(st);
     step_log_populations(st);
 
     st->t += st->dt;
