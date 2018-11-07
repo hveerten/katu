@@ -246,6 +246,7 @@ void step_heun(state_t *st)
     step_calculate_deltas_RK(st, 0);
     step_update_populations(st, st->dt);
     step_accept_tentative_population_RK(st);
+    step_log_populations(st);
 
     // Second step
     step_calculate_processes(st);
@@ -254,6 +255,7 @@ void step_heun(state_t *st)
     // Combination step
     step_update_populations_heun(st, st->dt);
     step_accept_tentative_population(st);
+    step_log_populations(st);
 
     st->t += st->dt;
 }
