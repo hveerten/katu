@@ -9,13 +9,13 @@ ax3 = ax1.twiny()
 
 B = 0.17
 gamma  = 10
-z      = 1.34
+z      = 0.34
 factor = 2e-7
 step   = 1
 
 g_min = 10**2.5
 g_c   = 10**4.2
-g_max = 10**5.5
+g_max = 10**5.4
 q = 4.8032045e-10
 m = 9.109e-28
 c = 3e10
@@ -31,26 +31,13 @@ ax1.grid()
 
 first_plot = True
 i = 0
-while i<17:
-    # filename = ""
-    # label = ""
-    # if i == 0:
-        # filename = "./data/data_linn_logg_implicit_NO_limit/photon_data_{:04d}.tsv".format(16)
-        # label = "NO limit"
-    # elif i == 1:
-        # filename = "./data/data_linn_logg_implicit_WITH_limit/photon_data_{:04d}.tsv".format(16)
-        # label = "WITH limit"
-    # elif i == 2:
-        # filename = "./data/data_logn_logg_2_order/photon_data_{:04d}.tsv".format(16)
-        # label = "Logn"
-    # else:
-        # i+=1
-        # continue
+while True:
 
 
     # filename = "./data/data_linn_logg_implicit_NO_limit/photon_data_{:04d}.tsv".format(i)
     # filename = "./data/data_linn_logg_implicit_WITH_limit/photon_data_{:04d}.tsv".format(i)
-    filename = "./data/data_logn_logg_2_order/photon_data_{:04d}.tsv".format(i)
+    # filename = "./data/data_logn_logg_2_order/photon_data_{:04d}.tsv".format(i)
+    filename = "./data/photon_data_{:04d}.tsv".format(i)
 
     try:
         print(filename)
@@ -78,8 +65,8 @@ obs_data[1] = (obs_data[1] - 113) / (725 - 113)
 obs_data_x = 10**(-6  * (1 - obs_data[0]) + obs_data[0] * 3)
 obs_data_y = 10**(-10 * (1 - obs_data[1]) + obs_data[1] * -14)
 
-ax1.loglog(obs_data_x / gamma * z, obs_data_y, 'o')
-ax1.errorbar(obs_data_x / gamma * z, obs_data_y, yerr=0.5*obs_data_y, fmt='o')
+ax1.loglog(obs_data_x / gamma * (1+z), obs_data_y, 'o')
+ax1.errorbar(obs_data_x / gamma * (1+z), obs_data_y, yerr=0.5*obs_data_y, fmt='o')
 
 x_extra = np.logspace(-7, 12, 1024)
 p_extra_1 = 1.2
