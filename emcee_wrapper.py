@@ -153,16 +153,13 @@ def write_config_file(theta, config_filename):
     fout.close()
 
 def generate_sim_data(theta):
-    # config_filename = "config_emcee_{}.toml".format(os.getpid())
+    config_filename = "config_emcee_{}.toml".format(os.getpid())
 
-    # write_config_file(theta, config_filename)
-    # process = subprocess.Popen(['./model',config_filename], stdout=subprocess.PIPE, universal_newlines=True)
-    # output_data, err = process.communicate('')
-    # data = np.loadtxt(StringIO(output_data), unpack=True)
-    # os.remove(config_filename)
-
-    data = np.loadtxt("./data/photon_data_0031.tsv", unpack=True, usecols=(0,2))
-    data[1] = data[0] * (1 + 0.1 * np.random.normal(size=len(data[1])))
+    write_config_file(theta, config_filename)
+    process = subprocess.Popen(['./model',config_filename], stdout=subprocess.PIPE, universal_newlines=True)
+    output_data, err = process.communicate()
+    data = np.loadtxt(StringIO(output_data), unpack=True)
+    os.remove(config_filename)
 
     return data
 
@@ -178,7 +175,7 @@ def lnlike(theta):
     sim_data[1] *= sim_data[0] * sim_data[0] * ELECTRON_ENERGY
     sim_data[0] *= 511000
 
-    # Transformate the simulated data from the fluid frame to the obs frame
+    # Transform the simulated data from the fluid frame to the obs frame
     sim_data[0] *= Gamma / (1 + z)
     sim_data[1] *= S_f
 
@@ -212,7 +209,7 @@ def lnlike(theta):
 def lnprior(theta):
     gamma_min, gamma_break, gamma_max,  \
     first_slope, second_slope,          \
-    B, S_f, Gamma, density = theta_to_params(theta)
+    R, B, S_f, Gamma, density = theta_to_params(theta)
 
     if 10        < gamma_min    < gamma_max and \
        gamma_min < gamma_break  < gamma_max and \
@@ -220,7 +217,7 @@ def lnprior(theta):
        1         < first_slope  < 5 and         \
        1         < second_slope < 5 and         \
                                                 \
-       1e13  <  R       < 1e16 and  \
+       1e13  <  R       < 1e17 and  \
        1e-3  <  B       < 1e1 and   \
        1e-10 <  S_f     < 1e-5 and  \
        5     <  Gamma   < 25 and    \
@@ -237,19 +234,19 @@ def lnprob(theta):
         lnlike_data = lnlike(theta)
         return lp + lnlike_data[0], lnlike_data[1]
 
-ndim = 9
-walkers = 20
+ndim = 10
+walkers = 96
 
 limits = np.array([(1, 6),      # log10 g_min
                    (1, 6),      # log10 g_break
                    (1, 6),      # log10 g_max
                    (1, 5),      # p1
                    (1, 5),      # p2
-                   (13, 16),    # log10 R
+                   (13, 17),    # log10 R
                    (-3, 1),     # log10 B
                    (-10, -5),   # log10 S_f
                    (5, 25),     # Gamma
-                   (-20, -24)]) # log10 d
+                   (-24, -20)]) # log10 d
 
 labels=["$\\log_{10}\\left(\\gamma_{min}\\right)$", \
         "$\\log_{10}\\left(\\gamma_{break}\\right)$", \
@@ -259,17 +256,37 @@ labels=["$\\log_{10}\\left(\\gamma_{min}\\right)$", \
         "$\\log_{10}\\left(R\\right)$", \
         "$\\log_{10}\\left(B\\right)$", \
         "$\\log_{10}\\left(S_f\\right)$", \
+        "$\\Gamma$", \
         "$\\log_{10}\\left(\\rho\\right)$"]
 
-initial = [2.5, 4.2,  5.5, \
+initial = [2.5, 4.2,  5.4, \
            2.15, 4.0, \
-           np.log10(1e14), np.log10(0.17), np.log10(2e-7), 10, -22]
+           np.log10(1e16), np.log10(0.17), np.log10(2e-7), 10, np.log10(4e-22)]
 
-real_params = [2.5, 4.2,  5.5, \
+real_params = [2.5, 4.2,  5.4, \
            2.15, 4.0, \
-           np.log10(1e14), np.log10(0.17), np.log10(2e-7), 10, -22]
+           np.log10(1e16), np.log10(0.17), np.log10(2e-7), 10, np.log10(4e-22)]
 
-print(lnprob(real_params)[0])
+input_parameters_lnprob, input_parameters_data = lnprob(real_params)
+
+plt.figure(figsize=(24,12), dpi=128)
+plt.ylim([1e-17, 1e-9])
+plt.xlim([1e-6, 1e12])
+plt.grid()
+plt.loglog(input_parameters_data[0], input_parameters_data[1])
+plt.loglog(radio_obs_data[0], radio_obs_data[1], 'o')
+# plt.loglog(optical_obs_data[0], optical_obs_data[1], 'o')
+# plt.loglog(x_rays_obs_data[0], x_rays_obs_data[1], 'o')
+# plt.loglog(gamma_rays_obs_data[0], gamma_rays_obs_data[1], 'o')
+plt.errorbar(optical_obs_data[0], optical_obs_data[1], fmt='o', yerr=optical_obs_errors)
+plt.errorbar(x_rays_obs_data[0], x_rays_obs_data[1], fmt='o', yerr=x_rays_obs_errors)
+plt.errorbar(gamma_rays_obs_data[0], gamma_rays_obs_data[1], fmt='o', yerr=gamma_rays_obs_errors)
+
+# plt.legend(loc='best')
+plt.savefig("input_parameters.png", dpi='figure')
+plt.clf()
+plt.close()
+print(input_parameters_lnprob)
 
 pos = np.array([real_params * (1 + 0.1*np.random.normal(size=len(real_params))) for i in range(walkers)])
 
@@ -284,9 +301,13 @@ sampler = emcee.EnsembleSampler(walkers, ndim, lnprob, threads=4)
 # plt.show()
 
 total_iterations = 100 * 1
+
+print("Percent\tlog10(g_min)\tlog10(g_break)\tlog10(g_max)\tp_1\t\tp_2\t\tlog10(R)\tlog10(B)\tlog10(S_f)\tGamma\tlog10(rho)")
 for i in range(100):
     pos, lnprobs, ignored, blobs = sampler.run_mcmc(pos, total_iterations / 100, lnprob0=lnprobs, blobs0=blobs)
     samples = sampler.chain[:,:,:].reshape((-1,ndim))
+
+    blobs = np.array(blobs)
 
     lnprobs_sort_indices = lnprobs.argsort()
     sorted_lnprobs = lnprobs[lnprobs_sort_indices[::-1]]
@@ -312,9 +333,20 @@ for i in range(100):
     print("{:.3f} ± {:.3f}".format(Gamma_mcmc[0],    (Gamma_mcmc[1]    + Gamma_mcmc[2])    / 2), end='\t')
     print("{:.3f} ± {:.3f}".format(log_density_mcmc[0],    (log_density_mcmc[1]    + log_density_mcmc[2])    / 2), end='\t')
 
-    # print("{:.3g}".format(prob), end='\n')
     print("", end='\n')
-    print(theta_to_params(sorted_pos[0]), sorted_lnprobs[0])
+    print("BEST:", end='\t')
+    print("10^{:.3f}".format(sorted_pos[0][0]), end='\t')
+    print("10^{:.3f}".format(sorted_pos[0][1]), end='\t')
+    print("10^{:.3f}".format(sorted_pos[0][2]), end='\t')
+    print("{:.3f}".format(sorted_pos[0][3]), end='\t\t')
+    print("{:.3f}".format(sorted_pos[0][4]), end='\t\t')
+    print("10^{:.3f}".format(sorted_pos[0][5]), end='\t')
+    print("{:.3f}".format(10**sorted_pos[0][6]), end='\t\t')
+    print("10^{:.3f}".format(sorted_pos[0][7]), end='\t')
+    print("{:.3f}".format(sorted_pos[0][8]), end='\t\t')
+    print("10^{:.3f}".format(sorted_pos[0][9]), end='\t')
+    print("{:.3f}".format(sorted_lnprobs[0]))
+    print("", end='\n')
 
     plt.figure(figsize=(24,12), dpi=128)
     plt.ylim([1e-17, 1e-9])
@@ -322,9 +354,12 @@ for i in range(100):
     plt.grid()
     plt.loglog(sorted_blobs[0][0], sorted_blobs[0][1])
     plt.loglog(radio_obs_data[0], radio_obs_data[1], 'o')
-    plt.loglog(optical_obs_data[0], optical_obs_data[1], 'o')
-    plt.loglog(x_rays_obs_data[0], x_rays_obs_data[1], 'o')
-    plt.loglog(gamma_rays_obs_data[0], gamma_rays_obs_data[1], 'o')
+    # plt.loglog(optical_obs_data[0], optical_obs_data[1], 'o')
+    # plt.loglog(x_rays_obs_data[0], x_rays_obs_data[1], 'o')
+    # plt.loglog(gamma_rays_obs_data[0], gamma_rays_obs_data[1], 'o')
+    plt.errorbar(optical_obs_data[0], optical_obs_data[1], fmt='o', yerr=optical_obs_errors)
+    plt.errorbar(x_rays_obs_data[0], x_rays_obs_data[1], fmt='o', yerr=x_rays_obs_errors)
+    plt.errorbar(gamma_rays_obs_data[0], gamma_rays_obs_data[1], fmt='o', yerr=gamma_rays_obs_errors)
 
     # plt.legend(loc='best')
     plt.savefig("emcee_best_at_step_{:03d}.png".format(i), dpi='figure')
