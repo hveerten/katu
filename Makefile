@@ -23,52 +23,55 @@ EXTERNAL_OBJECTS = \
 	./external_libs/toml.o
 
 SOURCES = \
-	./src/acceleration.c 	\
-	./src/config.c		 	\
-	./src/distribution.c 	\
-	./src/escape.c			\
-	./src/inverse_compton.c \
-	./src/muon_decay.c 		\
-	./src/pair_production.c \
-	./src/pion_decay.c 		\
-	./src/pion_production.c \
-	./src/population.c		\
-	./src/state.c			\
-	./src/state_step.c		\
-	./src/synchrotron.c		\
+	./src/acceleration.c 		\
+	./src/config.c		 		\
+	./src/distribution.c 		\
+	./src/escape.c				\
+	./src/inverse_compton.c 	\
+	./src/muon_decay.c 			\
+	./src/pair_production.c 	\
+	./src/pion_decay.c 			\
+	./src/pion_production.c 	\
+	./src/population.c			\
+	./src/state.c				\
+	./src/state_step.c			\
+	./src/state_step_common.c	\
+	./src/synchrotron.c			\
 	./src/test.c
 
 OBJECTS = \
-	./src/acceleration.o 	\
-	./src/config.o		 	\
-	./src/distribution.o 	\
-	./src/escape.o			\
-	./src/inverse_compton.o \
-	./src/muon_decay.o 		\
-	./src/pair_production.o \
-	./src/pion_decay.o 		\
-	./src/pion_production.o \
-	./src/population.o 		\
-	./src/state.o			\
-	./src/state_step.o		\
-	./src/synchrotron.o		\
+	./src/acceleration.o 		\
+	./src/config.o		 		\
+	./src/distribution.o 		\
+	./src/escape.o				\
+	./src/inverse_compton.o 	\
+	./src/muon_decay.o 			\
+	./src/pair_production.o 	\
+	./src/pion_decay.o 			\
+	./src/pion_production.o 	\
+	./src/population.o 			\
+	./src/state.o				\
+	./src/state_step.o			\
+	./src/state_step_common.o	\
+	./src/synchrotron.o			\
 	./src/test.o
 
 HEADERS = \
-	./src/acceleration.h 	\
-	./src/config.h		 	\
-	./src/constants.h		\
-	./src/distribution.h	\
-	./src/escape.h			\
-	./src/inverse_compton.h	\
-	./src/muon_decay.h 		\
-	./src/pair_production.h	\
-	./src/pion_decay.h 		\
-	./src/pion_production.h \
-	./src/population.h		\
-	./src/state.h			\
-	./src/state_step.h		\
-	./src/synchrotron.h		\
+	./src/acceleration.h 		\
+	./src/config.h		 		\
+	./src/constants.h			\
+	./src/distribution.h		\
+	./src/escape.h				\
+	./src/inverse_compton.h		\
+	./src/muon_decay.h 			\
+	./src/pair_production.h		\
+	./src/pion_decay.h 			\
+	./src/pion_production.h 	\
+	./src/population.h			\
+	./src/state.h				\
+	./src/state_step.h			\
+	./src/state_step_common.h	\
+	./src/synchrotron.h			\
 
 TARGET = model
 
