@@ -415,18 +415,9 @@ void step_experimental_update_populations(state_t *st, double dt)
 
         double L = phot_losses / st->photons.population[i] - 1 / st->photon_escape.t;
         double tau = L * dt;
-
         double aux = expm1(tau) / L;
 
-        /*
-         *double new_pop = isfinite(phot_gains / phot_losses) ?
-         *                    st->photons.population[i] * (exp(-tau) - (phot_gains / (phot_losses - st->photons.population[i] / st->photon_escape.t) * expm1(-tau))) :
-         *                    st->photons.population[i] * exp(-tau) - phot_gains / L * expm1(-tau);
-         */
-        /*double new_pop = st->photons.population[i] * exp(-tau) - phot_gains / L * expm1(-tau);*/
         double new_pop = st->photons.population[i] * exp(tau) + phot_gains * aux;
-
-        /*if(i==0) fprintf(stderr,"%lg %lg %lg %lg %lg\n", tau, exp(tau), expm1(tau), phot_gains, L);*/
 
         st->photons.tentative_population[i] = new_pop;
 
@@ -543,7 +534,6 @@ void step_experimental_update_populations(state_t *st, double dt)
     g_turnover = 1 / (st->electron_acceleration.t * (st->electron_synchrotron.particle_losses_factor + st->inverse_compton_electron_losses_factor));
     double g_max = st->electrons.energy[0] * exp(st->t / st->electron_acceleration.t) / (st->electrons.energy[0] / g_turnover * expm1(st->t / st->electron_acceleration.t) + 1);
     dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
-    fprintf(stderr,"%lg:\t%lg\t%lg\n", st->t, g_max, g_turnover);
 
 #if 0
     st->electrons.tentative_population[0] = st->electrons.population[0];
@@ -626,11 +616,6 @@ void step_experimental_update_populations(state_t *st, double dt)
         {
             new_pop = (st->electrons.population[i] * exp(tau) + aux2 * (electron_gains + aux1 * st->electrons.tentative_population[i + 1])) /
                       (1 + aux1 * aux2);
-
-            if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t-->\t%lg\n", i, st->electrons.population[i], new_pop);
-            if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t%lg\n", i, aux1, aux2);
-            if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
-                    st->electron_synchrotron.particle_losses_factor, st->inverse_compton_electron_losses_factor, st->electron_acceleration.t);
         }
         else
             new_pop = st->electrons.population[i];
@@ -655,11 +640,6 @@ void step_experimental_update_populations(state_t *st, double dt)
         if(i != st->electrons.size - 1)
         {
             new_pop = st->electrons.population[i] * exp(tau);
-
-            if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t-->\t%lg\n", i, st->electrons.population[i], new_pop);
-            if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t%lg\n", i, aux1, aux2);
-            if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
-                    st->electron_synchrotron.particle_losses_factor, st->inverse_compton_electron_losses_factor, st->electron_acceleration.t);
         }
         else
             new_pop = st->electrons.population[i];
@@ -682,13 +662,6 @@ void step_experimental_update_populations(state_t *st, double dt)
         {
             log_new_pop = (st->electrons.log_population[i] + st->dt * (aux2 + aux1 * log_new_pop / dlng)) /
                           (1 + aux1 * st->dt / dlng);
-
-            /*
-             *if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t-->\t%lg\n", i, st->electrons.log_population[i], log_new_pop);
-             *if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t%lg\n", i, aux1, aux2);
-             *if(i==st->electrons.size - 2)fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
-             *        st->electron_synchrotron.particle_losses_factor, st->inverse_compton_electron_losses_factor, st->electron_acceleration.t);
-             */
         }
         else
             log_new_pop = st->electrons.log_population[i];
