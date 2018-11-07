@@ -973,11 +973,11 @@ void step(state_t *st)
 {
     step_calculate_processes(st);
     step_update_populations(st, st->dt);
-    step_accept_temporary_population(st);
 
     if(step_check_tentative_populations(st))
         assert(0);
     step_fix_tentative_zeros(st);
+    step_accept_temporary_population(st);
 
     step_log_populations(st);
 
