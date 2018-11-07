@@ -9,6 +9,7 @@ typedef struct
     double density;
     double magnetic_field;
     double dt;
+    double dt_max;
     double t_max;
     double R;
 
