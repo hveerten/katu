@@ -899,6 +899,7 @@ static void step_propagate_new_dt(state_t *st, double dt)
     update_acceleration(st, &st->proton_acceleration,   st->proton_acceleration.t);
     update_acceleration(st, &st->electron_acceleration, st->electron_acceleration.t);
     update_escape(st,       &st->photon_escape,         st->photon_escape.t);
+    update_escape(st,       &st->electron_escape,       st->electron_escape.t);
 
     calculate_muon_decay_LUT_lifetime(st);
     calculate_pion_decay_LUT_lifetime(st);
