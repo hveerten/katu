@@ -128,96 +128,6 @@ config_template = Template("""
     size = 128
     """)
 
-# def theta_to_params(theta):
-    # log_gamma_min, log_gamma_break, log_gamma_max,  \
-    # first_slope, second_slope,                      \
-    # log_R, B, log_S_f, Gamma, log_density = theta
-
-    # return (10**log_gamma_min, 10**log_gamma_break, 10**log_gamma_max,
-            # first_slope, second_slope,
-            # 10**log_R, B, 10**log_S_f, Gamma, 10**log_density)
-
-# def params_to_theta(params):
-    # gamma_min, gamma_break, gamma_max,  \
-    # first_slope, second_slope,          \
-    # R, B, S_f, Gamma, density = params
-
-    # return (np.log10(gamma_min), np.log10(gamma_break), np.log10(gamma_max),
-            # first_slope, second_slope,
-            # np.log10(R), B, np.log10(S_f), Gamma, np.log10(density))
-
-# def theta_to_params(theta):
-    # log_gamma_min, log_gamma_break, log_gamma_max,  \
-    # first_slope, second_slope,                      \
-    # log_R, B, log_S_f, Gamma, log_density_R = theta
-
-    # return (10**log_gamma_min, 10**log_gamma_break, 10**log_gamma_max,
-            # first_slope, second_slope,
-            # 10**log_R, B, 10**log_S_f, Gamma, 10**(log_density_R - log_R))
-
-# def params_to_theta(params):
-    # gamma_min, gamma_break, gamma_max,  \
-    # first_slope, second_slope,          \
-    # R, B, S_f, Gamma, density = params
-
-    # return (np.log10(gamma_min), np.log10(gamma_break), np.log10(gamma_max),
-            # first_slope, second_slope,
-            # np.log10(R), B, np.log10(S_f), Gamma, np.log10(density * R))
-
-# def theta_to_params(theta):
-    # log_gamma_min, log_gamma_break, log_gamma_max,  \
-    # first_slope, second_slope,                      \
-    # log_R, B, Gamma, log_density_R = theta
-
-    # return (10**log_gamma_min, 10**log_gamma_break, 10**log_gamma_max,
-            # first_slope, second_slope,
-            # 10**log_R, B, Gamma, 10**(log_density_R - log_R))
-
-# def params_to_theta(params):
-    # gamma_min, gamma_break, gamma_max,  \
-    # first_slope, second_slope,          \
-    # R, B, Gamma, density = params
-
-    # return (np.log10(gamma_min), np.log10(gamma_break), np.log10(gamma_max),
-            # first_slope, second_slope,
-            # np.log10(R), B, Gamma, np.log10(density * R))
-
-# def theta_to_params(theta):
-    # log_gamma_min, log_gamma_break, log_gamma_max,  \
-    # first_slope, second_slope,                      \
-    # log_R, log_h, B, Gamma, log_density_h = theta
-
-    # return (10**log_gamma_min, 10**log_gamma_break, 10**log_gamma_max,
-            # first_slope, second_slope,
-            # 10**log_R, 10**log_h, B, Gamma, 10**(log_density_h - log_h))
-
-# def params_to_theta(params):
-    # gamma_min, gamma_break, gamma_max,  \
-    # first_slope, second_slope,          \
-    # R, h, B, Gamma, density = params
-
-    # return (np.log10(gamma_min), np.log10(gamma_break), np.log10(gamma_max),
-            # first_slope, second_slope,
-            # np.log10(R), np.log10(h), B, Gamma, np.log10(density * h))
-
-# def theta_to_params(theta):
-    # log_gamma_min, log_gamma_break, log_gamma_max,  \
-    # first_slope, second_slope,                      \
-    # log_Sf_R2, log_h, B, Gamma, log_density_h = theta
-
-    # return (10**log_gamma_min, 10**log_gamma_break, 10**log_gamma_max,
-            # first_slope, second_slope,
-            # 10**log_Sf_R2, 10**log_h, B, Gamma, 10**(log_density_h - log_h))
-
-# def params_to_theta(params):
-    # gamma_min, gamma_break, gamma_max,  \
-    # first_slope, second_slope,          \
-    # Sf_R2, h, B, Gamma, density = params
-
-    # return (np.log10(gamma_min), np.log10(gamma_break), np.log10(gamma_max),
-            # first_slope, second_slope,
-            # np.log10(Sf_R2), np.log10(h), B, Gamma, np.log10(density * h))
-
 def theta_to_params(theta):
     log_gamma_min, log_gamma_break, log_gamma_max,  \
     first_slope, second_slope,                      \
@@ -314,8 +224,8 @@ def lnprior(theta):
     first_slope, second_slope,          \
     Sf_R2, h, B, Gamma, density = theta_to_params(theta)
 
-    if 10 < gamma_min    < gamma_break  < gamma_max < 1e7 and \
-       1  < first_slope  < second_slope < 7 and               \
+    if 1 < gamma_min    < gamma_break  < gamma_max < 1e8 and \
+       1 < first_slope  < second_slope < 7 and               \
                                                               \
        1e25  <  Sf_R2   < 1e35 and  \
        1e12  <  h       < 1e18 and  \
@@ -336,44 +246,19 @@ def lnprob(theta):
 
 ndim = 10
 walkers = 128
-total_iterations = 100 * 10
-
-# limits = np.array([(1, 4),      # log10 g_min
-                   # (2, 6),      # log10 g_break
-                   # (3, 7),      # log10 g_max
-                   # (1, 4),      # p1
-                   # (2, 5),      # p2
-                   # (13, 18),    # log10 R
-                   # (0.1, 0.3),  # B
-                   # (5, 20),     # Gamma
-                   # (-24, -19)]) # log10 d
-
-# labels=["$\\log_{10}\\left(\\gamma_{min}\\right)$", \
-        # "$\\log_{10}\\left(\\gamma_{break}\\right)$", \
-        # "$\\log_{10}\\left(\\gamma_{max}\\right)$", \
-        # "$p_1$", \
-        # "$p_2$", \
-        # "$\\log_{10}\\left(R\\right)$", \
-        # "$B$", \
-        # "$\\Gamma$", \
-        # "$\\log_{10}\\left(\\rho\\right)$"]
-
-# real_params = [2.5, 4.2,  5.5, \
-               # 2.17, 4.15, \
-               # np.log10(6.3e15), 0.17, np.log10(3.5e-7), 10, np.log10(4e-22)]
 
 # Note that this are the limits for the corner plot!
 # They are different from the ones in our priors
+# BUT! they are used to generate the initial guesses
 limits = np.array([(1, 7),          # log10 g_min
                    (1, 7),          # log10 g_break
                    (1, 7),          # log10 g_max
                    (1, 5),          # p1
                    (1, 5),          # p2
-                   # (14, 19),        # log10 R
                    (25, 35),        # log10 Sf·R^2
-                   (12, 18),        # log10 h
-                   (0.05, 0.30),    # B
-                   (5, 30),         # Gamma
+                   (13, 16),        # log10 h
+                   (0.08, 0.25),    # B
+                   (5, 20),         # Gamma
                    (-10, +2)])      # log10 (d·h·g_min^2/3)
 
 labels=["$\\log_{10}\\left(\\gamma_{min}\\right)$", \
@@ -381,7 +266,6 @@ labels=["$\\log_{10}\\left(\\gamma_{min}\\right)$", \
         "$\\log_{10}\\left(\\gamma_{max}\\right)$", \
         "$p_1$", \
         "$p_2$", \
-        # "$\\log_{10}\\left(R\\right)$", \
         "$\\log_{10}\\left(S_f \cdot R^2\\right)$", \
         "$\\log_{10}\\left(h\\right)$", \
         "$B$", \
@@ -393,26 +277,13 @@ real_params = [10**2.22, \
                10**5.87, \
                1.85,    \
                4.32,    \
-               10**29.68,      # Sf x R^2 \
+               10**29.68, \
                10**14.94,  \
                0.17,    \
                11.51,      \
                10**(-5.39 - 14.94)]
 
-# If we assume that the blob is spherical and h = R we start here
-real_params_spherical = [10**2.41, \
-                         10**4.14, \
-                         10**5.57, \
-                         2.17,    \
-                         4.23,    \
-                         10**15.55,  \
-                         10**15.55,  \
-                         0.17,    \
-                         10.30,      \
-                         10**(-5.61 - 15.55)]
-
 real_theta = params_to_theta(real_params)
-real_theta_spherical = params_to_theta(real_params_spherical)
 print(real_theta)
 
 input_parameters_lnprob, input_parameters_data = lnprob(real_theta)
@@ -427,115 +298,164 @@ plt.errorbar(optical_obs_data[0], optical_obs_data[1], fmt='o', yerr=optical_obs
 plt.errorbar(x_rays_obs_data[0], x_rays_obs_data[1], fmt='o', yerr=x_rays_obs_errors)
 plt.errorbar(gamma_rays_obs_data[0], gamma_rays_obs_data[1], fmt='o', yerr=gamma_rays_obs_errors)
 
-# plt.legend(loc='best')
 plt.savefig("input_parameters.png", dpi='figure')
 plt.clf()
 plt.close()
 print(input_parameters_lnprob)
 
-# pos = np.array([real_theta * (1 + 0.1*np.random.normal(size=len(real_theta)) * 4 / np.array(real_theta)) for i in range(walkers)])
 pos = np.array([np.random.normal(loc=real_theta, scale=(limits[:,1] - limits[:,0]) / 4) for i in range(walkers)])
-# pos = np.concatenate([np.array([np.random.normal(loc=real_theta,           scale=(limits[:,1] - limits[:,0]) / 4) for i in range(walkers//2)]),
-                      # np.array([np.random.normal(loc=real_theta_spherical, scale=(limits[:,1] - limits[:,0]) / 4) for i in range(int(walkers/2))])])
 
 print(pos[0])
 pos[0] = real_theta
 
 lnprobs = None
 blobs = None
+rstate = None
 sampler = emcee.EnsembleSampler(walkers, ndim, lnprob, threads=4)
 
-print("Percent\tlog10(g_min)\tlog10(g_break)\tlog10(g_max)\tp_1\t\tp_2\t\tlog10(Sf·R^2)\tlog10(h)\tB\t\tGamma\t\tlog10(rho·h·g_min^2/3)")
 try:
-    for i in range(100):
-        pos, lnprobs, ignored, blobs = sampler.run_mcmc(pos, total_iterations / 100, lnprob0=lnprobs, blobs0=blobs)
-        samples = sampler.chain[:,:,:].reshape((-1,ndim))
-
-        blobs = np.array(blobs)
-
-        lnprobs_sort_indices = lnprobs.argsort()
-        sorted_lnprobs = lnprobs[lnprobs_sort_indices[::-1]]
-        sorted_pos     = pos[lnprobs_sort_indices[::-1]]
-        sorted_blobs   = blobs[lnprobs_sort_indices[::-1]]
-
-        # log_g_min_mcmc, log_g_break_mcmc, log_g_max_mcmc, \
-        # p1_mcmc, p2_mcmc, \
-        # log_R_mcmc, B_mcmc, log_S_f_mcmc, Gamma_mcmc, log_density_mcmc = \
-                # map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), \
-                        # zip(*np.percentile(samples, [16,50,84], axis=0)))
-
-        # log_g_min_mcmc, log_g_break_mcmc, log_g_max_mcmc, \
-        # p1_mcmc, p2_mcmc, \
-        # log_R_mcmc, B_mcmc, Gamma_mcmc, log_density_R_mcmc = \
-                # map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), \
-                        # zip(*np.percentile(samples, [16,50,84], axis=0)))
-
-        # log_g_min_mcmc, log_g_break_mcmc, log_g_max_mcmc, \
-        # p1_mcmc, p2_mcmc, \
-        # log_R_mcmc, log_h_mcmc, B_mcmc, Gamma_mcmc, log_density_h_mcmc = \
-                # map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), \
-                        # zip(*np.percentile(samples, [16,50,84], axis=0)))
-
-        log_g_min_mcmc, log_g_break_mcmc, log_g_max_mcmc, \
-        p1_mcmc, p2_mcmc, \
-        log_Sf_R2_mcmc, log_h_mcmc, B_mcmc, Gamma_mcmc, log_density_h_mcmc = \
-                map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), \
-                        zip(*np.percentile(samples, [16,50,84], axis=0)))
-
-        print("{:d}%".format(i+1), end='\t')
-        print("{:.3f} ± {:.3f}".format(log_g_min_mcmc[0],    (log_g_min_mcmc[1]    + log_g_min_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(log_g_break_mcmc[0],    (log_g_break_mcmc[1]    + log_g_break_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(log_g_max_mcmc[0],    (log_g_max_mcmc[1]    + log_g_max_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(p1_mcmc[0],    (p1_mcmc[1]    + p1_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(p2_mcmc[0],    (p2_mcmc[1]    + p2_mcmc[2])    / 2), end='\t')
-
-        print("{:.3f} ± {:.3f}".format(log_Sf_R2_mcmc[0],    (log_Sf_R2_mcmc[1]    + log_Sf_R2_mcmc[2])    / 2), end='\t')
-        # print("{:.3f} ± {:.3f}".format(log_R_mcmc[0],    (log_R_mcmc[1]    + log_R_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(log_h_mcmc[0],    (log_h_mcmc[1]    + log_h_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(B_mcmc[0],    (B_mcmc[1]    + B_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(Gamma_mcmc[0],    (Gamma_mcmc[1]    + Gamma_mcmc[2])    / 2), end='\t')
-        print("{:.3f} ± {:.3f}".format(log_density_h_mcmc[0],    (log_density_h_mcmc[1]    + log_density_h_mcmc[2])    / 2), end='\t')
-        # print("{:.3f} ± {:.3f}".format(log_density_mcmc[0],    (log_density_mcmc[1]    + log_density_mcmc[2])    / 2), end='\t')
-
+    def print_medians(i, samples, ndim):
+        print("{:03d}".format(i+1), end='\t')
+        for j in range(ndim):
+            medians = np.percentile(samples[:,j] , [16,50,84])
+            medians[0] = medians[1] - medians[0]
+            medians[2] = medians[2] - medians[1]
+            print("{:.3f} ± {:.3f}".format(medians[1], (medians[0] + medians[2]) / 2), end='\t')
         print("", end='\n')
+
+    def print_best(i, best, best_lnprob):
         print("BEST:", end='\t')
-        print("10^{:.3f}".format(sorted_pos[0][0]), end='\t')
-        print("10^{:.3f}".format(sorted_pos[0][1]), end='\t')
-        print("10^{:.3f}".format(sorted_pos[0][2]), end='\t')
-        print("{:.3f}".format(sorted_pos[0][3]), end='\t\t')
-        print("{:.3f}".format(sorted_pos[0][4]), end='\t\t')
-        print("10^{:.3f}".format(sorted_pos[0][5]), end='\t')
-        print("10^{:.3f}".format(sorted_pos[0][6]), end='\t')
-        print("{:.3f}".format(sorted_pos[0][7]), end='\t\t')
-        print("{:.3f}".format(sorted_pos[0][8]), end='\t\t')
-        print("10^{:.3f}".format(sorted_pos[0][9]), end='\t')
-        print("{:.3f}".format(sorted_lnprobs[0]))
+        print("10^{:.3f}".format(best[0]), end='\t')
+        print("10^{:.3f}".format(best[1]), end='\t')
+        print("10^{:.3f}".format(best[2]), end='\t')
+        print("{:.3f}".format(best[3]), end='\t\t')
+        print("{:.3f}".format(best[4]), end='\t\t')
+        print("10^{:.3f}".format(best[5]), end='\t')
+        print("10^{:.3f}".format(best[6]), end='\t')
+        print("{:.3f}".format(best[7]), end='\t\t')
+        print("{:.3f}".format(best[8]), end='\t\t')
+        print("10^{:.3f}".format(best[9]), end='\t')
+        print("{:.3f}".format(best_lnprob))
         print("", end='\n')
 
+    def create_fig(i, best_blob):
         plt.figure(figsize=(24,12), dpi=128)
         plt.ylim([1e-17, 1e-9])
         plt.xlim([1e-6, 1e12])
         plt.grid()
-        plt.loglog(sorted_blobs[0][0], sorted_blobs[0][1])
+        plt.loglog(best_blob[0], best_blob[1])
         plt.loglog(radio_obs_data[0], radio_obs_data[1], 'o')
         plt.errorbar(optical_obs_data[0], optical_obs_data[1], fmt='o', yerr=optical_obs_errors)
         plt.errorbar(x_rays_obs_data[0], x_rays_obs_data[1], fmt='o', yerr=x_rays_obs_errors)
         plt.errorbar(gamma_rays_obs_data[0], gamma_rays_obs_data[1], fmt='o', yerr=gamma_rays_obs_errors)
 
-        # plt.legend(loc='best')
         plt.savefig("emcee_best_at_step_{:03d}.png".format(i), dpi='figure')
         plt.clf()
         plt.close()
 
+    def create_corner(i, samples):
         fig = corner.corner(samples, labels=labels, range=limits, truths=real_theta, quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
         fig.savefig("triangle_at_step_{:03d}.png".format(i))
         plt.close(fig)
-        np.save("data_mcmc_at_step_{:03d}".format(i), sampler.chain)
+
+    def save_data(i, data):
+        np.save("data_mcmc_at_step_{:03d}".format(i), data)
+
+    print("Percent\tlog10(g_min)\tlog10(g_break)\tlog10(g_max)\tp_1\t\tp_2\t\tlog10(Sf·R^2)\tlog10(h)\tB\t\tGamma\t\tlog10(rho·h·g_min^2/3)")
+    total_iterations = 0
+
+    # First, do 10 quick iterations and output general data to see if
+    # everything is behaving correctly
+    for i in range(10):
+        pos, lnprobs, rstate, blobs = sampler.run_mcmc(pos, 1, rstate0=rstate, lnprob0=lnprobs, blobs0=blobs)
+        samples = sampler.chain[:,:,:].reshape((-1,ndim))
+
+        blobs = np.array(blobs)
+
+        lnprobs_max_index = (lnprobs.argsort())[::-1]
+        best_lnprob = lnprobs[lnprobs_max_index][0]
+        best_pos    = pos[lnprobs_max_index][0]
+        best_blob   = blobs[lnprobs_max_index][0]
+
+        print_medians(i, samples, ndim)
+        print_best(i, best_pos, best_lnprob)
+        create_fig(i, best_blob)
+        create_corner(i, samples)
+        save_data(i, sampler.chain)
+
+        total_iterations += 1
+
+    # Now, do some longish iterations as a 'burn-in' thing
+    for i in range(10, 29):
+        pos, lnprobs, rstate, blobs = sampler.run_mcmc(pos, 10, rstate0=rstate, lnprob0=lnprobs, blobs0=blobs)
+        samples = sampler.chain[:,:,:].reshape((-1,ndim))
+
+        blobs = np.array(blobs)
+
+        lnprobs_max_index = (lnprobs.argsort())[::-1]
+        best_lnprob = lnprobs[lnprobs_max_index][0]
+        best_pos    = pos[lnprobs_max_index][0]
+        best_blob   = blobs[lnprobs_max_index][0]
+
+        print_medians(i, samples, ndim)
+        print_best(i, best_pos, best_lnprob)
+        create_fig(i, best_blob)
+        create_corner(i, samples)
+        save_data(i, sampler.chain)
+
+        total_iterations += 10
+    i = 29
+
+    # total_iterations ~ 200
+
+    # Now, '''Real''' MCMC process. This runs until some condition of steady
+    # state is True
+    while True:
+        pos, lnprobs, rstate, blobs = sampler.run_mcmc(pos, 10, rstate0=rstate, lnprob0=lnprobs, blobs0=blobs)
+        samples = sampler.chain[:,:,:].reshape((-1,ndim))
+
+        blobs = np.array(blobs)
+
+        lnprobs_max_index = (lnprobs.argsort())[::-1]
+        best_lnprob = lnprobs[lnprobs_max_index][0]
+        best_pos    = pos[lnprobs_max_index][0]
+        best_blob   = blobs[lnprobs_max_index][0]
+
+        print_medians(i, samples, ndim)
+        print_best(i, best_pos, best_lnprob)
+        create_fig(i, best_blob)
+        create_corner(i, samples)
+        save_data(i, sampler.chain)
+
+        total_iterations += 10
+        i += 1
+
+        out_conditions = 0
+        for dim in range(ndim):
+            old_data = sampler.chain[:, -100:-50, dim]
+            new_data = sampler.chain[:, -50 :   , dim]
+
+            old_medians = np.percentile(old_data, [16, 50, 84])
+            new_medians = np.percentile(new_data, [16, 50, 84])
+
+            if ((new_medians - old_medians) / new_medians < 1e-3).all():
+                out_conditions += 1
+
+        if out_conditions == ndim:
+            break
+
+    # SIGINT -> KeyboardInterrupt
+    # and that means that we are killing the program with Ctrl+C.
+    # Just dump the data we have so far and be done with it
 except KeyboardInterrupt as e:
     samples = sampler.chain[:,:,:].reshape((-1,ndim))
-    np.save("data_mcmc_saved".format(i), sampler.chain)
+    np.save("saved_data_mcmc", sampler.chain)
+    fig = corner.corner(samples, labels=labels, range=limits, truths=real_theta, quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
+    fig.savefig("saved_triangle.png")
+
+    sys.exit(1)
 
 samples = sampler.chain[:,:,:].reshape((-1,ndim))
-np.save("data_mcmc", sampler.chain)
+np.save("final_data_mcmc", sampler.chain)
 fig = corner.corner(samples, labels=labels, range=limits, truths=real_theta, quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
-fig.savefig("triangle.png")
+fig.savefig("final_triangle.png")
