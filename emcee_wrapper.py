@@ -131,20 +131,30 @@ config_template = Template("""
 def theta_to_params(theta):
     log_gamma_min, log_gamma_break, log_gamma_max,  \
     first_slope, second_slope,                      \
-    log_Sf_R2, log_h, B, Gamma, log_density_h_g_min = theta
+    B, Gamma,                                       \
+    log_h,                                          \
+    log_R_g_break,                                  \
+    log_density_h_g_min = theta
 
     return (10**log_gamma_min, 10**log_gamma_break, 10**log_gamma_max,
             first_slope, second_slope,
-            10**log_Sf_R2, 10**log_h, B, Gamma, 10**(log_density_h_g_min - log_h - 2/3*log_gamma_min))
+            B, Gamma,
+            10**log_h,
+            10**(log_R_g_break + 3/2 * log_gamma_break),
+            10**(log_density_h_g_min - log_h - 2/3*log_gamma_min))
 
 def params_to_theta(params):
     gamma_min, gamma_break, gamma_max,  \
     first_slope, second_slope,          \
-    Sf_R2, h, B, Gamma, density = params
+    B, Gamma,                           \
+    h, R, density = params
 
     return (np.log10(gamma_min), np.log10(gamma_break), np.log10(gamma_max),
             first_slope, second_slope,
-            np.log10(Sf_R2), np.log10(h), B, Gamma, np.log10(density * h * np.power(gamma_min,2/3)))
+            B, Gamma,
+            np.log10(h),
+            np.log10(R / np.power(g_break, 3/2)),
+            np.log10(density * h * np.power(gamma_min,2/3)))
 
 def write_config_file(theta, config_filename):
     params = theta_to_params(theta)
@@ -154,8 +164,9 @@ def write_config_file(theta, config_filename):
                 g_max = params[2],
                 p1 = params[3],
                 p2 = params[4],
-                radius = params[6], # not radius, h
-                mag = params[7],
+                mag = params[5],
+                radius = params[7], # not radius, h
+                # radius = params[8],
                 dens = params[9])
 
     fout = open(config_filename, "w")
@@ -176,10 +187,11 @@ def generate_sim_data(theta):
 def lnlike(theta):
     gamma_min, gamma_break, gamma_max,  \
     first_slope, second_slope,          \
-    Sf_R2, h, B, Gamma, density = theta_to_params(theta)
+    B, Gamma,                           \
+    h, R, density = theta_to_params(theta)
 
     # S_f = ELECTRON_ENERGY / 2     * (R * Gamma * LIGHT_SPEED / D_l)**2  # Spherical
-    S_f = Sf_R2 * (Gamma * LIGHT_SPEED / D_l)**2  # Shell
+    S_f = ELECTRON_ENERGY / (4 * np.pi**2) * (R * Gamma * LIGHT_SPEED / D_l)**2  # Shell
 
     sim_data = generate_sim_data(theta)
 
@@ -198,7 +210,7 @@ def lnlike(theta):
     gamma_rays_sim_data = np.interp(gamma_rays_obs_data[0], sim_data[0], sim_data[1])
 
     # The radio band is an upper limit
-    if np.any(radio_sim_data > radio_obs_data): return -np.inf, sim_data
+    if np.any(radio_sim_data > radio_obs_data): return -np.inf, (sim_data, (0,0,0))
 
     optical_lnlike = -np.sum(0.5*np.power((optical_sim_data - optical_obs_data[1]) / (optical_obs_errors), 2)
                              + np.log(optical_obs_errors))
@@ -217,19 +229,20 @@ def lnlike(theta):
     x_rays_lnlike     = -np.sum(0.5*np.power((x_rays_sim_data     - x_rays_obs_data[1])     / (x_rays_obs_errors), 2))
     gamma_rays_lnlike = -np.sum(0.5*np.power((gamma_rays_sim_data - gamma_rays_obs_data[1]) / (gamma_rays_obs_errors_temp), 2))
 
-    return optical_lnlike + x_rays_lnlike + gamma_rays_lnlike, sim_data
+    return optical_lnlike + x_rays_lnlike + gamma_rays_lnlike, (sim_data, (optical_lnlike, x_rays_lnlike, gamma_rays_lnlike))
 
 def lnprior(theta):
     gamma_min, gamma_break, gamma_max,  \
     first_slope, second_slope,          \
-    Sf_R2, h, B, Gamma, density = theta_to_params(theta)
+    B, Gamma,                           \
+    h, R, density = theta_to_params(theta)
 
-    if 1 < gamma_min    < gamma_break  < gamma_max < 1e8 and \
-       1 < first_slope  < second_slope < 7 and               \
+    if 1e1 < gamma_min    < gamma_break  < gamma_max < 1e8 and \
+       1   < first_slope  < second_slope < 7 and               \
                                                               \
-       1e25  <  Sf_R2   < 1e35 and  \
        1e12  <  h       < 1e18 and  \
-       0.05  <  B       < 0.3 and   \
+       1e14  <  R       < 1e20 and  \
+       0.01  <  B       < 0.3 and   \
        5     <  Gamma   < 30 and    \
        1e-24 <  density < 1e-18:
            return 0
@@ -239,7 +252,7 @@ def lnprior(theta):
 def lnprob(theta):
     lp = lnprior(theta)
     if np.isinf(lp):
-        return -np.inf, np.array([[0]*128,[0]*128])
+        return -np.inf, (np.array([[0]*128,[0]*128]), (0,0,0))
     else:
         lnlike_data = lnlike(theta)
         return lp + lnlike_data[0], lnlike_data[1]
@@ -247,52 +260,51 @@ def lnprob(theta):
 ndim = 10
 walkers = 128
 
-# Note that this are the limits for the corner plot!
-# They are different from the ones in our priors
-# BUT! they are used to generate the initial guesses
-limits = np.array([(1, 7),          # log10 g_min
-                   (1, 7),          # log10 g_break
-                   (1, 7),          # log10 g_max
-                   (1, 5),          # p1
-                   (1, 5),          # p2
-                   (25, 35),        # log10 Sf·R^2
-                   (13, 16),        # log10 h
-                   (0.08, 0.25),    # B
-                   (5, 20),         # Gamma
-                   (-10, +2)])      # log10 (d·h·g_min^2/3)
-
 labels=["$\\log_{10}\\left(\\gamma_{min}\\right)$", \
         "$\\log_{10}\\left(\\gamma_{break}\\right)$", \
         "$\\log_{10}\\left(\\gamma_{max}\\right)$", \
         "$p_1$", \
         "$p_2$", \
-        "$\\log_{10}\\left(S_f \cdot R^2\\right)$", \
-        "$\\log_{10}\\left(h\\right)$", \
         "$B$", \
         "$\\Gamma$", \
+        "$\\log_{10}\\left(h\\right)$", \
+        "$\\log_{10}\\left(R \cdot \\gamma_{break}^{-3/2}\\right)$", \
         "$\\log_{10}\\left(\\rho \cdot h \cdot \\gamma_{min}^{2/3}\\right)$"]
 
-real_params = [10**2.22, \
-               10**4.14, \
-               10**5.87, \
-               1.85,    \
-               4.32,    \
-               10**29.68, \
-               10**14.94,  \
-               0.17,    \
-               11.51,      \
-               10**(-5.39 - 14.94)]
+# initial_params = [10**1.909, \
+                  # 10**4.308, \
+                  # 10**6.203, \
+                  # 1.84,    \
+                  # 4.325,    \
+                  # 10**18.712, \
+                  # 10**15.127,  \
+                  # 0.107,    \
+                  # 8.501,      \
+                  # 10**-20]
 
-real_theta = params_to_theta(real_params)
-print(real_theta)
+initial_theta = [[-0.58,  2.43, 0.36], # log10(g_min)
+                 [-0.10,  4.16, 0.11], # log10(g_break)
+                 [-0.59,  6.64, 0.78], # log10(g_max)
+                 [-0.15,  1.85, 0.18], # p1
+                 [-0.09,  4.29, 0.10], # p2
+                 [-0.03,  0.12, 0.03], # B
+                 [-3.33, 13.32, 3.67], # Gamma
+                 [-1.27, 14.63, 1.54], # log10(h)
+                 [-0.54, 12.44, 0.12], # log10(R·g_break^-3/2)
+                 [-0.09, -3.91, 0.08]] # log10(rho·h·g_min^2/3)
+initial_theta = np.array(initial_theta).T
 
-input_parameters_lnprob, input_parameters_data = lnprob(real_theta)
+initial_params = theta_to_params(initial_theta[1])
+print(initial_theta[1])
+print(initial_params)
+
+input_parameters_lnprob, input_parameters_data = lnprob(initial_theta[1])
 
 plt.figure(figsize=(24,12), dpi=128)
 plt.ylim([1e-17, 1e-9])
 plt.xlim([1e-6, 1e12])
 plt.grid()
-plt.loglog(input_parameters_data[0], input_parameters_data[1])
+plt.loglog(input_parameters_data[0][0], input_parameters_data[0][1])
 plt.loglog(radio_obs_data[0], radio_obs_data[1], 'o')
 plt.errorbar(optical_obs_data[0], optical_obs_data[1], fmt='o', yerr=optical_obs_errors)
 plt.errorbar(x_rays_obs_data[0], x_rays_obs_data[1], fmt='o', yerr=x_rays_obs_errors)
@@ -301,12 +313,23 @@ plt.errorbar(gamma_rays_obs_data[0], gamma_rays_obs_data[1], fmt='o', yerr=gamma
 plt.savefig("input_parameters.png", dpi='figure')
 plt.clf()
 plt.close()
-print(input_parameters_lnprob)
+print(input_parameters_lnprob, input_parameters_data[1])
 
-pos = np.array([np.random.normal(loc=real_theta, scale=(limits[:,1] - limits[:,0]) / 4) for i in range(walkers)])
+pos = np.array([np.random.normal(loc=initial_theta[1], scale=(initial_theta[2] - initial_theta[0]) / 2) for i in range(walkers)])
 
 print(pos[0])
-pos[0] = real_theta
+pos[0] = initial_theta[1]
+
+# Make sure that ALL walkers start from a valid position
+for i in range(walkers):
+    prob, _ = lnprob(pos[i])
+
+    while np.isinf(prob):
+        pos[i] = np.random.normal(loc=initial_theta[1], scale=(initial_theta[2] - initial_theta[0]) / 2)
+        prob, _ = lnprob(pos[i])
+
+    print("\r[{}{}] {:.2g}%".format("=" * int(80 * i/walkers), ' ' * int(80 * (walkers - i)/walkers), 100 * i/walkers), end='')
+print()
 
 lnprobs = None
 blobs = None
@@ -323,19 +346,20 @@ try:
             print("{:.3f} ± {:.3f}".format(medians[1], (medians[0] + medians[2]) / 2), end='\t')
         print("", end='\n')
 
-    def print_best(i, best, best_lnprob):
+    def print_best(i, best, best_lnprob, best_lnprobs):
         print("BEST:", end='\t')
         print("10^{:.3f}".format(best[0]), end='\t')
         print("10^{:.3f}".format(best[1]), end='\t')
         print("10^{:.3f}".format(best[2]), end='\t')
         print("{:.3f}".format(best[3]), end='\t\t')
         print("{:.3f}".format(best[4]), end='\t\t')
-        print("10^{:.3f}".format(best[5]), end='\t')
-        print("10^{:.3f}".format(best[6]), end='\t')
-        print("{:.3f}".format(best[7]), end='\t\t')
-        print("{:.3f}".format(best[8]), end='\t\t')
+        print("{:.3f}".format(best[5]), end='\t\t')
+        print("{:.3f}".format(best[6]), end='\t\t')
+        print("10^{:.3f}".format(best[7]), end='\t')
+        print("10^{:.3f}".format(best[8]), end='\t')
         print("10^{:.3f}".format(best[9]), end='\t')
-        print("{:.3f}".format(best_lnprob))
+        print("{:.3f}".format(best_lnprob), end='\t')
+        print("({:.3f} + {:.3f} + {:.3f})".format(*best_lnprobs))
         print("", end='\n')
 
     def create_fig(i, best_blob):
@@ -354,14 +378,14 @@ try:
         plt.close()
 
     def create_corner(i, samples):
-        fig = corner.corner(samples, labels=labels, range=limits, truths=real_theta, quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
+        fig = corner.corner(samples, labels=labels, truths=initial_theta[1], quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
         fig.savefig("triangle_at_step_{:03d}.png".format(i))
         plt.close(fig)
 
-    def save_data(i, data):
-        np.save("data_mcmc_at_step_{:03d}".format(i), data)
+    def save_data(i, data, lnprobs):
+        np.savez("data_mcmc_at_step_{:03d}".format(i), data=data, lnprobs=lnprobs)
 
-    print("Percent\tlog10(g_min)\tlog10(g_break)\tlog10(g_max)\tp_1\t\tp_2\t\tlog10(Sf·R^2)\tlog10(h)\tB\t\tGamma\t\tlog10(rho·h·g_min^2/3)")
+    print("Percent\tlog10(g_min)\tlog10(g_break)\tlog10(g_max)\tp_1\t\tp_2\t\tB\t\tGamma\t\tlog10(h)\tlog10(R·g_break^-3/2)\tlog10(rho·h·g_min^2/3)")
     total_iterations = 0
 
     # First, do 10 quick iterations and output general data to see if
@@ -370,40 +394,49 @@ try:
         pos, lnprobs, rstate, blobs = sampler.run_mcmc(pos, 1, rstate0=rstate, lnprob0=lnprobs, blobs0=blobs)
         samples = sampler.chain[:,:,:].reshape((-1,ndim))
 
-        blobs = np.array(blobs)
+        lnprobs_max_index = ((lnprobs.argsort())[::-1])[0]
 
-        lnprobs_max_index = (lnprobs.argsort())[::-1]
-        best_lnprob = lnprobs[lnprobs_max_index][0]
-        best_pos    = pos[lnprobs_max_index][0]
-        best_blob   = blobs[lnprobs_max_index][0]
+        best_lnprob = lnprobs[lnprobs_max_index]
+        best_pos    = pos[lnprobs_max_index]
+        best_blob   = blobs[lnprobs_max_index]
 
         print_medians(i, samples, ndim)
-        print_best(i, best_pos, best_lnprob)
-        create_fig(i, best_blob)
+        print_best(i, best_pos, best_lnprob, best_blob[1])
+        create_fig(i, best_blob[0])
         create_corner(i, samples)
-        save_data(i, sampler.chain)
+        save_data(i, sampler.chain, sampler.lnprobability)
 
         total_iterations += 1
 
     # Now, do some longish iterations as a 'burn-in' thing
+    # and check that no walker has gotten stuck in a bad
+    # position
     for i in range(10, 29):
         pos, lnprobs, rstate, blobs = sampler.run_mcmc(pos, 10, rstate0=rstate, lnprob0=lnprobs, blobs0=blobs)
         samples = sampler.chain[:,:,:].reshape((-1,ndim))
 
-        blobs = np.array(blobs)
+        lnprobs_max_index = ((lnprobs.argsort())[::-1])[0]
 
-        lnprobs_max_index = (lnprobs.argsort())[::-1]
-        best_lnprob = lnprobs[lnprobs_max_index][0]
-        best_pos    = pos[lnprobs_max_index][0]
-        best_blob   = blobs[lnprobs_max_index][0]
+        best_lnprob = lnprobs[lnprobs_max_index]
+        best_pos    = pos[lnprobs_max_index]
+        best_blob   = blobs[lnprobs_max_index]
 
         print_medians(i, samples, ndim)
-        print_best(i, best_pos, best_lnprob)
-        create_fig(i, best_blob)
+        print_best(i, best_pos, best_lnprob, best_blob[1])
+        create_fig(i, best_blob[0])
         create_corner(i, samples)
-        save_data(i, sampler.chain)
+        save_data(i, sampler.chain, sampler.lnprobability)
+
+        for j in range(walkers):
+            if (sampler.chain[j, total_iterations:, :] == sampler.chain[j, total_iterations , :]).all():
+                print("Walker {} seems to be stuck at {} with {}, restarting".format(j, pos[j], lnprobs[j]))
+                lnprobs[j] = -np.inf
+                while lnprobs[j] < 25 * best_lnprob or np.isinf(lnprobs[j]):
+                    pos[j] = np.random.normal(loc=initial_theta[1], scale=(initial_theta[2] - initial_theta[0]) / 2)
+                    lnprobs[j], _ = lnprob(pos[j])
 
         total_iterations += 10
+
     i = 29
 
     # total_iterations ~ 200
@@ -414,18 +447,17 @@ try:
         pos, lnprobs, rstate, blobs = sampler.run_mcmc(pos, 10, rstate0=rstate, lnprob0=lnprobs, blobs0=blobs)
         samples = sampler.chain[:,:,:].reshape((-1,ndim))
 
-        blobs = np.array(blobs)
+        lnprobs_max_index = ((lnprobs.argsort())[::-1])[0]
 
-        lnprobs_max_index = (lnprobs.argsort())[::-1]
-        best_lnprob = lnprobs[lnprobs_max_index][0]
-        best_pos    = pos[lnprobs_max_index][0]
-        best_blob   = blobs[lnprobs_max_index][0]
+        best_lnprob = lnprobs[lnprobs_max_index]
+        best_pos    = pos[lnprobs_max_index]
+        best_blob   = blobs[lnprobs_max_index]
 
         print_medians(i, samples, ndim)
-        print_best(i, best_pos, best_lnprob)
-        create_fig(i, best_blob)
+        print_best(i, best_pos, best_lnprob, best_blob[1])
+        create_fig(i, best_blob[0])
         create_corner(i, samples)
-        save_data(i, sampler.chain)
+        save_data(i, sampler.chain, sampler.lnprobability)
 
         total_iterations += 10
         i += 1
@@ -449,13 +481,13 @@ try:
     # Just dump the data we have so far and be done with it
 except KeyboardInterrupt as e:
     samples = sampler.chain[:,:,:].reshape((-1,ndim))
-    np.save("saved_data_mcmc", sampler.chain)
-    fig = corner.corner(samples, labels=labels, range=limits, truths=real_theta, quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
+    np.savez("saved_data_mcmc", data=sampler.chain, lnprobs=sampler.lnprobability)
+    fig = corner.corner(samples, labels=labels, truths=initial_theta[1], quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
     fig.savefig("saved_triangle.png")
 
     sys.exit(1)
 
 samples = sampler.chain[:,:,:].reshape((-1,ndim))
-np.save("final_data_mcmc", sampler.chain)
-fig = corner.corner(samples, labels=labels, range=limits, truths=real_theta, quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
+np.savez("final_data_mcmc", data=sampler.chain, lnprobs=sampler.lnprobability)
+fig = corner.corner(samples, labels=labels, truths=initial_theta[1], quantiles=[0.16,0.5,0.84], show_titles=True, quiet=True)
 fig.savefig("final_triangle.png")
