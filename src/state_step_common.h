@@ -6,10 +6,22 @@
 
 #include <stdbool.h>
 
+#if ELECTRON_STEADY_STATE == 0
+#define APPLY_TO_ELECTRONS STEP_INTERNAL_FUNCTION(electrons)
+#else
+#define APPLY_TO_ELECTRONS
+#endif
+
+#if PROTON_STEADY_STATE == 0
+#define APPLY_TO_PROTONS STEP_INTERNAL_FUNCTION(protons)
+#else
+#define APPLY_TO_PROTONS
+#endif
+
 #define APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES   \
     STEP_INTERNAL_FUNCTION(photons)                 \
-    /*STEP_INTERNAL_FUNCTION(electrons)               \*/ \
-    /*STEP_INTERNAL_FUNCTION(protons)                 \*/ \
+    APPLY_TO_ELECTRONS \
+    APPLY_TO_PROTONS \
     STEP_INTERNAL_FUNCTION(neutrons)                \
                                                     \
     STEP_INTERNAL_FUNCTION(neutral_pions)           \
