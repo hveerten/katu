@@ -119,7 +119,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
              st->multi_resonances_proton_gains[i] +
              st->multi_resonances_proton_losses[i] +
              st->direct_pion_production_proton_gains[i] +
-             st->direct_pion_production_proton_losses[i]);
+             st->direct_pion_production_proton_losses[i] +
+             st->proton_escape.losses[i]);
     }
 
     for(i = 0; i < st->neutrons.size; i++)
@@ -128,7 +129,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
             (st->multi_resonances_neutron_gains[i] +
              st->multi_resonances_neutron_losses[i] +
              st->direct_pion_production_neutron_gains[i] +
-             st->direct_pion_production_neutron_losses[i]);
+             st->direct_pion_production_neutron_losses[i] +
+             st->neutron_escape.losses[i]);
     }
 
     for(i = 0; i < st->electrons.size; i++)
@@ -136,14 +138,16 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
         st->electrons_RK_information.stage_delta[stage][i] =
             (st->electron_synchrotron.particle_losses[i] +
              st->inverse_compton_electron_losses[i] +
-             st->electron_acceleration.gains[i]);
+             st->electron_acceleration.gains[i] +
+             st->electron_escape.losses[i]);
     }
 
     for(i = 0; i < st->neutral_pions.size; i++)
     {
         st->neutral_pions_RK_information.stage_delta[stage][i] =
             (st->multi_resonances_neutral_pion_gains[i] +
-             st->direct_neutral_pion_gains[i]);
+             st->direct_neutral_pion_gains[i] +
+             st->neutral_pion_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_pions.size; i++)
@@ -152,7 +156,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
             (st->multi_resonances_positive_pion_gains[i] +
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_positive_pion_losses[i]);
+             st->pion_decay_positive_pion_losses[i] +
+             st->positive_pion_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_pions.size; i++)
@@ -161,7 +166,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
             (st->multi_resonances_negative_pion_gains[i] +
              st->direct_negative_pion_gains[i] +
              st->negative_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_negative_pion_losses[i]);
+             st->pion_decay_negative_pion_losses[i] +
+             st->negative_pion_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_left_muons.size; i++)
@@ -169,7 +175,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
         st->positive_left_muons_RK_information.stage_delta[stage][i] =
             (st->pion_decay_positive_left_muon_gains[i] +
              st->positive_left_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_positive_left_muon_losses[i]);
+             st->muon_decay_positive_left_muon_losses[i] +
+             st->positive_left_muon_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_right_muons.size; i++)
@@ -177,7 +184,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
         st->positive_right_muons_RK_information.stage_delta[stage][i] =
             (st->pion_decay_positive_right_muon_gains[i] +
              st->positive_right_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_positive_right_muon_losses[i]);
+             st->muon_decay_positive_right_muon_losses[i] +
+             st->positive_right_muon_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_left_muons.size; i++)
@@ -185,7 +193,8 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
         st->negative_left_muons_RK_information.stage_delta[stage][i] =
             (st->pion_decay_negative_left_muon_gains[i] +
              st->negative_left_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_negative_left_muon_losses[i]);
+             st->muon_decay_negative_left_muon_losses[i] +
+             st->negative_left_muon_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_right_muons.size; i++)
@@ -193,33 +202,38 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
         st->negative_right_muons_RK_information.stage_delta[stage][i] =
             (st->pion_decay_negative_right_muon_gains[i] +
              st->negative_right_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_negative_right_muon_losses[i]);
+             st->muon_decay_negative_right_muon_losses[i] +
+             st->negative_right_muon_escape.losses[i]);
     }
 
     for(i = 0; i < st->electron_neutrinos.size; i++)
     {
         st->electron_neutrinos_RK_information.stage_delta[stage][i] =
-            (st->muon_decay_electron_neutrino_gains[i]);
+            (st->muon_decay_electron_neutrino_gains[i] +
+             st->electron_neutrino_escape.losses[i]);
     }
 
     for(i = 0; i < st->electron_antineutrinos.size; i++)
     {
         st->electron_antineutrinos_RK_information.stage_delta[stage][i] =
-            (st->muon_decay_electron_antineutrino_gains[i]);
+            (st->muon_decay_electron_antineutrino_gains[i] +
+             st->electron_antineutrino_escape.losses[i]);
     }
 
     for(i = 0; i < st->muon_neutrinos.size; i++)
     {
         st->muon_neutrinos_RK_information.stage_delta[stage][i] =
             (st->pion_decay_muon_neutrino_gains[i] +
-             st->muon_decay_muon_neutrino_gains[i]);
+             st->muon_decay_muon_neutrino_gains[i] +
+             st->muon_neutrino_escape.losses[i]);
     }
 
     for(i = 0; i < st->muon_antineutrinos.size; i++)
     {
         st->muon_antineutrinos_RK_information.stage_delta[stage][i] =
             (st->pion_decay_muon_antineutrino_gains[i] +
-             st->muon_decay_muon_antineutrino_gains[i]);
+             st->muon_decay_muon_antineutrino_gains[i] +
+             st->muon_antineutrino_escape.losses[i]);
     }
 }
 
