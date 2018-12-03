@@ -89,9 +89,6 @@ void step_calculate_processes(state_t *st)
 
     st->electron_acceleration.acceleration_function(&st->electron_acceleration);
     /*st->proton_acceleration.acceleration_function(&st->proton_acceleration);*/
-
-    st->photon_escape.escape_function(&st->photon_escape);
-    st->electron_escape.escape_function(&st->electron_escape);
 #else
     st->electron_synchrotron.synchrotron_function(&st->electron_synchrotron);
     st->proton_synchrotron.synchrotron_function(&st->proton_synchrotron);
@@ -119,10 +116,26 @@ void step_calculate_processes(state_t *st)
 
     st->electron_acceleration.acceleration_function(&st->electron_acceleration);
     st->proton_acceleration.acceleration_function(&st->proton_acceleration);
+#endif
 
     st->photon_escape.escape_function(&st->photon_escape);
     st->electron_escape.escape_function(&st->electron_escape);
-#endif
+    st->proton_escape.escape_function(&st->proton_escape);
+    st->neutron_escape.escape_function(&st->neutron_escape);
+
+    st->neutral_pion_escape.escape_function(&st->neutral_pion_escape);
+    st->positive_pion_escape.escape_function(&st->positive_pion_escape);
+    st->negative_pion_escape.escape_function(&st->negative_pion_escape);
+
+    st->positive_left_muon_escape.escape_function(&st->positive_left_muon_escape);
+    st->positive_right_muon_escape.escape_function(&st->positive_right_muon_escape);
+    st->negative_left_muon_escape.escape_function(&st->negative_left_muon_escape);
+    st->negative_right_muon_escape.escape_function(&st->negative_right_muon_escape);
+
+    st->electron_neutrino_escape.escape_function(&st->electron_neutrino_escape);
+    st->electron_antineutrino_escape.escape_function(&st->electron_antineutrino_escape);
+    st->muon_neutrino_escape.escape_function(&st->muon_neutrino_escape);
+    st->muon_antineutrino_escape.escape_function(&st->muon_antineutrino_escape);
 
     unsigned int i;
     for(i = 0; i < st->photons.size; i++)
