@@ -164,6 +164,22 @@ typedef struct state_t
 
     escape_t photon_escape;
     escape_t electron_escape;
+    escape_t proton_escape;
+    escape_t neutron_escape;
+
+    escape_t neutral_pion_escape;
+    escape_t positive_pion_escape;
+    escape_t negative_pion_escape;
+
+    escape_t positive_left_muon_escape;
+    escape_t positive_right_muon_escape;
+    escape_t negative_left_muon_escape;
+    escape_t negative_right_muon_escape;
+
+    escape_t electron_neutrino_escape;
+    escape_t electron_antineutrino_escape;
+    escape_t muon_neutrino_escape;
+    escape_t muon_antineutrino_escape;
 
     synchrotron_t electron_synchrotron;
     synchrotron_t proton_synchrotron;
