@@ -38,6 +38,28 @@ void init_state_synchrotron(state_t *st, double B)
     init_synchrotron(st, &st->negative_right_muon_synchrotron, negative_right_muon);
 }
 
+void init_state_escape(state_t *st, double t)
+{
+    init_escape(st, &st->photon_escape,   photon,   t);
+    init_escape(st, &st->electron_escape, electron, t);
+    init_escape(st, &st->proton_escape,   proton,   t);
+    init_escape(st, &st->neutron_escape,  neutron,  t);
+
+    init_escape(st, &st->neutral_pion_escape,  neutral_pion,  t);
+    init_escape(st, &st->positive_pion_escape, positive_pion, t);
+    init_escape(st, &st->negative_pion_escape, negative_pion, t);
+
+    init_escape(st, &st->positive_left_muon_escape,  positive_left_muon,  t);
+    init_escape(st, &st->positive_right_muon_escape, positive_right_muon, t);
+    init_escape(st, &st->negative_left_muon_escape,  negative_left_muon,  t);
+    init_escape(st, &st->negative_right_muon_escape, negative_right_muon, t);
+
+    init_escape(st, &st->electron_neutrino_escape,     electron_neutrino,     t);
+    init_escape(st, &st->electron_antineutrino_escape, electron_antineutrino, t);
+    init_escape(st, &st->muon_neutrino_escape,         muon_neutrino,         t);
+    init_escape(st, &st->muon_antineutrino_escape,     muon_antineutrino,     t);
+}
+
 void init_state_populations(state_t *st,
         double g_electron_min, double g_electron_max, unsigned int electron_size,
         double g_proton_min, double g_proton_max, unsigned int proton_size,

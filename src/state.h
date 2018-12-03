@@ -192,6 +192,7 @@ typedef struct state_t
 } state_t;
 
 void init_state_synchrotron(state_t *st, double B);
+void init_state_escape(state_t *st, double t);
 
 void init_state_populations(state_t *st,
         double g_electron_min, double g_electron_max, unsigned int electron_size,
