@@ -13,6 +13,8 @@ typedef struct
     double t_max;
     double R;
 
+    double eta;
+
     double electron_gamma_min;
     double electron_gamma_max;
     double electron_size;

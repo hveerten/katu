@@ -118,12 +118,14 @@ void config_read_file(config_t *cfg, char *filename)
     general_table = toml_table_in(conf, "general");
     if(general_table != 0)
     {
-        TOML_READ_DOUBLE(general_table, "density",        cfg->density,        "density",           1e-22);
-        TOML_READ_DOUBLE(general_table, "magnetic_field", cfg->magnetic_field, "magnetic field",    0.1);
-        TOML_READ_DOUBLE(general_table, "dt",             cfg->dt,             "time step",         0.1);
-        TOML_READ_DOUBLE(general_table, "dt_max",         cfg->dt_max,         "maximum time step", 1e3);
-        TOML_READ_DOUBLE(general_table, "t_max",          cfg->t_max,          "maximum time",      1e7);
-        TOML_READ_DOUBLE(general_table, "R",              cfg->R,              "radius",            1e16);
+        TOML_READ_DOUBLE(general_table, "density",        cfg->density,        "density",                  1e-22);
+        TOML_READ_DOUBLE(general_table, "magnetic_field", cfg->magnetic_field, "magnetic field",           0.1);
+        TOML_READ_DOUBLE(general_table, "dt",             cfg->dt,             "time step",                0.1);
+        TOML_READ_DOUBLE(general_table, "dt_max",         cfg->dt_max,         "maximum time step",        1e3);
+        TOML_READ_DOUBLE(general_table, "t_max",          cfg->t_max,          "maximum time",             1e7);
+        TOML_READ_DOUBLE(general_table, "R",              cfg->R,              "radius",                   1e16);
+        TOML_READ_DOUBLE(general_table, "R",              cfg->R,              "radius",                   1e16);
+        TOML_READ_DOUBLE(general_table, "eta",            cfg->eta,            "proton to electron_ratio", 1.0);
     }
 
     electron_table = toml_table_in(conf, "electrons");
