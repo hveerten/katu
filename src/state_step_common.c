@@ -941,8 +941,25 @@ void step_propagate_new_dt(state_t *st, double dt)
 
     update_acceleration(st, &st->proton_acceleration,   st->proton_acceleration.t);
     update_acceleration(st, &st->electron_acceleration, st->electron_acceleration.t);
-    update_escape(st,       &st->photon_escape,         st->photon_escape.t);
-    update_escape(st,       &st->electron_escape,       st->electron_escape.t);
+
+    update_escape(st, &st->photon_escape,   st->photon_escape.t);
+    update_escape(st, &st->electron_escape, st->electron_escape.t);
+    update_escape(st, &st->proton_escape,   st->proton_escape.t);
+    update_escape(st, &st->neutron_escape,  st->neutron_escape. t);
+
+    update_escape(st, &st->neutral_pion_escape,  st->neutral_pion_escape.t);
+    update_escape(st, &st->positive_pion_escape, st->positive_pion_escape.t);
+    update_escape(st, &st->negative_pion_escape, st->negative_pion_escape.t);
+
+    update_escape(st, &st->positive_left_muon_escape,  st->positive_left_muon_escape.t);
+    update_escape(st, &st->positive_right_muon_escape, st->positive_right_muon_escape.t);
+    update_escape(st, &st->negative_left_muon_escape,  st->negative_left_muon_escape.t);
+    update_escape(st, &st->negative_right_muon_escape, st->negative_right_muon_escape.t);
+
+    update_escape(st, &st->electron_neutrino_escape,     st->electron_neutrino_escape.t);
+    update_escape(st, &st->electron_antineutrino_escape, st->electron_antineutrino_escape.t);
+    update_escape(st, &st->muon_neutrino_escape,         st->muon_neutrino_escape.t);
+    update_escape(st, &st->muon_antineutrino_escape,     st->muon_antineutrino_escape.t);
 
     calculate_muon_decay_LUT_lifetime(st);
     calculate_pion_decay_LUT_lifetime(st);
