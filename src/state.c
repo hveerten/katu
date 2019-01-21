@@ -624,9 +624,8 @@ void state_load_state_from_file(state_t *st, char *filename)
 
     init_acceleration(st, &st->proton_acceleration,   proton,   proton_acceleration_timescale);
     init_acceleration(st, &st->electron_acceleration, electron, electron_acceleration_timescale);
-    init_escape      (st, &st->electron_escape,       electron, electron_escape_timescale);
 
-    init_escape(st, &st->photon_escape, photon, 2./3. * st->R / LIGHT_SPEED);
+    init_state_escape(st, electron_escape_timescale);
 
     state_init_LUTs(st);
 
