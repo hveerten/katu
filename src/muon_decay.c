@@ -54,13 +54,13 @@ void muon_decay(state_t *st)
         // Again, positive pions and negative pions have the same size
         for(j = 0; j < st->negative_left_muons.size; j++)
         {
-            double g_muon = st->negative_left_muons.energy[j];
-            double x = g_electron * ELECTRON_MASS / (g_muon * MUON_MASS);
+            /*double g_muon = st->negative_left_muons.energy[j];*/
+            /*double x = g_electron * ELECTRON_MASS / (g_muon * MUON_MASS);*/
 
-            double n_positive_left_muons  = st->positive_left_muons.population[j];
-            double n_positive_right_muons = st->positive_right_muons.population[j];
-            double n_negative_left_muons  = st->negative_left_muons.population[j];
-            double n_negative_right_muons = st->negative_right_muons.population[j];
+            /*double n_positive_left_muons  = st->positive_left_muons.population[j];*/
+            /*double n_positive_right_muons = st->positive_right_muons.population[j];*/
+            /*double n_negative_left_muons  = st->negative_left_muons.population[j];*/
+            /*double n_negative_right_muons = st->negative_right_muons.population[j];*/
 
             // TODO
             /*
@@ -93,8 +93,8 @@ void muon_decay(state_t *st)
         // Again, positive pions and negative pions have the same size
         for(j = 0; j < st->negative_left_muons.size; j++)
         {
-            double g_muon = st->negative_left_muons.energy[j];
-            double x = g_neutrino * ELECTRON_MASS / (g_muon * MUON_MASS);
+            /*double g_muon = st->negative_left_muons.energy[j];*/
+            /*double x = g_neutrino * ELECTRON_MASS / (g_muon * MUON_MASS);*/
 
             double n_positive_left_muons  = st->positive_left_muons.population[j];
             double n_positive_right_muons = st->positive_right_muons.population[j];
@@ -193,10 +193,10 @@ void calculate_muon_decay_LUT_neutrino_functions(state_t *st)
             double g_muon = st->negative_left_muons.energy[j];
             double x = g_neutrino * ELECTRON_MASS / (g_muon * MUON_MASS);
 
-            st->muon_decay_LUT_positive_electron_minus_1[index_base + j] = f_positive_electron(x, -1) / g_muon;
-            st->muon_decay_LUT_positive_electron_plus_1 [index_base + j] = f_positive_electron(x,  1) / g_muon;
-            st->muon_decay_LUT_positive_muon_plus_1     [index_base + j] = f_positive_muon(x,  1)     / g_muon;
-            st->muon_decay_LUT_positive_muon_minus_1    [index_base + j] = f_positive_muon(x, -1)     / g_muon;
+            st->muon_decay_LUT_positive_electron_minus_1[index_base + j] = f_positive_electron(x, -1) / (g_muon * g_muon);
+            st->muon_decay_LUT_positive_electron_plus_1 [index_base + j] = f_positive_electron(x,  1) / (g_muon * g_muon);
+            st->muon_decay_LUT_positive_muon_plus_1     [index_base + j] = f_positive_muon(x,  1)     / (g_muon * g_muon);
+            st->muon_decay_LUT_positive_muon_minus_1    [index_base + j] = f_positive_muon(x, -1)     / (g_muon * g_muon);
         }
     }
 }
