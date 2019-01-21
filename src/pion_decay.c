@@ -24,7 +24,7 @@ static double f_positive_left(double x)
 
     double aux = 1 / ((1 - MASSES_RATIO) * (1 - MASSES_RATIO));
 
-    return aux * (1 - MASSES_RATIO) / x;
+    return aux * (x - MASSES_RATIO) / x;
 }
 
 void charged_pion_decay(state_t *st)
