@@ -486,7 +486,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "mu_neutrino_Population\tmu_antineutrino_Population\t" \
                     "e_neutrino_gains\te_antineutrino_gains\t" ///Remember, only from muons
                     "mu_neutrino_PD_gains\tmu_neutrino_MuD_gains\t"
-                    "mu_antineutrino_PD_gains\tmu_antineutrino_MuD_gains\n" \
+                    "mu_antineutrino_PD_gains\tmu_antineutrino_MuD_gains\t" \
                     "e_neutrino_escape\te_antineutrino_escape\t" \
                     "mu_neutrino_escape\tmu_antineutrino_escape\t");
             for(i = 0; i < st->electron_neutrinos.size; i++)
