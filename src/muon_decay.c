@@ -29,7 +29,8 @@ static double f_positive_electron(double x, double h)
     if(fabs(h) > 1)
         return 0;
 
-    if(h ==  1.0) return 4 - 12 * x + 12 * x * x -  4 * x * x * x;
+    /*if(h ==  1.0) return 4 - 12 * x + 12 * x * x -  4 * x * x * x;*/
+    if(h ==  1.0) return 4 * (1 - 3 * (x - x * x) - x * x * x);
     if(h == -1.0) return     12 * x - 24 * x * x + 12 * x * x * x;
 
     double aux1 = 2          -  6 * x * x + 4 * x * x * x;
