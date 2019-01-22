@@ -24,7 +24,7 @@
 
 
 static void config_read_distribution_type(
-        toml_table_t *part_table, char *part_txt, 
+        toml_table_t *part_table, char *part_txt,
         enum distribution_type *part_dist_type, double *part_params)
 {
     const char *raw;
@@ -123,7 +123,6 @@ void config_read_file(config_t *cfg, char *filename)
         TOML_READ_DOUBLE(general_table, "dt",             cfg->dt,             "time step",                0.1);
         TOML_READ_DOUBLE(general_table, "dt_max",         cfg->dt_max,         "maximum time step",        1e3);
         TOML_READ_DOUBLE(general_table, "t_max",          cfg->t_max,          "maximum time",             1e7);
-        TOML_READ_DOUBLE(general_table, "R",              cfg->R,              "radius",                   1e16);
         TOML_READ_DOUBLE(general_table, "R",              cfg->R,              "radius",                   1e16);
         TOML_READ_DOUBLE(general_table, "eta",            cfg->eta,            "proton to electron_ratio", 1.0);
     }
