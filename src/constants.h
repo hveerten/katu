@@ -14,6 +14,8 @@
 #define BOLTZMANN_CONSTANT  1.3806503e-16       // cm^2·g/s^2·K
 #define FINE_STRUCTURE_CONSTANT (1/137.035999)
 
+#define NEUTRON_LIFETIME 880.2  // s
+
 /*
 #define CHARGED_PION_MASS   2.4880644e-25       // g
 #define NEUTRAL_PION_MASS   2.406176e-25        // g
