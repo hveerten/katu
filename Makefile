@@ -27,6 +27,7 @@ SOURCES = \
 	./src/config.c		 		\
 	./src/distribution.c 		\
 	./src/escape.c				\
+	./src/decay_and_escape.c	\
 	./src/inverse_compton.c 	\
 	./src/muon_decay.c 			\
 	./src/pair_production.c 	\
@@ -44,6 +45,7 @@ OBJECTS = \
 	./src/config.o		 		\
 	./src/distribution.o 		\
 	./src/escape.o				\
+	./src/decay_and_escape.o	\
 	./src/inverse_compton.o 	\
 	./src/muon_decay.o 			\
 	./src/pair_production.o 	\
@@ -62,6 +64,7 @@ HEADERS = \
 	./src/constants.h			\
 	./src/distribution.h		\
 	./src/escape.h				\
+	./src/decay_and_escape.h	\
 	./src/inverse_compton.h		\
 	./src/muon_decay.h 			\
 	./src/pair_production.h		\
