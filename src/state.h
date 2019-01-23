@@ -149,12 +149,6 @@ typedef struct state_t
     double *muon_decay_muon_neutrino_gains;
     double *muon_decay_muon_antineutrino_gains;
 
-    double *muon_decay_positive_left_muon_losses;
-    double *muon_decay_positive_right_muon_losses;
-    double *muon_decay_negative_left_muon_losses;
-    double *muon_decay_negative_right_muon_losses;
-
-    double *muon_decay_LUT_lifetime;
     double *muon_decay_LUT_positive_electron_minus_1;
     double *muon_decay_LUT_positive_electron_plus_1;
     double *muon_decay_LUT_positive_muon_minus_1;

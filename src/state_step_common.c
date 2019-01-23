@@ -952,7 +952,6 @@ void step_propagate_new_dt(state_t *st, double dt)
     update_escape(st, &st->muon_neutrino_escape,         st->muon_neutrino_escape.t);
     update_escape(st, &st->muon_antineutrino_escape,     st->muon_antineutrino_escape.t);
 
-    calculate_muon_decay_LUT_lifetime(st);
     calculate_pion_decay_LUT_lifetime(st);
 
     synchrotron_update_dt(&st->electron_synchrotron, dt);

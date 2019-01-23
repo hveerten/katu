@@ -6,10 +6,8 @@
 
 void muon_decay(state_t *st);
 
-void init_muon_decay_LUT_lifetime(state_t *st);
 void init_muon_decay_LUT_neutrino_functions(state_t *st);
 
-void calculate_muon_decay_LUT_lifetime(state_t *st);
 void calculate_muon_decay_LUT_neutrino_functions(state_t *st);
 
 #ifdef USE_THREADS

@@ -128,44 +128,6 @@ void muon_decay(state_t *st)
         st->muon_decay_muon_neutrino_gains[i]         = muon_neutrino_production         * dlng / (2 * MUON_LIFETIME);
         st->muon_decay_muon_antineutrino_gains[i]     = muon_antineutrino_production     * dlng / (2 * MUON_LIFETIME);
     }
-
-    for(i = 0; i < st->negative_left_muons.size; i++)
-    {
-        /*
-         *st->muon_decay_positive_left_muon_losses[i]  = -st->positive_left_muons.population[i]  / (st->positive_left_muons.energy[i]  * MUON_LIFETIME);
-         *st->muon_decay_positive_right_muon_losses[i] = -st->positive_right_muons.population[i] / (st->positive_right_muons.energy[i] * MUON_LIFETIME);
-         *st->muon_decay_negative_left_muon_losses[i]  = -st->negative_left_muons.population[i]  / (st->negative_left_muons.energy[i]  * MUON_LIFETIME);
-         *st->muon_decay_negative_right_muon_losses[i] = -st->negative_right_muons.population[i] / (st->negative_right_muons.energy[i] * MUON_LIFETIME);
-         */
-
-        /*
-         *st->muon_decay_positive_left_muon_losses[i]  = st->positive_left_muons.population[i]  * (exp(-st->dt / (st->positive_left_muons.energy[i]  * MUON_LIFETIME)) - 1) / st->dt;
-         *st->muon_decay_positive_right_muon_losses[i] = st->positive_right_muons.population[i] * (exp(-st->dt / (st->positive_right_muons.energy[i] * MUON_LIFETIME)) - 1) / st->dt;
-         *st->muon_decay_negative_left_muon_losses[i]  = st->negative_left_muons.population[i]  * (exp(-st->dt / (st->negative_left_muons.energy[i]  * MUON_LIFETIME)) - 1) / st->dt;
-         *st->muon_decay_negative_right_muon_losses[i] = st->negative_right_muons.population[i] * (exp(-st->dt / (st->negative_right_muons.energy[i] * MUON_LIFETIME)) - 1) / st->dt;
-         */
-
-        st->muon_decay_positive_left_muon_losses[i]  = st->positive_left_muons.population[i]  * st->muon_decay_LUT_lifetime[i];
-        st->muon_decay_positive_right_muon_losses[i] = st->positive_right_muons.population[i] * st->muon_decay_LUT_lifetime[i];
-        st->muon_decay_negative_left_muon_losses[i]  = st->negative_left_muons.population[i]  * st->muon_decay_LUT_lifetime[i];
-        st->muon_decay_negative_right_muon_losses[i] = st->negative_right_muons.population[i] * st->muon_decay_LUT_lifetime[i];
-    }
-}
-
-void init_muon_decay_LUT_lifetime(state_t *st)
-{
-    size_t size = st->positive_left_muons.size;
-
-    posix_memalign((void **) &st->muon_decay_LUT_lifetime, 32, sizeof(double) * size);
-}
-
-void calculate_muon_decay_LUT_lifetime(state_t *st)
-{
-    unsigned int i;
-
-    // As usual, we assume same limits and size for all muons
-    for(i = 0; i < st->positive_left_muons.size; i++)
-        st->muon_decay_LUT_lifetime[i] = expm1(-st->dt / (st->positive_left_muons.energy[i]  * MUON_LIFETIME)) / st->dt;
 }
 
 void init_muon_decay_LUT_neutrino_functions(state_t *st)
