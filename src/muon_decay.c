@@ -194,10 +194,10 @@ void calculate_muon_decay_LUT_neutrino_functions(state_t *st)
             double g_muon = st->negative_left_muons.energy[j];
             double x = g_neutrino * ELECTRON_MASS / (g_muon * MUON_MASS);
 
-            st->muon_decay_LUT_positive_electron_minus_1[index_base + j] = f_positive_electron(x, -1) / (g_muon * g_muon);
-            st->muon_decay_LUT_positive_electron_plus_1 [index_base + j] = f_positive_electron(x,  1) / (g_muon * g_muon);
-            st->muon_decay_LUT_positive_muon_plus_1     [index_base + j] = f_positive_muon(x,  1)     / (g_muon * g_muon);
-            st->muon_decay_LUT_positive_muon_minus_1    [index_base + j] = f_positive_muon(x, -1)     / (g_muon * g_muon);
+            st->muon_decay_LUT_positive_electron_minus_1[index_base + j] = f_positive_electron(x, -1) / (g_muon * g_muon) * (ELECTRON_MASS / MUON_MASS);
+            st->muon_decay_LUT_positive_electron_plus_1 [index_base + j] = f_positive_electron(x,  1) / (g_muon * g_muon) * (ELECTRON_MASS / MUON_MASS);
+            st->muon_decay_LUT_positive_muon_plus_1     [index_base + j] = f_positive_muon(x,  1)     / (g_muon * g_muon) * (ELECTRON_MASS / MUON_MASS);
+            st->muon_decay_LUT_positive_muon_minus_1    [index_base + j] = f_positive_muon(x, -1)     / (g_muon * g_muon) * (ELECTRON_MASS / MUON_MASS);
         }
     }
 }
