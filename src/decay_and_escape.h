@@ -7,6 +7,7 @@
 struct state_t;
 typedef struct decay_and_escape_t
 {
+    double *t;
     double *losses;
     double *losses_factor;
     population_t *particles;

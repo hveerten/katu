@@ -80,6 +80,7 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
         default: assert(0); break;
     }
 
+    MEM_PREPARE(dea->t,             dea->particles->size);
     MEM_PREPARE(dea->losses,        dea->particles->size);
     MEM_PREPARE(dea->losses_factor, dea->particles->size);
 
@@ -104,6 +105,7 @@ void update_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, double
             t = (dea->particles->energy[i] * dea->decay_lifetime + dea->escape_lifetime) / 
                 (dea->particles->energy[i] * dea->decay_lifetime * dea->escape_lifetime);
 
+        dea->t[i] = t;
         dea->losses_factor[i] = expm1(-dea->dt * t) / dea->dt;
     }
 }
