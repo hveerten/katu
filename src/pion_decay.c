@@ -91,8 +91,8 @@ void charged_pion_decay(state_t *st)
 
             if(x < 1 - MASSES_RATIO && x < 1)
             {
-                muon_neutrino_production     += 2 * n_positive_pion / (g_pion * (1 - MASSES_RATIO)) / g_pion;
-                muon_antineutrino_production += 2 * n_negative_pion / (g_pion * (1 - MASSES_RATIO)) / g_pion;
+                muon_neutrino_production     += 2 * n_positive_pion / (g_pion * g_pion * (1 - MASSES_RATIO)) * (ELECTRON_MASS / PION_MASS);
+                muon_antineutrino_production += 2 * n_negative_pion / (g_pion * g_pion * (1 - MASSES_RATIO)) * (ELECTRON_MASS / PION_MASS);
             }
         }
 
