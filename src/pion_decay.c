@@ -196,8 +196,8 @@ void calculate_pion_decay_LUT_muon_functions(state_t *st)
             double g_pion = st->positive_pions.energy[j];
             double x = g_muon * MUON_MASS / (g_pion * PION_MASS);
 
-            st->pion_decay_LUT_positive_right[index_base + j] = f_positive_right(x) / (g_pion * g_pion);
-            st->pion_decay_LUT_positive_left [index_base + j] = f_positive_left(x)  / (g_pion * g_pion);
+            st->pion_decay_LUT_positive_right[index_base + j] = f_positive_right(x) / (g_pion * g_pion) * (MUON_MASS / PION_MASS);
+            st->pion_decay_LUT_positive_left [index_base + j] = f_positive_left(x)  / (g_pion * g_pion) * (MUON_MASS / PION_MASS);
         }
     }
 }
