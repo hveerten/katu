@@ -5,6 +5,7 @@
 #include "acceleration.h"
 #include "distribution.h"
 #include "escape.h"
+#include "decay_and_escape.h"
 #include "population.h"
 #include "synchrotron.h"
 
@@ -165,16 +166,16 @@ typedef struct state_t
     escape_t photon_escape;
     escape_t electron_escape;
     escape_t proton_escape;
-    escape_t neutron_escape;
+    decay_and_escape_t neutron_decay_and_escape;
 
-    escape_t neutral_pion_escape;
-    escape_t positive_pion_escape;
-    escape_t negative_pion_escape;
+    decay_and_escape_t neutral_pion_decay_and_escape;
+    decay_and_escape_t positive_pion_decay_and_escape;
+    decay_and_escape_t negative_pion_decay_and_escape;
 
-    escape_t positive_left_muon_escape;
-    escape_t positive_right_muon_escape;
-    escape_t negative_left_muon_escape;
-    escape_t negative_right_muon_escape;
+    decay_and_escape_t positive_left_muon_decay_and_escape;
+    decay_and_escape_t positive_right_muon_decay_and_escape;
+    decay_and_escape_t negative_left_muon_decay_and_escape;
+    decay_and_escape_t negative_right_muon_decay_and_escape;
 
     escape_t electron_neutrino_escape;
     escape_t electron_antineutrino_escape;
@@ -193,6 +194,7 @@ typedef struct state_t
 
 void init_state_synchrotron(state_t *st, double B);
 void init_state_escape(state_t *st, double t);
+void init_state_decay_and_escape(state_t *st, double t);
 
 void init_state_populations(state_t *st,
         double g_electron_min, double g_electron_max, unsigned int electron_size,

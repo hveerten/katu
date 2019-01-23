@@ -9,10 +9,11 @@
 #include "pair_production.h"
 #include "muon_decay.h"
 
-#include <math.h>
-#include <stdio.h>
-#include <float.h>
 #include <assert.h>
+#include <float.h>
+#include <math.h>
+#include <pthread.h>
+#include <stdio.h>
 
 void step_calculate_processes(state_t *st)
 {
@@ -121,16 +122,16 @@ void step_calculate_processes(state_t *st)
     st->photon_escape.escape_function(&st->photon_escape);
     st->electron_escape.escape_function(&st->electron_escape);
     st->proton_escape.escape_function(&st->proton_escape);
-    st->neutron_escape.escape_function(&st->neutron_escape);
+    st->neutron_decay_and_escape.losses_function(&st->neutron_decay_and_escape);
 
-    st->neutral_pion_escape.escape_function(&st->neutral_pion_escape);
-    st->positive_pion_escape.escape_function(&st->positive_pion_escape);
-    st->negative_pion_escape.escape_function(&st->negative_pion_escape);
+    st->neutral_pion_decay_and_escape.losses_function(&st->neutral_pion_decay_and_escape);
+    st->positive_pion_decay_and_escape.losses_function(&st->positive_pion_decay_and_escape);
+    st->negative_pion_decay_and_escape.losses_function(&st->negative_pion_decay_and_escape);
 
-    st->positive_left_muon_escape.escape_function(&st->positive_left_muon_escape);
-    st->positive_right_muon_escape.escape_function(&st->positive_right_muon_escape);
-    st->negative_left_muon_escape.escape_function(&st->negative_left_muon_escape);
-    st->negative_right_muon_escape.escape_function(&st->negative_right_muon_escape);
+    st->positive_left_muon_decay_and_escape.losses_function(&st->positive_left_muon_decay_and_escape);
+    st->positive_right_muon_decay_and_escape.losses_function(&st->positive_right_muon_decay_and_escape);
+    st->negative_left_muon_decay_and_escape.losses_function(&st->negative_left_muon_decay_and_escape);
+    st->negative_right_muon_decay_and_escape.losses_function(&st->negative_right_muon_decay_and_escape);
 
     st->electron_neutrino_escape.escape_function(&st->electron_neutrino_escape);
     st->electron_antineutrino_escape.escape_function(&st->electron_antineutrino_escape);
@@ -224,7 +225,7 @@ void step_update_populations(state_t *st, double dt)
              st->multi_resonances_neutron_losses[i] +
              st->direct_pion_production_neutron_gains[i] +
              st->direct_pion_production_neutron_losses[i] +
-             st->neutron_escape.losses[i]);
+             st->neutron_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
@@ -263,7 +264,7 @@ void step_update_populations(state_t *st, double dt)
             st->neutral_pions.population[i] + dt *
             (st->multi_resonances_neutral_pion_gains[i] +
              st->direct_neutral_pion_gains[i] +
-             st->neutral_pion_escape.losses[i]);
+             st->neutral_pion_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"\t%lg\t%lg\n",
@@ -282,7 +283,7 @@ void step_update_populations(state_t *st, double dt)
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
              st->pion_decay_positive_pion_losses[i] +
-             st->positive_pion_escape.losses[i]);
+             st->positive_pion_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
@@ -302,7 +303,7 @@ void step_update_populations(state_t *st, double dt)
              st->direct_negative_pion_gains[i] +
              st->negative_pion_synchrotron.particle_losses[i] +
              st->pion_decay_negative_pion_losses[i] +
-             st->negative_pion_escape.losses[i]);
+             st->negative_pion_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_left_muons.size; i++)
@@ -311,8 +312,7 @@ void step_update_populations(state_t *st, double dt)
             st->positive_left_muons.population[i] + dt *
             (st->pion_decay_positive_left_muon_gains[i] +
              st->positive_left_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_positive_left_muon_losses[i] +
-             st->positive_left_muon_escape.losses[i]);
+             st->positive_left_muon_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_right_muons.size; i++)
@@ -321,8 +321,7 @@ void step_update_populations(state_t *st, double dt)
             st->positive_right_muons.population[i] + dt *
             (st->pion_decay_positive_right_muon_gains[i] +
              st->positive_right_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_positive_right_muon_losses[i] +
-             st->positive_right_muon_escape.losses[i]);
+             st->positive_right_muon_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_left_muons.size; i++)
@@ -331,8 +330,7 @@ void step_update_populations(state_t *st, double dt)
             st->negative_left_muons.population[i] + dt *
             (st->pion_decay_negative_left_muon_gains[i] +
              st->negative_left_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_negative_left_muon_losses[i] +
-             st->negative_left_muon_escape.losses[i]);
+             st->negative_left_muon_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_right_muons.size; i++)
@@ -341,8 +339,7 @@ void step_update_populations(state_t *st, double dt)
             st->negative_right_muons.population[i] + dt *
             (st->pion_decay_negative_right_muon_gains[i] +
              st->negative_right_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_negative_right_muon_losses[i] +
-             st->negative_right_muon_escape.losses[i]);
+             st->negative_right_muon_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
@@ -535,7 +532,7 @@ void step_experimental_update_populations(state_t *st, double dt)
              st->multi_resonances_neutron_losses[i] +
              st->direct_pion_production_neutron_gains[i] +
              st->direct_pion_production_neutron_losses[i] +
-             st->neutron_escape.losses[i]);
+             st->neutron_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
@@ -708,7 +705,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             st->neutral_pions.population[i] + dt *
             (st->multi_resonances_neutral_pion_gains[i] +
              st->direct_neutral_pion_gains[i] +
-             st->neutral_pion_escape.losses[i]);
+             st->neutral_pion_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"\t%lg\t%lg\n",
@@ -726,8 +723,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             (st->multi_resonances_positive_pion_gains[i] +
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_positive_pion_losses[i] +
-             st->positive_pion_escape.losses[i]);
+             st->positive_pion_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
@@ -746,8 +742,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             (st->multi_resonances_negative_pion_gains[i] +
              st->direct_negative_pion_gains[i] +
              st->negative_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_negative_pion_losses[i] +
-             st->negative_pion_escape.losses[i]);
+             st->negative_pion_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_left_muons.size; i++)
@@ -756,8 +751,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             st->positive_left_muons.population[i] + dt *
             (st->pion_decay_positive_left_muon_gains[i] +
              st->positive_left_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_positive_left_muon_losses[i] +
-             st->positive_left_muon_escape.losses[i]);
+             st->positive_left_muon_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->positive_right_muons.size; i++)
@@ -766,8 +760,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             st->positive_right_muons.population[i] + dt *
             (st->pion_decay_positive_right_muon_gains[i] +
              st->positive_right_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_positive_right_muon_losses[i] +
-             st->positive_right_muon_escape.losses[i]);
+             st->positive_right_muon_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_left_muons.size; i++)
@@ -776,8 +769,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             st->negative_left_muons.population[i] + dt *
             (st->pion_decay_negative_left_muon_gains[i] +
              st->negative_left_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_negative_left_muon_losses[i] +
-             st->negative_left_muon_escape.losses[i]);
+             st->negative_left_muon_decay_and_escape.losses[i]);
     }
 
     for(i = 0; i < st->negative_right_muons.size; i++)
@@ -786,8 +778,7 @@ void step_experimental_update_populations(state_t *st, double dt)
             st->negative_right_muons.population[i] + dt *
             (st->pion_decay_negative_right_muon_gains[i] +
              st->negative_right_muon_synchrotron.particle_losses[i] +
-             st->muon_decay_negative_right_muon_losses[i] +
-             st->negative_right_muon_escape.losses[i]);
+             st->negative_right_muon_decay_and_escape.losses[i]);
 
         /*
          *fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
@@ -945,16 +936,16 @@ void step_propagate_new_dt(state_t *st, double dt)
     update_escape(st, &st->photon_escape,   st->photon_escape.t);
     update_escape(st, &st->electron_escape, st->electron_escape.t);
     update_escape(st, &st->proton_escape,   st->proton_escape.t);
-    update_escape(st, &st->neutron_escape,  st->neutron_escape. t);
+    update_decay_and_escape(st, &st->neutron_decay_and_escape,  st->neutron_decay_and_escape.escape_lifetime);
 
-    update_escape(st, &st->neutral_pion_escape,  st->neutral_pion_escape.t);
-    update_escape(st, &st->positive_pion_escape, st->positive_pion_escape.t);
-    update_escape(st, &st->negative_pion_escape, st->negative_pion_escape.t);
+    update_decay_and_escape(st, &st->neutral_pion_decay_and_escape,  st->neutral_pion_decay_and_escape.escape_lifetime);
+    update_decay_and_escape(st, &st->positive_pion_decay_and_escape, st->positive_pion_decay_and_escape.escape_lifetime);
+    update_decay_and_escape(st, &st->negative_pion_decay_and_escape, st->negative_pion_decay_and_escape.escape_lifetime);
 
-    update_escape(st, &st->positive_left_muon_escape,  st->positive_left_muon_escape.t);
-    update_escape(st, &st->positive_right_muon_escape, st->positive_right_muon_escape.t);
-    update_escape(st, &st->negative_left_muon_escape,  st->negative_left_muon_escape.t);
-    update_escape(st, &st->negative_right_muon_escape, st->negative_right_muon_escape.t);
+    update_decay_and_escape(st, &st->positive_left_muon_decay_and_escape,  st->positive_left_muon_decay_and_escape.escape_lifetime);
+    update_decay_and_escape(st, &st->positive_right_muon_decay_and_escape, st->positive_right_muon_decay_and_escape.escape_lifetime);
+    update_decay_and_escape(st, &st->negative_left_muon_decay_and_escape,  st->negative_left_muon_decay_and_escape.escape_lifetime);
+    update_decay_and_escape(st, &st->negative_right_muon_decay_and_escape, st->negative_right_muon_decay_and_escape.escape_lifetime);
 
     update_escape(st, &st->electron_neutrino_escape,     st->electron_neutrino_escape.t);
     update_escape(st, &st->electron_antineutrino_escape, st->electron_antineutrino_escape.t);

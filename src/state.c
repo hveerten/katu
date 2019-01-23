@@ -43,21 +43,25 @@ void init_state_escape(state_t *st, double t)
     init_escape(st, &st->photon_escape,   photon,   t);
     init_escape(st, &st->electron_escape, electron, t);
     init_escape(st, &st->proton_escape,   proton,   t);
-    init_escape(st, &st->neutron_escape,  neutron,  t);
-
-    init_escape(st, &st->neutral_pion_escape,  neutral_pion,  t);
-    init_escape(st, &st->positive_pion_escape, positive_pion, t);
-    init_escape(st, &st->negative_pion_escape, negative_pion, t);
-
-    init_escape(st, &st->positive_left_muon_escape,  positive_left_muon,  t);
-    init_escape(st, &st->positive_right_muon_escape, positive_right_muon, t);
-    init_escape(st, &st->negative_left_muon_escape,  negative_left_muon,  t);
-    init_escape(st, &st->negative_right_muon_escape, negative_right_muon, t);
 
     init_escape(st, &st->electron_neutrino_escape,     electron_neutrino,     t);
     init_escape(st, &st->electron_antineutrino_escape, electron_antineutrino, t);
     init_escape(st, &st->muon_neutrino_escape,         muon_neutrino,         t);
     init_escape(st, &st->muon_antineutrino_escape,     muon_antineutrino,     t);
+}
+
+void init_state_decay_and_escape(state_t *st, double t)
+{
+    init_decay_and_escape(st, &st->neutron_decay_and_escape,  neutron,  t);
+
+    init_decay_and_escape(st, &st->neutral_pion_decay_and_escape,  neutral_pion,  t);
+    init_decay_and_escape(st, &st->positive_pion_decay_and_escape, positive_pion, t);
+    init_decay_and_escape(st, &st->negative_pion_decay_and_escape, negative_pion, t);
+
+    init_decay_and_escape(st, &st->positive_left_muon_decay_and_escape,  positive_left_muon,  t);
+    init_decay_and_escape(st, &st->positive_right_muon_decay_and_escape, positive_right_muon, t);
+    init_decay_and_escape(st, &st->negative_left_muon_decay_and_escape,  negative_left_muon,  t);
+    init_decay_and_escape(st, &st->negative_right_muon_decay_and_escape, negative_right_muon, t);
 }
 
 void init_state_populations(state_t *st,
@@ -333,9 +337,11 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "#Energy\tP_Population\tN_Population\t" \
                     "MR_P_gains\tD_P_gains\tMR_N_gains\tD_N_gains\t" \
                     "MR_P_losses\tD_P_losses\tMR_N_losses\tD_N_losses\t" \
-                    "P_escape\tN_escape\n");
+                    "P_escape\tN_escape\tN_decay\n");
             for(i = 0; i < st->protons.size; i++)
             {
+                decay_and_escape_t ndae = st->neutron_decay_and_escape;
+
                 fprintf(temp_file,"%lg\t%lg\t%lg\t",
                         st->protons.energy[i],
                         st->protons.population[i],
@@ -347,13 +353,14 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->multi_resonances_neutron_gains[i],
                         st->direct_pion_production_neutron_gains[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->multi_resonances_proton_losses[i],
                         st->direct_pion_production_proton_losses[i],
                         st->multi_resonances_neutron_losses[i],
                         st->direct_pion_production_neutron_losses[i],
                         st->proton_escape.losses[i],
-                        st->neutron_escape.losses[i]);
+                        ndae.losses[i] / (ndae.t[i] * ndae.escape_lifetime),
+                        ndae.losses[i] / (ndae.t[i] * ndae.decay_lifetime * st->neutrons.energy[i]));
             }
             break;
         }
@@ -391,11 +398,15 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "0Pion_MR_gains\t0Pion_D_gains\t" \
                     "+Pion_MR_gains\t+Pion_D_gains\t" \
                     "-Pion_MR_gains\t-Pion_D_gains\t" \
-                    "+Pion_sync_losses\t+Pion_decay\t" \
-                    "-Pion_sync_losses\t-Pion_decay\t" \
-                    "0Pion_escape\t+Pion_escape\t-Pion_escape\n");
+                    "+Pion_sync_losses\t+Pion_decay\t+Pion_escape\t" \
+                    "-Pion_sync_losses\t-Pion_decay\t-Pion_escape\t" \
+                    "0Pion_decay\t0Pion_escape\n");
             for(i = 0; i < st->neutral_pions.size; i++)
             {
+                decay_and_escape_t pos_dae = st->positive_pion_decay_and_escape;
+                decay_and_escape_t neg_dae = st->negative_pion_decay_and_escape;
+                decay_and_escape_t neu_dae = st->neutral_pion_decay_and_escape;
+
                 fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
                         st->neutral_pions.energy[i],
                         st->neutral_pions.population[i],
@@ -410,14 +421,16 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->multi_resonances_negative_pion_gains[i],
                         st->direct_negative_pion_gains[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->positive_pion_synchrotron.particle_losses[i],
-                        st->pion_decay_positive_pion_losses[i],
+                        pos_dae.losses[i] / (pos_dae.t[i] * pos_dae.decay_lifetime * st->positive_pions.energy[i]),
+                        pos_dae.losses[i] / (pos_dae.t[i] * pos_dae.escape_lifetime),
                         st->negative_pion_synchrotron.particle_losses[i],
-                        st->pion_decay_negative_pion_losses[i],
-                        st->neutral_pion_escape.losses[i],
-                        st->positive_pion_escape.losses[i],
-                        st->negative_pion_escape.losses[i]);
+                        neg_dae.losses[i] / (neg_dae.t[i] * neg_dae.decay_lifetime * st->negative_pions.energy[i]),
+                        neg_dae.losses[i] / (neg_dae.t[i] * neg_dae.escape_lifetime),
+                        neu_dae.losses[i] / (neu_dae.t[i] * neu_dae.decay_lifetime * st->neutral_pions.energy[i]),
+                        neu_dae.losses[i] / (neu_dae.t[i] * neu_dae.escape_lifetime));
+
             }
             break;
         }
@@ -442,6 +455,11 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "-l_escape\t-r_escape\n");
             for(i = 0; i < st->positive_left_muons.size; i++)
             {
+                decay_and_escape_t pos_l_dae = st->positive_left_muon_decay_and_escape;
+                decay_and_escape_t pos_r_dae = st->positive_right_muon_decay_and_escape;
+                decay_and_escape_t neg_l_dae = st->negative_left_muon_decay_and_escape;
+                decay_and_escape_t neg_r_dae = st->negative_right_muon_decay_and_escape;
+
                 fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t",
                         st->positive_left_muons.energy[i],
                         st->positive_left_muons.population[i],
@@ -462,14 +480,14 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->negative_right_muon_synchrotron.particle_losses[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-                        st->muon_decay_positive_left_muon_losses[i],
-                        st->muon_decay_positive_right_muon_losses[i],
-                        st->muon_decay_negative_left_muon_losses[i],
-                        st->muon_decay_negative_right_muon_losses[i],
-                        st->positive_left_muon_escape.losses[i],
-                        st->positive_right_muon_escape.losses[i],
-                        st->negative_left_muon_escape.losses[i],
-                        st->negative_right_muon_escape.losses[i]);
+                        pos_l_dae.losses[i] / (pos_l_dae.t[i] * pos_l_dae.decay_lifetime * st->positive_left_muons.energy[i]),
+                        pos_r_dae.losses[i] / (pos_r_dae.t[i] * pos_r_dae.decay_lifetime * st->positive_right_muons.energy[i]),
+                        neg_l_dae.losses[i] / (neg_l_dae.t[i] * neg_l_dae.decay_lifetime * st->negative_left_muons.energy[i]),
+                        neg_r_dae.losses[i] / (neg_r_dae.t[i] * neg_r_dae.decay_lifetime * st->negative_right_muons.energy[i]),
+                        pos_l_dae.losses[i] / (pos_l_dae.t[i] * pos_l_dae.escape_lifetime),
+                        pos_r_dae.losses[i] / (pos_r_dae.t[i] * pos_r_dae.escape_lifetime),
+                        neg_l_dae.losses[i] / (neg_l_dae.t[i] * neg_l_dae.escape_lifetime),
+                        neg_r_dae.losses[i] / (neg_r_dae.t[i] * neg_r_dae.escape_lifetime));
             }
             break;
         }
@@ -488,7 +506,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "mu_neutrino_PD_gains\tmu_neutrino_MuD_gains\t"
                     "mu_antineutrino_PD_gains\tmu_antineutrino_MuD_gains\t" \
                     "e_neutrino_escape\te_antineutrino_escape\t" \
-                    "mu_neutrino_escape\tmu_antineutrino_escape\t");
+                    "mu_neutrino_escape\tmu_antineutrino_escape\n");
             for(i = 0; i < st->electron_neutrinos.size; i++)
             {
                 fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t",
