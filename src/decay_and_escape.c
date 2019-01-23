@@ -8,7 +8,7 @@
 #include "decay_and_escape.h"
 #include "state.h"
 
-static void free_decay_and_escape(decay_and_escape_t *dea);
+static void free_decay_and_escape(decay_and_escape_t *dae);
 
 #define MEM_PREPARE(X,S) \
     do \
@@ -18,28 +18,28 @@ static void free_decay_and_escape(decay_and_escape_t *dea);
         \
     } while(0);
 
-void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum particle_type pt, double escape_lifetime)
+void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dae, enum particle_type pt, double escape_lifetime)
 {
     switch(pt)
     {
-        case electron:      dea->particles = &st->electrons;      break;
-        case photon:        dea->particles = &st->photons;        break;
-        case proton:        dea->particles = &st->protons;        break;
-        case neutron:       dea->particles = &st->neutrons;       break;
+        case electron:      dae->particles = &st->electrons;      break;
+        case photon:        dae->particles = &st->photons;        break;
+        case proton:        dae->particles = &st->protons;        break;
+        case neutron:       dae->particles = &st->neutrons;       break;
 
-        case positive_pion: dea->particles = &st->positive_pions; break;
-        case neutral_pion:  dea->particles = &st->neutral_pions;  break;
-        case negative_pion: dea->particles = &st->negative_pions; break;
+        case positive_pion: dae->particles = &st->positive_pions; break;
+        case neutral_pion:  dae->particles = &st->neutral_pions;  break;
+        case negative_pion: dae->particles = &st->negative_pions; break;
 
-        case positive_left_muon:  dea->particles = &st->positive_left_muons;  break;
-        case positive_right_muon: dea->particles = &st->positive_right_muons; break;
-        case negative_left_muon:  dea->particles = &st->negative_left_muons;  break;
-        case negative_right_muon: dea->particles = &st->negative_right_muons; break;
+        case positive_left_muon:  dae->particles = &st->positive_left_muons;  break;
+        case positive_right_muon: dae->particles = &st->positive_right_muons; break;
+        case negative_left_muon:  dae->particles = &st->negative_left_muons;  break;
+        case negative_right_muon: dae->particles = &st->negative_right_muons; break;
 
-        case electron_neutrino:     dea->particles = &st->electron_neutrinos;       break;
-        case electron_antineutrino: dea->particles = &st->electron_antineutrinos;   break;
-        case muon_neutrino:         dea->particles = &st->muon_neutrinos;           break;
-        case muon_antineutrino:     dea->particles = &st->muon_antineutrinos;       break;
+        case electron_neutrino:     dae->particles = &st->electron_neutrinos;       break;
+        case electron_antineutrino: dae->particles = &st->electron_antineutrinos;   break;
+        case muon_neutrino:         dae->particles = &st->muon_neutrinos;           break;
+        case muon_antineutrino:     dae->particles = &st->muon_antineutrinos;       break;
 
         // TODO: ADD FAIL MESSAGES
         default: assert(0); break;
@@ -48,22 +48,22 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
     switch(pt)
     {
         case neutron:
-            dea->decay_lifetime = NEUTRON_LIFETIME;
+            dae->decay_lifetime = NEUTRON_LIFETIME;
             break;
 
         case neutral_pion:
-            dea->decay_lifetime = NEUTRAL_PION_LIFETIME;
+            dae->decay_lifetime = NEUTRAL_PION_LIFETIME;
 
         case positive_pion:
         case negative_pion:
-            dea->decay_lifetime = CHARGED_PION_LIFETIME;
+            dae->decay_lifetime = CHARGED_PION_LIFETIME;
             break;
 
         case positive_left_muon:
         case positive_right_muon:
         case negative_left_muon:
         case negative_right_muon:
-            dea->decay_lifetime = MUON_LIFETIME;
+            dae->decay_lifetime = MUON_LIFETIME;
             break;
 
         case electron:
@@ -73,48 +73,48 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
         case electron_antineutrino:
         case muon_neutrino:
         case muon_antineutrino:
-            dea->decay_lifetime = INFINITY;
+            dae->decay_lifetime = INFINITY;
             break;
 
         // TODO: ADD FAIL MESSAGES
         default: assert(0); break;
     }
 
-    MEM_PREPARE(dea->t,             dea->particles->size);
-    MEM_PREPARE(dea->losses,        dea->particles->size);
-    MEM_PREPARE(dea->losses_factor, dea->particles->size);
+    MEM_PREPARE(dae->t,             dae->particles->size);
+    MEM_PREPARE(dae->losses,        dae->particles->size);
+    MEM_PREPARE(dae->losses_factor, dae->particles->size);
 
-    dea->losses_function = free_decay_and_escape;
+    dae->losses_function = free_decay_and_escape;
 
-    update_decay_and_escape(st, dea, escape_lifetime);
+    update_decay_and_escape(st, dae, escape_lifetime);
 }
 
-void update_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, double escape_lifetime)
+void update_decay_and_escape(struct state_t *st, decay_and_escape_t *dae, double escape_lifetime)
 {
-    dea->escape_lifetime = escape_lifetime;
-    dea->dt = st->dt;
+    dae->escape_lifetime = escape_lifetime;
+    dae->dt = st->dt;
 
     unsigned int i;
-    for(i = 0; i < dea->particles->size; i++)
+    for(i = 0; i < dae->particles->size; i++)
     {
         double t;
 
-        if(isinf(dea->decay_lifetime))
-            t = 1 / dea->escape_lifetime;
+        if(isinf(dae->decay_lifetime))
+            t = 1 / dae->escape_lifetime;
         else
-            t = (dea->particles->energy[i] * dea->decay_lifetime + dea->escape_lifetime) / 
-                (dea->particles->energy[i] * dea->decay_lifetime * dea->escape_lifetime);
+            t = (dae->particles->energy[i] * dae->decay_lifetime + dae->escape_lifetime) / 
+                (dae->particles->energy[i] * dae->decay_lifetime * dae->escape_lifetime);
 
-        dea->t[i] = t;
-        dea->losses_factor[i] = expm1(-dea->dt * t) / dea->dt;
+        dae->t[i] = t;
+        dae->losses_factor[i] = expm1(-dae->dt * t) / dae->dt;
     }
 }
 
-static void free_decay_and_escape(decay_and_escape_t *dea)
+static void free_decay_and_escape(decay_and_escape_t *dae)
 {
     unsigned int i;
-    population_t *p = dea->particles;
+    population_t *p = dae->particles;
 
     for(i = 0; i < p->size; i++)
-        dea->losses[i] = p->population[i] * dea->losses_factor[i];
+        dae->losses[i] = p->population[i] * dae->losses_factor[i];
 }

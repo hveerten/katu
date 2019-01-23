@@ -15,11 +15,11 @@ typedef struct decay_and_escape_t
     double escape_lifetime;
     double dt;      // Needed for implicit and log-log methods!
 
-    void (*losses_function)(struct decay_and_escape_t *dea);
+    void (*losses_function)(struct decay_and_escape_t *dae);
 } decay_and_escape_t;
 
-void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum particle_type pt, double escape_lifetime);
+void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dae, enum particle_type pt, double escape_lifetime);
 
-void update_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, double escape_lifetime);
+void update_decay_and_escape(struct state_t *st, decay_and_escape_t *dae, double escape_lifetime);
 
 #endif /* end of include guard: DECAY_AND_ESCAPE_H */
