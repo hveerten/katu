@@ -22,10 +22,10 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
 {
     switch(pt)
     {
-        case neutron:
-            dea->particles = &st->neutrons;
-            assert(0); // Not implemented
-            break;
+        case electron:      dea->particles = &st->electrons;      break;
+        case photon:        dea->particles = &st->photons;        break;
+        case proton:        dea->particles = &st->protons;        break;
+        case neutron:       dea->particles = &st->neutrons;       break;
 
         case positive_pion: dea->particles = &st->positive_pions; break;
         case neutral_pion:  dea->particles = &st->neutral_pions;  break;
@@ -36,6 +36,11 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
         case negative_left_muon:  dea->particles = &st->negative_left_muons;  break;
         case negative_right_muon: dea->particles = &st->negative_right_muons; break;
 
+        case electron_neutrino:     dea->particles = &st->electron_neutrinos;       break;
+        case electron_antineutrino: dea->particles = &st->electron_antineutrinos;   break;
+        case muon_neutrino:         dea->particles = &st->muon_neutrinos;           break;
+        case muon_antineutrino:     dea->particles = &st->muon_antineutrinos;       break;
+
         // TODO: ADD FAIL MESSAGES
         default: assert(0); break;
     }
@@ -43,8 +48,7 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
     switch(pt)
     {
         case neutron:
-            dea->decay_lifetime = 0;
-            assert(0); // Not implemented
+            dea->decay_lifetime = NEUTRON_LIFETIME;
             break;
 
         case neutral_pion:
@@ -60,6 +64,16 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, enum par
         case negative_left_muon:
         case negative_right_muon:
             dea->decay_lifetime = MUON_LIFETIME;
+            break;
+
+        case electron:
+        case photon:
+        case proton:
+        case electron_neutrino:
+        case electron_antineutrino:
+        case muon_neutrino:
+        case muon_antineutrino:
+            dea->decay_lifetime = INFINITY;
             break;
 
         // TODO: ADD FAIL MESSAGES
@@ -82,9 +96,15 @@ void update_decay_and_escape(struct state_t *st, decay_and_escape_t *dea, double
     unsigned int i;
     for(i = 0; i < dea->particles->size; i++)
     {
-        double t = (dea->particles->energy[i] * dea->decay_lifetime + dea->escape_lifetime) / 
-                   (dea->particles->energy[i] * dea->decay_lifetime * dea->escape_lifetime);
-        dea->losses_factor[i] = expm1(-dea->dt / t) / dea->dt;
+        double t;
+
+        if(isinf(dea->decay_lifetime))
+            t = 1 / dea->escape_lifetime;
+        else
+            t = (dea->particles->energy[i] * dea->decay_lifetime + dea->escape_lifetime) / 
+                (dea->particles->energy[i] * dea->decay_lifetime * dea->escape_lifetime);
+
+        dea->losses_factor[i] = expm1(-dea->dt * t) / dea->dt;
     }
 }
 
