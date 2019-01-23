@@ -45,8 +45,10 @@ void init_escape_and_decay(struct state_t *st, escape_and_decay_t *ead, enum par
             assert(0); // Not implemented
             break;
 
-        case positive_pion:
         case neutral_pion:
+            ead->decay_lifetime = NEUTRAL_PION_LIFETIME;
+
+        case positive_pion:
         case negative_pion:
             ead->decay_lifetime = CHARGED_PION_LIFETIME;
             break;
@@ -56,6 +58,7 @@ void init_escape_and_decay(struct state_t *st, escape_and_decay_t *ead, enum par
         case negative_left_muon:
         case negative_right_muon:
             ead->decay_lifetime = MUON_LIFETIME;
+            break;
 
         // TODO: ADD FAIL MESSAGES
         default: assert(0); break;
