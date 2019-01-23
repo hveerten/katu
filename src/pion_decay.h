@@ -6,10 +6,8 @@
 
 void charged_pion_decay(state_t *st);
 
-void init_pion_decay_LUT_lifetime(state_t *st);
 void init_pion_decay_LUT_muon_functions(state_t *st);
 
-void calculate_pion_decay_LUT_lifetime(state_t *st);
 void calculate_pion_decay_LUT_muon_functions(state_t *st);
 
 void neutral_pion_decay(state_t *st);

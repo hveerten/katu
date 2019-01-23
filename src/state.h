@@ -135,10 +135,6 @@ typedef struct state_t
     double *pion_decay_muon_neutrino_gains;
     double *pion_decay_muon_antineutrino_gains;
 
-    double *pion_decay_positive_pion_losses;
-    double *pion_decay_negative_pion_losses;
-
-    double *pion_decay_LUT_lifetime;
     double *pion_decay_LUT_positive_right;
     double *pion_decay_LUT_positive_left;
 

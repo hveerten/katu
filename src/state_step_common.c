@@ -282,7 +282,6 @@ void step_update_populations(state_t *st, double dt)
             (st->multi_resonances_positive_pion_gains[i] +
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_positive_pion_losses[i] +
              st->positive_pion_decay_and_escape.losses[i]);
 
         /*
@@ -302,7 +301,6 @@ void step_update_populations(state_t *st, double dt)
             (st->multi_resonances_negative_pion_gains[i] +
              st->direct_negative_pion_gains[i] +
              st->negative_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_negative_pion_losses[i] +
              st->negative_pion_decay_and_escape.losses[i]);
     }
 
@@ -951,8 +949,6 @@ void step_propagate_new_dt(state_t *st, double dt)
     update_escape(st, &st->electron_antineutrino_escape, st->electron_antineutrino_escape.t);
     update_escape(st, &st->muon_neutrino_escape,         st->muon_neutrino_escape.t);
     update_escape(st, &st->muon_antineutrino_escape,     st->muon_antineutrino_escape.t);
-
-    calculate_pion_decay_LUT_lifetime(st);
 
     synchrotron_update_dt(&st->electron_synchrotron, dt);
     synchrotron_update_dt(&st->proton_synchrotron, dt);

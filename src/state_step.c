@@ -156,7 +156,6 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
             (st->multi_resonances_positive_pion_gains[i] +
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_positive_pion_losses[i] +
              st->positive_pion_decay_and_escape.losses[i]);
     }
 
@@ -166,7 +165,6 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
             (st->multi_resonances_negative_pion_gains[i] +
              st->direct_negative_pion_gains[i] +
              st->negative_pion_synchrotron.particle_losses[i] +
-             st->pion_decay_negative_pion_losses[i] +
              st->negative_pion_decay_and_escape.losses[i]);
     }
 

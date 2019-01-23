@@ -196,9 +196,6 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->pion_decay_muon_neutrino_gains,     st->muon_neutrinos.size);
     MEM_PREPARE(st->pion_decay_muon_antineutrino_gains, st->muon_antineutrinos.size);
 
-    MEM_PREPARE(st->pion_decay_positive_pion_losses, st->positive_pions.size);
-    MEM_PREPARE(st->pion_decay_negative_pion_losses, st->negative_pions.size);
-
     MEM_PREPARE(st->muon_decay_electron_neutrino_gains,     st->electron_neutrinos.size);
     MEM_PREPARE(st->muon_decay_electron_antineutrino_gains, st->electron_antineutrinos.size);
     MEM_PREPARE(st->muon_decay_muon_neutrino_gains,         st->muon_neutrinos.size);
@@ -214,7 +211,6 @@ void state_init_LUTs(state_t *st)
     init_inverse_compton_LUT_losses_reaction_rate(st);
     init_pair_production_LUT(st);
     init_muon_decay_LUT_neutrino_functions(st);
-    init_pion_decay_LUT_lifetime(st);
     init_pion_decay_LUT_muon_functions(st);
     init_multi_resonances_LUT_pion_gains(st);
     init_multi_resonances_LUT_hadron_gains(st);
@@ -227,7 +223,6 @@ void state_init_LUTs(state_t *st)
     calculate_inverse_compton_LUT_losses_reaction_rate(st);
     calculate_pair_production_LUT(st);
     calculate_muon_decay_LUT_neutrino_functions(st);
-    calculate_pion_decay_LUT_lifetime(st);
     calculate_pion_decay_LUT_muon_functions(st);
     calculate_multi_resonances_LUT_pion_gains(st);
     calculate_multi_resonances_LUT_hadron_gains(st);

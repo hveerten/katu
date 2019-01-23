@@ -99,20 +99,6 @@ void charged_pion_decay(state_t *st)
         st->pion_decay_muon_neutrino_gains[i]     = muon_neutrino_production     * dlng / (2 * CHARGED_PION_LIFETIME);
         st->pion_decay_muon_antineutrino_gains[i] = muon_antineutrino_production * dlng / (2 * CHARGED_PION_LIFETIME);
     }
-
-    for(i = 0; i < st->positive_pions.size; i++)
-    {
-        /*
-         *st->pion_decay_positive_pion_losses[i] = -st->positive_pions.population[i] / (st->positive_pions.energy[i] * CHARGED_PION_LIFETIME);
-         *st->pion_decay_negative_pion_losses[i] = -st->negative_pions.population[i] / (st->negative_pions.energy[i] * CHARGED_PION_LIFETIME);
-         */
-        /*
-         *st->pion_decay_positive_pion_losses[i] = st->positive_pions.population[i] * (exp(-st->dt / (st->positive_pions.energy[i] * CHARGED_PION_LIFETIME)) - 1) / st->dt;
-         *st->pion_decay_negative_pion_losses[i] = st->negative_pions.population[i] * (exp(-st->dt / (st->negative_pions.energy[i] * CHARGED_PION_LIFETIME)) - 1) / st->dt;
-         */
-        st->pion_decay_positive_pion_losses[i] = st->positive_pions.population[i] * st->pion_decay_LUT_lifetime[i];
-        st->pion_decay_negative_pion_losses[i] = st->negative_pions.population[i] * st->pion_decay_LUT_lifetime[i];
-    }
 }
 
 /* NOTE:
@@ -154,22 +140,6 @@ void neutral_pion_decay(state_t *st)
 
         st->pion_decay_photon_gains[i] = gains * 4 * M_PI / PION_MASS;
     }
-}
-
-void init_pion_decay_LUT_lifetime(state_t *st)
-{
-    size_t size = st->positive_pions.size;
-
-    posix_memalign((void **) &st->pion_decay_LUT_lifetime, 32, sizeof(double) * size);
-}
-
-void calculate_pion_decay_LUT_lifetime(state_t *st)
-{
-    unsigned int i;
-
-    // As usual, we assume same limits and size for all muons
-    for(i = 0; i < st->positive_pions.size; i++)
-        st->pion_decay_LUT_lifetime[i] = expm1(-st->dt / (st->positive_pions.energy[i]  * CHARGED_PION_LIFETIME)) / st->dt;
 }
 
 void init_pion_decay_LUT_muon_functions(state_t *st)
