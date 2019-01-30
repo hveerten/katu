@@ -68,8 +68,8 @@ void init_synchrotron(state_t *st, synchrotron_t *synchro, enum particle_type pt
     synchro->nu_0 = 3 / (4 * M_PI) * ELECTRON_CHARGE * st->B / (synchro->particles->mass * LIGHT_SPEED);
     double magnetic_energy = st->B * st->B / (8 * M_PI);
 
-    synchro->photon_gains_factor    = sqrt(3) / 12 * FINE_STRUCTURE_CONSTANT * synchro->nu_0;
-    synchro->photon_losses_factor   = sqrt(3) / 12 * ELECTRON_RADIUS * ELECTRON_ENERGY * synchro->nu_0 / synchro->particles->mass;
+    synchro->photon_gains_factor    = sqrt(3)        / 12 * FINE_STRUCTURE_CONSTANT * synchro->nu_0;
+    synchro->photon_losses_factor   = sqrt(3) * M_PI / 12 * ELECTRON_RADIUS * ELECTRON_ENERGY * synchro->nu_0 / synchro->particles->mass;
     synchro->particle_losses_factor = 4 * LIGHT_SPEED * THOMSON_CROSS_SECTION * magnetic_energy / (3 * ELECTRON_ENERGY) * pow(ELECTRON_MASS / synchro->particles->mass, 3);
 
     synchro->dt = st->dt;
@@ -99,8 +99,8 @@ void synchrotron_update_B(synchrotron_t *synchro, double B)
     synchro->nu_0 = 3 / (4 * M_PI) * ELECTRON_CHARGE * B / (synchro->particles->mass * LIGHT_SPEED);
     double magnetic_energy = B * B / (8 * M_PI);
 
-    synchro->photon_gains_factor    = sqrt(3) / 12 * FINE_STRUCTURE_CONSTANT * synchro->nu_0;
-    synchro->photon_losses_factor   = sqrt(3) / 12 * ELECTRON_RADIUS * ELECTRON_ENERGY * synchro->nu_0 / synchro->particles->mass;
+    synchro->photon_gains_factor    = sqrt(3)        / 12 * FINE_STRUCTURE_CONSTANT * synchro->nu_0;
+    synchro->photon_losses_factor   = sqrt(3) * M_PI / 12 * ELECTRON_RADIUS * ELECTRON_ENERGY * synchro->nu_0 / synchro->particles->mass;
     synchro->particle_losses_factor = 4 * LIGHT_SPEED * THOMSON_CROSS_SECTION * magnetic_energy / (3 * ELECTRON_ENERGY) * pow(ELECTRON_MASS / synchro->particles->mass, 3);
 
     calculate_synchrotron_LUT_xCS(synchro);
