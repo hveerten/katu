@@ -177,7 +177,7 @@ static void synchrotron_process_full(synchrotron_t *synchro)
             unsigned int index_min = i * part->size + index_of_g_min;
             unsigned int index_max = i * part->size + index_of_g_max;
             emission += g0 * n0 * synchro->LUT_xCS[index_min];
-            emission += g0 * nN * synchro->LUT_xCS[index_max];
+            emission += gN * nN * synchro->LUT_xCS[index_max];
 
             absorption += synchro->LUT_xCS[index_min] * synchro->temp2[index_of_g_min];
             absorption += synchro->LUT_xCS[index_max] * synchro->temp2[index_of_g_max];
