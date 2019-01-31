@@ -242,7 +242,7 @@ void inverse_compton_process_head_on_upscattering(state_t *st)
                 st->inverse_compton_inner_upscattering[j] += 2 * n * st->inverse_compton_LUT_g2[index];
             }
 
-            st->inverse_compton_inner_upscattering[j] *= dlne;
+            st->inverse_compton_inner_upscattering[j] *= dlne / 2;
 
             /*fprintf(stderr,"AAA%u:\t%lg\n", j, st->inverse_compton_inner_upscattering[j]);*/
         }
@@ -256,7 +256,7 @@ void inverse_compton_process_head_on_upscattering(state_t *st)
             upscattering += 2 * st->electrons.population[j] * st->inverse_compton_inner_upscattering[j];
         }
 
-        st->inverse_compton_photon_gains_upscattering[i] = factor * upscattering * dlng;
+        st->inverse_compton_photon_gains_upscattering[i] = factor * upscattering * dlng / 2;
 
         /*fprintf(stderr,"%u:\t%lg\t%lg\n", i, downscattering, upscattering);*/
     }
