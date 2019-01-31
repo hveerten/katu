@@ -29,7 +29,7 @@ double g2(double g, double e, double es)
 
 void inverse_compton_process_head_on(state_t *st)
 {
-    double factor = LIGHT_SPEED * ELECTRON_RADIUS * ELECTRON_RADIUS / 4;
+    double factor = LIGHT_SPEED * ELECTRON_RADIUS * ELECTRON_RADIUS * M_PI;
     double dlne = st->photons.log_energy[1] - st->photons.log_energy[0];
     double dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
@@ -142,7 +142,7 @@ void inverse_compton_process_head_on(state_t *st)
 
 void inverse_compton_process_head_on_downscattering(state_t *st)
 {
-    double factor = LIGHT_SPEED * ELECTRON_RADIUS * ELECTRON_RADIUS / 4;
+    double factor = LIGHT_SPEED * ELECTRON_RADIUS * ELECTRON_RADIUS * M_PI;
     double dlne = st->photons.log_energy[1] - st->photons.log_energy[0];
     double dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
@@ -198,7 +198,7 @@ void inverse_compton_process_head_on_downscattering(state_t *st)
 
 void inverse_compton_process_head_on_upscattering(state_t *st)
 {
-    double factor = LIGHT_SPEED * ELECTRON_RADIUS * ELECTRON_RADIUS / 4;
+    double factor = LIGHT_SPEED * ELECTRON_RADIUS * ELECTRON_RADIUS * M_PI;
     double dlne = st->photons.log_energy[1] - st->photons.log_energy[0];
     double dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
