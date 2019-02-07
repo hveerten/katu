@@ -180,6 +180,28 @@ typedef struct state_t
     synchrotron_t positive_right_muon_synchrotron;
     synchrotron_t negative_left_muon_synchrotron;
     synchrotron_t negative_right_muon_synchrotron;
+
+    struct
+    {
+        double *photons;
+        double *electrons;
+        double *protons;
+        double *neutrons;
+
+        double *neutral_pions;
+        double *positive_pions;
+        double *negative_pions;
+
+        double *positive_left_muons;
+        double *positive_right_muons;
+        double *negative_left_muons;
+        double *negative_right_muons;
+
+        double *electron_neutrinos;
+        double *electron_antineutrinos;
+        double *muon_neutrinos;
+        double *muon_antineutrinos;
+    }  external_injection;
 } state_t;
 
 void init_state_synchrotron(state_t *st, double B);
