@@ -200,6 +200,26 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->muon_decay_electron_antineutrino_gains, st->electron_antineutrinos.size);
     MEM_PREPARE(st->muon_decay_muon_neutrino_gains,         st->muon_neutrinos.size);
     MEM_PREPARE(st->muon_decay_muon_antineutrino_gains,     st->muon_antineutrinos.size);
+
+    // External Injection
+    MEM_PREPARE(st->external_injection.photons,   st->photons.size);
+    MEM_PREPARE(st->external_injection.electrons, st->electrons.size);
+    MEM_PREPARE(st->external_injection.protons,   st->protons.size);
+    MEM_PREPARE(st->external_injection.neutrons,  st->neutrons.size);
+
+    MEM_PREPARE(st->external_injection.positive_pions, st->positive_pions.size);
+    MEM_PREPARE(st->external_injection.neutral_pions,  st->neutral_pions.size);
+    MEM_PREPARE(st->external_injection.negative_pions, st->negative_pions.size);
+
+    MEM_PREPARE(st->external_injection.negative_left_muons,  st->negative_left_muons.size);
+    MEM_PREPARE(st->external_injection.negative_right_muons, st->negative_right_muons.size);
+    MEM_PREPARE(st->external_injection.positive_left_muons,  st->positive_left_muons.size);
+    MEM_PREPARE(st->external_injection.positive_right_muons, st->positive_right_muons.size);
+
+    MEM_PREPARE(st->external_injection.electron_neutrinos,     st->electron_neutrinos.size);
+    MEM_PREPARE(st->external_injection.electron_antineutrinos, st->electron_antineutrinos.size);
+    MEM_PREPARE(st->external_injection.muon_neutrinos,         st->muon_neutrinos.size);
+    MEM_PREPARE(st->external_injection.muon_antineutrinos,     st->muon_antineutrinos.size);
 }
 
 void state_init_LUTs(state_t *st)
