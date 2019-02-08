@@ -368,7 +368,11 @@ void step_experimental_update_populations(state_t *st, double dt)
     double proton_g_turnover = 1 / (t_acc * S);
 
     dlng = st->protons.log_energy[1] - st->protons.log_energy[0];
-    for(i = 0; i < st->protons.size && st->protons.energy[i] < proton_g_turnover; i++)
+
+    double proton_new_pop = st->protons.population[0];
+    st->protons.tentative_population[0] = proton_new_pop;
+
+    for(i = 1; i < st->protons.size && st->protons.energy[i] < proton_g_turnover; i++)
     {
         double proton_gains = st->multi_resonances_proton_gains[i] +
                               st->direct_pion_production_proton_gains[i];
@@ -379,25 +383,23 @@ void step_experimental_update_populations(state_t *st, double dt)
         double n = st->protons.population[i];
         double g = st->protons.energy[i];
 
+        double Q = proton_gains;
         double L = proton_losses / n + 2 * g * S - 1 / t_acc - 1 / t_esc;
         double tau = L * dt;
 
         double aux1 = (S * g - 1 / t_acc) / dlng;
         double aux2 = expm1(tau) / L;
 
-        double new_pop;
-        if(i != 0)
-        {
-            new_pop = (n * exp(tau) + aux2 * (proton_gains - aux1 * st->protons.tentative_population[i - 1])) /
+        proton_new_pop = (n * exp(tau) + aux2 * (Q - aux1 * proton_new_pop)) /
                       (1 - aux1 * aux2);
-        }
-        else
-            new_pop = n;
 
-        st->protons.tentative_population[i] = new_pop;
+        st->protons.tentative_population[i] = proton_new_pop;
     }
 
-    for(i = st->protons.size - 1; i < st->protons.size && proton_g_turnover < st->protons.energy[i]; i--)
+    proton_new_pop = st->protons.population[st->protons.size - 1];
+    st->protons.tentative_population[st->protons.size - 1] = proton_new_pop;
+
+    for(i = st->protons.size - 2; i < st->protons.size && proton_g_turnover < st->protons.energy[i]; i--)
     {
         double proton_gains = st->multi_resonances_proton_gains[i] +
                               st->direct_pion_production_proton_gains[i];
@@ -408,22 +410,17 @@ void step_experimental_update_populations(state_t *st, double dt)
         double n = st->protons.population[i];
         double g = st->protons.energy[i];
 
+        double Q = proton_gains;
         double L = proton_losses / n + 2 * g * S - 1 / t_acc - 1 / t_esc;
         double tau = L * dt;
 
         double aux1 = (S * g - 1 / t_acc) / dlng;
         double aux2 = expm1(tau) / L;
 
-        double new_pop;
-        if(i != st->protons.size - 1)
-        {
-            new_pop = (n * exp(tau) + aux2 * (proton_gains + aux1 * st->protons.tentative_population[i + 1])) /
+        proton_new_pop = (n * exp(tau) + aux2 * (Q + aux1 * proton_new_pop)) /
                       (1 + aux1 * aux2);
-        }
-        else
-            new_pop = n;
 
-        st->protons.tentative_population[i] = new_pop;
+        st->protons.tentative_population[i] = proton_new_pop;
     }
 }
 #endif
@@ -778,7 +775,11 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     double proton_g_turnover = 1 / (t_acc * S);
 
     dlng = st->protons.log_energy[1] - st->protons.log_energy[0];
-    for(i = 0; i < st->protons.size && st->protons.energy[i] < proton_g_turnover; i++)
+
+    double proton_new_pop = st->protons.population[0];
+    st->protons.tentative_population[0] = proton_new_pop;
+
+    for(i = 1; i < st->protons.size && st->protons.energy[i] < proton_g_turnover; i++)
     {
         double proton_gains = st->external_injection.protons[i] +
                               st->multi_resonances_proton_gains[i] +
@@ -790,25 +791,23 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n = st->protons.population[i];
         double g = st->protons.energy[i];
 
+        double Q = proton_gains;
         double L = proton_losses / n + 2 * g * S - 1 / t_acc - 1 / t_esc;
         double tau = L * dt;
 
         double aux1 = (S * g - 1 / t_acc) / dlng;
         double aux2 = expm1(tau) / L;
 
-        double new_pop;
-        if(i != 0)
-        {
-            new_pop = (n * exp(tau) + aux2 * (proton_gains - aux1 * st->protons.tentative_population[i - 1])) /
+        proton_new_pop = (n * exp(tau) + aux2 * (Q - aux1 * proton_new_pop)) /
                       (1 - aux1 * aux2);
-        }
-        else
-            new_pop = n;
 
-        st->protons.tentative_population[i] = new_pop;
+        st->protons.tentative_population[i] = proton_new_pop;
     }
 
-    for(i = st->protons.size - 1; i < st->protons.size && proton_g_turnover < st->protons.energy[i]; i--)
+    proton_new_pop = st->protons.population[st->protons.size - 1];
+    st->protons.tentative_population[st->protons.size - 1] = proton_new_pop;
+
+    for(i = st->protons.size - 2; i < st->protons.size && proton_g_turnover < st->protons.energy[i]; i--)
     {
         double proton_gains = st->external_injection.protons[i] +
                               st->multi_resonances_proton_gains[i] +
@@ -820,22 +819,17 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n = st->protons.population[i];
         double g = st->protons.energy[i];
 
+        double Q = proton_gains;
         double L = proton_losses / n + 2 * g * S - 1 / t_acc - 1 / t_esc;
         double tau = L * dt;
 
         double aux1 = (S * g - 1 / t_acc) / dlng;
         double aux2 = expm1(tau) / L;
 
-        double new_pop;
-        if(i != st->protons.size - 1)
-        {
-            new_pop = (n * exp(tau) + aux2 * (proton_gains + aux1 * st->protons.tentative_population[i + 1])) /
+        proton_new_pop = (n * exp(tau) + aux2 * (Q + aux1 * proton_new_pop)) /
                       (1 + aux1 * aux2);
-        }
-        else
-            new_pop = n;
 
-        st->protons.tentative_population[i] = new_pop;
+        st->protons.tentative_population[i] = proton_new_pop;
     }
 }
 #endif
