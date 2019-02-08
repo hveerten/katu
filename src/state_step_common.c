@@ -153,7 +153,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->photons.tentative_population[i] =
             st->photons.population[i] + dt *
-            (st->electron_synchrotron.photon_gains[i] +
+            (st->external_injection.photons[i] +
+             st->electron_synchrotron.photon_gains[i] +
              st->electron_synchrotron.photon_losses[i] +
              st->proton_synchrotron.photon_gains[i] +
              st->proton_synchrotron.photon_losses[i] +
@@ -178,7 +179,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->protons.tentative_population[i] =
             st->protons.population[i] + dt *
-            (st->proton_synchrotron.particle_losses[i] +
+            (st->external_injection.protons[i] +
+             st->proton_synchrotron.particle_losses[i] +
              st->proton_acceleration.gains[i] +
              st->multi_resonances_proton_gains[i] +
              st->multi_resonances_proton_losses[i] +
@@ -191,7 +193,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->neutrons.tentative_population[i] =
             st->neutrons.population[i] + dt *
-            (st->multi_resonances_neutron_gains[i] +
+            (st->external_injection.neutrons[i] +
+             st->multi_resonances_neutron_gains[i] +
              st->multi_resonances_neutron_losses[i] +
              st->direct_pion_production_neutron_gains[i] +
              st->direct_pion_production_neutron_losses[i] +
@@ -202,7 +205,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->electrons.tentative_population[i] =
             st->electrons.population[i] + dt *
-            (st->electron_synchrotron.particle_losses[i] +
+            (st->external_injection.electrons[i] +
+             st->electron_synchrotron.particle_losses[i] +
              st->inverse_compton_electron_losses[i] +
              st->electron_acceleration.gains[i] +
              st->electron_escape.losses[i]);
@@ -212,7 +216,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->neutral_pions.tentative_population[i] =
             st->neutral_pions.population[i] + dt *
-            (st->multi_resonances_neutral_pion_gains[i] +
+            (st->external_injection.neutral_pions[i] +
+             st->multi_resonances_neutral_pion_gains[i] +
              st->direct_neutral_pion_gains[i] +
              st->neutral_pion_decay_and_escape.losses[i]);
     }
@@ -221,7 +226,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->positive_pions.tentative_population[i] =
             st->positive_pions.population[i] + dt *
-            (st->multi_resonances_positive_pion_gains[i] +
+            (st->external_injection.positive_pions[i] +
+             st->multi_resonances_positive_pion_gains[i] +
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
              st->positive_pion_decay_and_escape.losses[i]);
@@ -231,7 +237,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->negative_pions.tentative_population[i] =
             st->negative_pions.population[i] + dt *
-            (st->multi_resonances_negative_pion_gains[i] +
+            (st->external_injection.negative_pions[i] +
+             st->multi_resonances_negative_pion_gains[i] +
              st->direct_negative_pion_gains[i] +
              st->negative_pion_synchrotron.particle_losses[i] +
              st->negative_pion_decay_and_escape.losses[i]);
@@ -241,7 +248,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->positive_left_muons.tentative_population[i] =
             st->positive_left_muons.population[i] + dt *
-            (st->pion_decay_positive_left_muon_gains[i] +
+            (st->external_injection.positive_left_muons[i] +
+             st->pion_decay_positive_left_muon_gains[i] +
              st->positive_left_muon_synchrotron.particle_losses[i] +
              st->positive_left_muon_decay_and_escape.losses[i]);
     }
@@ -250,7 +258,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->positive_right_muons.tentative_population[i] =
             st->positive_right_muons.population[i] + dt *
-            (st->pion_decay_positive_right_muon_gains[i] +
+            (st->external_injection.positive_right_muons[i] +
+             st->pion_decay_positive_right_muon_gains[i] +
              st->positive_right_muon_synchrotron.particle_losses[i] +
              st->positive_right_muon_decay_and_escape.losses[i]);
     }
@@ -259,7 +268,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->negative_left_muons.tentative_population[i] =
             st->negative_left_muons.population[i] + dt *
-            (st->pion_decay_negative_left_muon_gains[i] +
+            (st->external_injection.negative_left_muons[i] +
+             st->pion_decay_negative_left_muon_gains[i] +
              st->negative_left_muon_synchrotron.particle_losses[i] +
              st->negative_left_muon_decay_and_escape.losses[i]);
     }
@@ -268,7 +278,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->negative_right_muons.tentative_population[i] =
             st->negative_right_muons.population[i] + dt *
-            (st->pion_decay_negative_right_muon_gains[i] +
+            (st->external_injection.negative_right_muons[i] +
+             st->pion_decay_negative_right_muon_gains[i] +
              st->negative_right_muon_synchrotron.particle_losses[i] +
              st->negative_right_muon_decay_and_escape.losses[i]);
     }
@@ -277,7 +288,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->electron_neutrinos.tentative_population[i] =
             st->electron_neutrinos.population[i] + dt *
-            (st->muon_decay_electron_neutrino_gains[i] +
+            (st->external_injection.electron_neutrinos[i] +
+             st->muon_decay_electron_neutrino_gains[i] +
              st->electron_neutrino_escape.losses[i]);
     }
 
@@ -285,7 +297,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->electron_antineutrinos.tentative_population[i] =
             st->electron_antineutrinos.population[i] + dt *
-            (st->muon_decay_electron_antineutrino_gains[i] +
+            (st->external_injection.electron_antineutrinos[i] +
+             st->muon_decay_electron_antineutrino_gains[i] +
              st->electron_antineutrino_escape.losses[i]);
     }
 
@@ -293,7 +306,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->muon_neutrinos.tentative_population[i] =
             st->muon_neutrinos.population[i] + dt *
-            (st->pion_decay_muon_neutrino_gains[i] +
+            (st->external_injection.muon_neutrinos[i] +
+             st->pion_decay_muon_neutrino_gains[i] +
              st->muon_decay_muon_neutrino_gains[i] +
              st->muon_neutrino_escape.losses[i]);
     }
@@ -302,7 +316,8 @@ void step_update_populations(state_t *st, double dt)
     {
         st->muon_antineutrinos.tentative_population[i] =
             st->muon_antineutrinos.population[i] + dt *
-            (st->pion_decay_muon_antineutrino_gains[i] +
+            (st->external_injection.muon_antineutrinos[i] +
+             st->pion_decay_muon_antineutrino_gains[i] +
              st->muon_decay_muon_antineutrino_gains[i] +
              st->muon_antineutrino_escape.losses[i]);
     }
