@@ -574,19 +574,16 @@ void step_experimental_update_populations(state_t *st, double dt)
 
     for(i = 0; i < st->neutral_pions.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->neutral_pions.population[i]);*/
+        double n = st->neutral_pions.population[i];
+        double Q = st->multi_resonances_neutral_pion_gains[i] +
+                   st->direct_neutral_pion_gains[i];
+        double L = -st->neutral_pion_decay_and_escape.t[i];
+
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
 
         st->neutral_pions.tentative_population[i] =
-            st->neutral_pions.population[i] + dt *
-            (st->multi_resonances_neutral_pion_gains[i] +
-             st->direct_neutral_pion_gains[i] +
-             st->neutral_pion_decay_and_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\n",
-         *        st->neutral_pions.tentative_population[i],
-         *        st->multi_resonances_neutral_pion_gains[i]);
-         */
+            aux0 * n + aux1 * Q;
     }
 
     for(i = 0; i < st->positive_pions.size; i++)
