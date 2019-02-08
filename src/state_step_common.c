@@ -586,25 +586,28 @@ void step_experimental_update_populations(state_t *st, double dt)
             aux0 * n + aux1 * Q;
     }
 
-    for(i = 0; i < st->positive_pions.size; i++)
+    dlng = st->positive_pions.log_energy[1] - st->positive_pions.log_energy[0];
+    double pp_new_pop = st->positive_pions.population[st->positive_pions.size - 1];
+    st->positive_pions.tentative_population[st->positive_pions.size - 1] = pp_new_pop;
+
+    for(i = st->positive_pions.size - 2; i < st->positive_pions.size; i--)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->positive_pions.population[i]);*/
+        double S   = st->positive_pion_synchrotron.particle_losses_factor;
+        double g   = st->positive_pions.energy[i];
+        double tau = 1 / st->positive_pion_decay_and_escape.t[i];
+        double aux = st->dt / dlng;
 
-        st->positive_pions.tentative_population[i] =
-            st->positive_pions.population[i] + dt *
-            (st->multi_resonances_positive_pion_gains[i] +
-             st->direct_positive_pion_gains[i] +
-             st->positive_pion_synchrotron.particle_losses[i] +
-             st->positive_pion_decay_and_escape.losses[i]);
+        double n = st->positive_pions.population[i];
 
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->positive_pions.tentative_population[i],
-         *        st->multi_resonances_positive_pion_gains[i],
-         *        st->direct_positive_pion_gains[i],
-         *        st->positive_pion_synchrotron.particle_losses[i],
-         *        st->pion_decay_positive_pion_losses[i]);
-         */
+        double Q = st->multi_resonances_positive_pion_gains[i] +
+                   st->direct_positive_pion_gains[i];
+
+        double L = 2 * g * S - 1 / tau;
+
+        pp_new_pop = (n + aux * (dlng * Q + g * S * pp_new_pop)) /
+                    (1 - aux * (dlng * L - g * S));
+
+        st->positive_pions.tentative_population[i] = pp_new_pop;
     }
 
     for(i = 0; i < st->negative_pions.size; i++)
