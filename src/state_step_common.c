@@ -151,8 +151,6 @@ void step_update_populations(state_t *st, double dt)
 
     for(i = 0; i < st->photons.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->photons.population[i]);*/
-
         st->photons.tentative_population[i] =
             st->photons.population[i] + dt *
             (st->electron_synchrotron.photon_gains[i] +
@@ -174,27 +172,10 @@ void step_update_populations(state_t *st, double dt)
              st->inverse_compton_photon_gains[i] + st->inverse_compton_photon_losses[i] +
              st->pair_production_losses[i] +
              st->photon_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->photons.tentative_population[i],
-         *        st->electron_synchrotron.photon_gains[i],
-         *        st->electron_synchrotron.photon_losses[i],
-         *        st->proton_synchrotron.photon_gains[i],
-         *        st->proton_synchrotron.photon_losses[i],
-         *        st->positive_pion_synchrotron.photon_gains[i],
-         *        st->negative_pion_synchrotron.photon_losses[i],
-         *        st->inverse_compton_gains[i],
-         *        st->inverse_compton_loses[i],
-         *        st->pair_production_losses[i],
-         *        st->photon_escape.losses[i]);
-         */
     }
 
     for(i = 0; i < st->protons.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->protons.population[i]);*/
-
         st->protons.tentative_population[i] =
             st->protons.population[i] + dt *
             (st->proton_synchrotron.particle_losses[i] +
@@ -204,21 +185,10 @@ void step_update_populations(state_t *st, double dt)
              st->direct_pion_production_proton_gains[i] +
              st->direct_pion_production_proton_losses[i] +
              st->proton_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->protons.tentative_population[i],
-         *        st->proton_synchrotron.particle_losses[i],
-         *        st->proton_acceleration.gains[i],
-         *        st->multi_resonances_proton_gains[i],
-         *        st->multi_resonances_proton_losses[i]);
-         */
     }
 
     for(i = 0; i < st->neutrons.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->neutrons.population[i]);*/
-
         st->neutrons.tentative_population[i] =
             st->neutrons.population[i] + dt *
             (st->multi_resonances_neutron_gains[i] +
@@ -226,72 +196,35 @@ void step_update_populations(state_t *st, double dt)
              st->direct_pion_production_neutron_gains[i] +
              st->direct_pion_production_neutron_losses[i] +
              st->neutron_decay_and_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->neutrons.tentative_population[i],
-         *        st->multi_resonances_neutron_gains[i],
-         *        st->multi_resonances_neutron_losses[i],
-         *        st->direct_pion_production_neutron_gains[i],
-         *        st->direct_pion_production_neutron_losses[i]);
-         */
     }
 
     for(i = 0; i < st->electrons.size; i++)
     {
-        /*fprintf(stderr,"%i:\t%lg\t->", i, st->electrons.population[i]);*/
-
         st->electrons.tentative_population[i] =
             st->electrons.population[i] + dt *
             (st->electron_synchrotron.particle_losses[i] +
              st->inverse_compton_electron_losses[i] +
              st->electron_acceleration.gains[i] +
              st->electron_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\n",
-         *        st->electrons.tentative_population[i],
-         *        st->electron_synchrotron.particle_losses[i],
-         *        st->electron_acceleration.gains[i]);
-         */
     }
 
     for(i = 0; i < st->neutral_pions.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->neutral_pions.population[i]);*/
-
         st->neutral_pions.tentative_population[i] =
             st->neutral_pions.population[i] + dt *
             (st->multi_resonances_neutral_pion_gains[i] +
              st->direct_neutral_pion_gains[i] +
              st->neutral_pion_decay_and_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\n",
-         *        st->neutral_pions.tentative_population[i],
-         *        st->multi_resonances_neutral_pion_gains[i]);
-         */
     }
 
     for(i = 0; i < st->positive_pions.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->positive_pions.population[i]);*/
-
         st->positive_pions.tentative_population[i] =
             st->positive_pions.population[i] + dt *
             (st->multi_resonances_positive_pion_gains[i] +
              st->direct_positive_pion_gains[i] +
              st->positive_pion_synchrotron.particle_losses[i] +
              st->positive_pion_decay_and_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->positive_pions.tentative_population[i],
-         *        st->multi_resonances_positive_pion_gains[i],
-         *        st->direct_positive_pion_gains[i],
-         *        st->positive_pion_synchrotron.particle_losses[i],
-         *        st->pion_decay_positive_pion_losses[i]);
-         */
     }
 
     for(i = 0; i < st->negative_pions.size; i++)
@@ -338,45 +271,22 @@ void step_update_populations(state_t *st, double dt)
             (st->pion_decay_negative_right_muon_gains[i] +
              st->negative_right_muon_synchrotron.particle_losses[i] +
              st->negative_right_muon_decay_and_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
-         *        st->pion_decay_negative_right_muon_gains[i],
-         *        st->negative_right_muon_synchrotron.particle_losses[i],
-         *        st->muon_decay_negative_right_muon_losses[i]);
-         */
     }
 
     for(i = 0; i < st->electron_neutrinos.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->electron_neutrinos.population[i]);*/
-
         st->electron_neutrinos.tentative_population[i] =
             st->electron_neutrinos.population[i] + dt *
             (st->muon_decay_electron_neutrino_gains[i] +
              st->electron_neutrino_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\n",
-         *        st->electron_neutrinos.tentative_population[i],
-         *        st->muon_decay_electron_neutrino_gains[i]);
-         */
     }
 
     for(i = 0; i < st->electron_antineutrinos.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->electron_antineutrinos.population[i]);*/
-
         st->electron_antineutrinos.tentative_population[i] =
             st->electron_antineutrinos.population[i] + dt *
             (st->muon_decay_electron_antineutrino_gains[i] +
              st->electron_antineutrino_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\n",
-         *        st->electron_antineutrinos.tentative_population[i],
-         *        st->muon_decay_electron_antineutrino_gains[i]);
-         */
     }
 
     for(i = 0; i < st->muon_neutrinos.size; i++)
@@ -386,12 +296,6 @@ void step_update_populations(state_t *st, double dt)
             (st->pion_decay_muon_neutrino_gains[i] +
              st->muon_decay_muon_neutrino_gains[i] +
              st->muon_neutrino_escape.losses[i]);
-
-        /*
-         *fprintf(stderr,"%u:\t%lg\t%lg\n", i,
-         *        st->pion_decay_muon_neutrino_gains[i],
-         *        st->muon_decay_muon_neutrino_gains[i]);
-         */
     }
 
     for(i = 0; i < st->muon_antineutrinos.size; i++)
@@ -412,8 +316,6 @@ void step_experimental_update_populations(state_t *st, double dt)
 
     for(i = 0; i < st->photons.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->photons.population[i]);*/
-
         double phot_gains = st->electron_synchrotron.photon_gains[i] +
                             st->proton_synchrotron.photon_gains[i] +
                             st->positive_pion_synchrotron.photon_gains[i] +
@@ -442,21 +344,6 @@ void step_experimental_update_populations(state_t *st, double dt)
         double new_pop = st->photons.population[i] * exp(tau) + phot_gains * aux;
 
         st->photons.tentative_population[i] = new_pop;
-
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->photons.tentative_population[i],
-         *        st->electron_synchrotron.photon_gains[i],
-         *        st->electron_synchrotron.photon_losses[i],
-         *        st->proton_synchrotron.photon_gains[i],
-         *        st->proton_synchrotron.photon_losses[i],
-         *        st->positive_pion_synchrotron.photon_gains[i],
-         *        st->negative_pion_synchrotron.photon_losses[i],
-         *        st->inverse_compton_gains[i],
-         *        st->inverse_compton_loses[i],
-         *        st->pair_production_losses[i],
-         *        st->photon_escape.losses[i]);
-         */
     }
 
 #if PROTON_STEADY_STATE == 0
@@ -611,8 +498,6 @@ void step_experimental_update_populations(state_t *st, double dt)
                         (1 - 3*aux1 * st->dt / dlng/2);
 
         st->electrons.tentative_population[i] = exp(log_new_pop);
-
-        /*fprintf(stderr,"%u:\t%lg\t%lg\n", i, log_new_pop, log(st->electrons.tentative_population[i - 2]));*/
     }
     st->electrons.tentative_population[0] = st->electrons.population[0];
 #endif
