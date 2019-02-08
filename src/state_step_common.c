@@ -634,48 +634,51 @@ void step_experimental_update_populations(state_t *st, double dt)
         st->negative_pions.tentative_population[i] = np_new_pop;
     }
 
-    for(i = 0; i < st->positive_left_muons.size; i++)
-    {
-        st->positive_left_muons.tentative_population[i] =
-            st->positive_left_muons.population[i] + dt *
-            (st->pion_decay_positive_left_muon_gains[i] +
-             st->positive_left_muon_synchrotron.particle_losses[i] +
-             st->positive_left_muon_decay_and_escape.losses[i]);
-    }
 
-    for(i = 0; i < st->positive_right_muons.size; i++)
-    {
-        st->positive_right_muons.tentative_population[i] =
-            st->positive_right_muons.population[i] + dt *
-            (st->pion_decay_positive_right_muon_gains[i] +
-             st->positive_right_muon_synchrotron.particle_losses[i] +
-             st->positive_right_muon_decay_and_escape.losses[i]);
-    }
+    // Muon Updater
+{
+    double plm_new_pop = st->positive_left_muons.population [st->positive_left_muons.size - 1];
+    double prm_new_pop = st->positive_right_muons.population[st->positive_right_muons.size - 1];
+    double nlm_new_pop = st->negative_left_muons.population [st->negative_left_muons.size - 1];
+    double nrm_new_pop = st->negative_right_muons.population[st->negative_right_muons.size - 1];
 
-    for(i = 0; i < st->negative_left_muons.size; i++)
-    {
-        st->negative_left_muons.tentative_population[i] =
-            st->negative_left_muons.population[i] + dt *
-            (st->pion_decay_negative_left_muon_gains[i] +
-             st->negative_left_muon_synchrotron.particle_losses[i] +
-             st->negative_left_muon_decay_and_escape.losses[i]);
-    }
+    st->positive_left_muons.tentative_population [st->positive_left_muons.size - 1]  = plm_new_pop;
+    st->positive_right_muons.tentative_population[st->positive_right_muons.size - 1] = prm_new_pop;
+    st->negative_left_muons.tentative_population [st->negative_left_muons.size - 1]  = nlm_new_pop;
+    st->negative_right_muons.tentative_population[st->negative_right_muons.size - 1] = nrm_new_pop;
 
-    for(i = 0; i < st->negative_right_muons.size; i++)
-    {
-        st->negative_right_muons.tentative_population[i] =
-            st->negative_right_muons.population[i] + dt *
-            (st->pion_decay_negative_right_muon_gains[i] +
-             st->negative_right_muon_synchrotron.particle_losses[i] +
-             st->negative_right_muon_decay_and_escape.losses[i]);
+    dlng = st->positive_right_muons.log_energy[1] - st->positive_right_muons.log_energy[0];
 
-        /*
-         *fprintf(stderr,"%u:\t%lg\t%lg\t%lg\n", i,
-         *        st->pion_decay_negative_right_muon_gains[i],
-         *        st->negative_right_muon_synchrotron.particle_losses[i],
-         *        st->muon_decay_negative_right_muon_losses[i]);
-         */
+    for(i = st->positive_right_muons.size - 2; i < st->positive_right_muons.size; i--)
+    {
+        double S   = st->positive_right_muon_synchrotron.particle_losses_factor;
+        double g   = st->positive_right_muons.energy[i];
+        double tau = 1 / st->positive_right_muon_decay_and_escape.t[i];
+        double aux = st->dt / dlng;
+
+        double n_plm = st->positive_left_muons.population[i];
+        double n_prm = st->positive_right_muons.population[i];
+        double n_nlm = st->negative_left_muons.population[i];
+        double n_nrm = st->negative_right_muons.population[i];
+
+        double Q_plm = st->pion_decay_positive_left_muon_gains[i];
+        double Q_prm = st->pion_decay_positive_right_muon_gains[i];
+        double Q_nlm = st->pion_decay_negative_left_muon_gains[i];
+        double Q_nrm = st->pion_decay_negative_right_muon_gains[i];
+
+        double L = 2 * g * S - 1 / tau;
+
+        plm_new_pop = (n_plm + aux * (dlng * Q_plm + g * S * plm_new_pop)) / (1 - aux * (dlng * L - g * S));
+        prm_new_pop = (n_prm + aux * (dlng * Q_prm + g * S * prm_new_pop)) / (1 - aux * (dlng * L - g * S));
+        nlm_new_pop = (n_nlm + aux * (dlng * Q_nlm + g * S * nlm_new_pop)) / (1 - aux * (dlng * L - g * S));
+        nrm_new_pop = (n_nrm + aux * (dlng * Q_nrm + g * S * nrm_new_pop)) / (1 - aux * (dlng * L - g * S));
+
+        st->positive_left_muons.tentative_population[i]  = plm_new_pop;
+        st->positive_right_muons.tentative_population[i] = prm_new_pop;
+        st->negative_left_muons.tentative_population[i]  = nlm_new_pop;
+        st->negative_right_muons.tentative_population[i] = nrm_new_pop;
     }
+}
 
     for(i = 0; i < st->electron_neutrinos.size; i++)
     {
