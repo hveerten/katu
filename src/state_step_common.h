@@ -52,4 +52,6 @@ void step_log_populations(state_t *st);
 
 void step_propagate_new_dt(state_t *st, double dt);
 
+void step_report_population_update(state_t *st, enum particle_type pt);
+
 #endif /* end of include guard: STATE_STEP_COMMON_H */

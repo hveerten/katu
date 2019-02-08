@@ -959,3 +959,217 @@ void step_propagate_new_dt(state_t *st, double dt)
     synchrotron_update_dt(&st->positive_left_muon_synchrotron, dt);
     synchrotron_update_dt(&st->positive_right_muon_synchrotron, dt);
 }
+
+void step_report_population_update(state_t *st, enum particle_type pt)
+{
+    unsigned int i;
+    switch(pt)
+    {
+        case photon:
+            for(i = 0; i < st->photons.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->photons.population[i], st->photons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->electron_synchrotron.photon_gains[i],
+                        st->proton_synchrotron.photon_gains[i],
+                        st->electron_synchrotron.photon_losses[i],
+                        st->proton_synchrotron.photon_losses[i],
+                        st->inverse_compton_photon_gains[i],
+                        st->inverse_compton_photon_losses[i],
+                        st->pair_production_losses[i],
+                        st->photon_escape.losses[i]);
+            }
+            break;
+
+        case electron:
+            for(i = 0; i < st->electrons.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->electrons.population[i], st->electrons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                        st->electron_acceleration.gains[i],
+                        st->electron_synchrotron.particle_losses[i],
+                        st->inverse_compton_electron_losses[i],
+                        st->electron_escape.losses[i]);
+            }
+            break;
+
+        case positron: assert(1);
+
+        case proton:
+            for(i = 0; i < st->protons.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->protons.population[i], st->protons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->proton_acceleration.gains[i],
+                        st->proton_synchrotron.particle_losses[i],
+                        st->multi_resonances_proton_gains[i],
+                        st->multi_resonances_proton_losses[i],
+                        st->direct_pion_production_proton_gains[i],
+                        st->direct_pion_production_proton_losses[i],
+                        st->proton_escape.losses[i]);
+            }
+            break;
+
+        case neutron:
+            for(i = 0; i < st->neutrons.size; i++)
+            {
+                decay_and_escape_t ndae = st->neutron_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->neutrons.population[i], st->neutrons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->multi_resonances_neutron_gains[i],
+                        st->multi_resonances_neutron_losses[i],
+                        st->direct_pion_production_neutron_gains[i],
+                        st->direct_pion_production_neutron_losses[i],
+                        ndae.losses[i] / (ndae.t[i] * ndae.escape_lifetime),
+                        ndae.losses[i] / (ndae.t[i] * ndae.decay_lifetime * st->neutrons.energy[i]));
+            }
+            break;
+
+        case positive_pion:
+            for(i = 0; i < st->positive_pions.size; i++)
+            {
+                decay_and_escape_t pos_dae = st->positive_pion_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->positive_pions.population[i], st->positive_pions.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->multi_resonances_positive_pion_gains[i],
+                        st->direct_positive_pion_gains[i],
+                        st->positive_pion_synchrotron.particle_losses[i],
+                        pos_dae.losses[i] / (pos_dae.t[i] * pos_dae.decay_lifetime * st->positive_pions.energy[i]),
+                        pos_dae.losses[i] / (pos_dae.t[i] * pos_dae.escape_lifetime));
+            }
+            break;
+
+        case negative_pion:
+            for(i = 0; i < st->negative_pions.size; i++)
+            {
+                decay_and_escape_t neg_dae = st->negative_pion_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->negative_pions.population[i], st->negative_pions.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->multi_resonances_negative_pion_gains[i],
+                        st->direct_negative_pion_gains[i],
+                        st->negative_pion_synchrotron.particle_losses[i],
+                        neg_dae.losses[i] / (neg_dae.t[i] * neg_dae.decay_lifetime * st->negative_pions.energy[i]),
+                        neg_dae.losses[i] / (neg_dae.t[i] * neg_dae.escape_lifetime));
+            }
+            break;
+
+        case neutral_pion:
+            for(i = 0; i < st->neutral_pions.size; i++)
+            {
+                decay_and_escape_t neu_dae = st->neutral_pion_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->neutral_pions.population[i], st->neutral_pions.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                        st->multi_resonances_neutral_pion_gains[i],
+                        st->direct_neutral_pion_gains[i],
+                        neu_dae.losses[i] / (neu_dae.t[i] * neu_dae.decay_lifetime * st->negative_pions.energy[i]),
+                        neu_dae.losses[i] / (neu_dae.t[i] * neu_dae.escape_lifetime));
+            }
+            break;
+
+        case positive_left_muon:
+            for(i = 0; i < st->positive_left_muons.size; i++)
+            {
+                decay_and_escape_t pos_l_dae = st->positive_left_muon_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->positive_left_muons.population[i], st->positive_left_muons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                        st->pion_decay_positive_left_muon_gains[i],
+                        st->positive_left_muon_synchrotron.particle_losses[i],
+                        pos_l_dae.losses[i] / (pos_l_dae.t[i] * pos_l_dae.decay_lifetime * st->positive_left_muons.energy[i]),
+                        pos_l_dae.losses[i] / (pos_l_dae.t[i] * pos_l_dae.escape_lifetime));
+            }
+            break;
+
+        case positive_right_muon:
+            for(i = 0; i < st->positive_right_muons.size; i++)
+            {
+                decay_and_escape_t pos_r_dae = st->positive_right_muon_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->positive_right_muons.population[i], st->positive_right_muons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                        st->pion_decay_positive_right_muon_gains[i],
+                        st->positive_right_muon_synchrotron.particle_losses[i],
+                        pos_r_dae.losses[i] / (pos_r_dae.t[i] * pos_r_dae.decay_lifetime * st->positive_right_muons.energy[i]),
+                        pos_r_dae.losses[i] / (pos_r_dae.t[i] * pos_r_dae.escape_lifetime));
+            }
+            break;
+
+        case negative_left_muon:
+            for(i = 0; i < st->negative_left_muons.size; i++)
+            {
+                decay_and_escape_t neg_l_dae = st->negative_left_muon_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->negative_left_muons.population[i], st->negative_left_muons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                        st->pion_decay_negative_left_muon_gains[i],
+                        st->negative_left_muon_synchrotron.particle_losses[i],
+                        neg_l_dae.losses[i] / (neg_l_dae.t[i] * neg_l_dae.decay_lifetime * st->negative_left_muons.energy[i]),
+                        neg_l_dae.losses[i] / (neg_l_dae.t[i] * neg_l_dae.escape_lifetime));
+            }
+            break;
+
+        case negative_right_muon:
+            for(i = 0; i < st->negative_right_muons.size; i++)
+            {
+                decay_and_escape_t neg_r_dae = st->negative_right_muon_decay_and_escape;
+
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->negative_right_muons.population[i], st->negative_right_muons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                        st->pion_decay_negative_right_muon_gains[i],
+                        st->negative_right_muon_synchrotron.particle_losses[i],
+                        neg_r_dae.losses[i] / (neg_r_dae.t[i] * neg_r_dae.decay_lifetime * st->negative_right_muons.energy[i]),
+                        neg_r_dae.losses[i] / (neg_r_dae.t[i] * neg_r_dae.escape_lifetime));
+            }
+            break;
+
+
+        // TODO: ADD FAIL MESSAGES
+        case electron_neutrino:
+            for(i = 0; i < st->electron_neutrinos.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->electron_neutrinos.population[i], st->electron_neutrinos.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\n",
+                        st->muon_decay_electron_neutrino_gains[i],
+                        st->electron_neutrino_escape.losses[i]);
+            }
+            break;
+
+        case electron_antineutrino:
+            for(i = 0; i < st->electron_antineutrinos.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->electron_antineutrinos.population[i], st->electron_antineutrinos.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\n",
+                        st->muon_decay_electron_antineutrino_gains[i],
+                        st->electron_antineutrino_escape.losses[i]);
+            }
+            break;
+
+        case muon_neutrino:
+            for(i = 0; i < st->muon_neutrinos.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->muon_neutrinos.population[i], st->muon_neutrinos.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\n",
+                        st->pion_decay_muon_neutrino_gains[i],
+                        st->muon_decay_muon_neutrino_gains[i],
+                        st->muon_neutrino_escape.losses[i]);
+            }
+            break;
+
+        case muon_antineutrino:
+            for(i = 0; i < st->muon_antineutrinos.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->muon_antineutrinos.population[i], st->muon_antineutrinos.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\n",
+                        st->pion_decay_muon_antineutrino_gains[i],
+                        st->muon_decay_muon_antineutrino_gains[i],
+                        st->muon_antineutrino_escape.losses[i]);
+            }
+            break;
+
+        default: assert(1); break;
+    }
+}
