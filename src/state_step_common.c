@@ -610,14 +610,28 @@ void step_experimental_update_populations(state_t *st, double dt)
         st->positive_pions.tentative_population[i] = pp_new_pop;
     }
 
-    for(i = 0; i < st->negative_pions.size; i++)
+    dlng = st->negative_pions.log_energy[1] - st->negative_pions.log_energy[0];
+    double np_new_pop = st->negative_pions.population[st->negative_pions.size - 1];
+    st->negative_pions.tentative_population[st->negative_pions.size - 1] = np_new_pop;
+
+    for(i = st->negative_pions.size - 2; i < st->negative_pions.size; i--)
     {
-        st->negative_pions.tentative_population[i] =
-            st->negative_pions.population[i] + dt *
-            (st->multi_resonances_negative_pion_gains[i] +
-             st->direct_negative_pion_gains[i] +
-             st->negative_pion_synchrotron.particle_losses[i] +
-             st->negative_pion_decay_and_escape.losses[i]);
+        double S   = st->negative_pion_synchrotron.particle_losses_factor;
+        double g   = st->negative_pions.energy[i];
+        double tau = 1 / st->negative_pion_decay_and_escape.t[i];
+        double aux = st->dt / dlng;
+
+        double n = st->negative_pions.population[i];
+
+        double Q = st->multi_resonances_negative_pion_gains[i] +
+                   st->direct_negative_pion_gains[i];
+
+        double L = 2 * g * S - 1 / tau;
+
+        np_new_pop = (n + aux * (dlng * Q + g * S * np_new_pop)) /
+                    (1 - aux * (dlng * L - g * S));
+
+        st->negative_pions.tentative_population[i] = np_new_pop;
     }
 
     for(i = 0; i < st->positive_left_muons.size; i++)
