@@ -408,24 +408,17 @@ void step_experimental_update_populations(state_t *st, double dt)
 
     for(i = 0; i < st->neutrons.size; i++)
     {
-        /*fprintf(stderr,"%u:\t%lg\t->", i, st->neutrons.population[i]);*/
+        double n = st->neutrons.population[i];
+        double Q = st->multi_resonances_neutron_gains[i] +
+                   st->direct_pion_production_neutron_gains[i];
+        double L = (st->multi_resonances_neutron_losses[i] +
+                    st->direct_pion_production_neutron_losses[i]) / n +
+                   - st->neutron_decay_and_escape.t[i];
 
-        st->neutrons.tentative_population[i] =
-            st->neutrons.population[i] + dt *
-            (st->multi_resonances_neutron_gains[i] +
-             st->multi_resonances_neutron_losses[i] +
-             st->direct_pion_production_neutron_gains[i] +
-             st->direct_pion_production_neutron_losses[i] +
-             st->neutron_decay_and_escape.losses[i]);
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
 
-        /*
-         *fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
-         *        st->neutrons.tentative_population[i],
-         *        st->multi_resonances_neutron_gains[i],
-         *        st->multi_resonances_neutron_losses[i],
-         *        st->direct_pion_production_neutron_gains[i],
-         *        st->direct_pion_production_neutron_losses[i]);
-         */
+        st->neutrons.tentative_population[i] = aux0 * n + aux1 * Q;
     }
 
 #if ELECTRON_STEADY_STATE == 0
