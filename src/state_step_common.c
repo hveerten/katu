@@ -316,34 +316,33 @@ void step_experimental_update_populations(state_t *st, double dt)
 
     for(i = 0; i < st->photons.size; i++)
     {
-        double phot_gains = st->electron_synchrotron.photon_gains[i] +
-                            st->proton_synchrotron.photon_gains[i] +
-                            st->positive_pion_synchrotron.photon_gains[i] +
-                            st->negative_pion_synchrotron.photon_gains[i] +
-                            st->positive_left_muon_synchrotron.photon_gains[i] +
-                            st->positive_right_muon_synchrotron.photon_gains[i] +
-                            st->negative_left_muon_synchrotron.photon_gains[i] +
-                            st->negative_right_muon_synchrotron.photon_gains[i] +
-                            st->inverse_compton_photon_gains[i];
+        double n = st->photons.population[i];
+        double Q = st->electron_synchrotron.photon_gains[i] +
+                   st->proton_synchrotron.photon_gains[i] +
+                   st->positive_pion_synchrotron.photon_gains[i] +
+                   st->negative_pion_synchrotron.photon_gains[i] +
+                   st->positive_left_muon_synchrotron.photon_gains[i] +
+                   st->positive_right_muon_synchrotron.photon_gains[i] +
+                   st->negative_left_muon_synchrotron.photon_gains[i] +
+                   st->negative_right_muon_synchrotron.photon_gains[i] +
+                   st->inverse_compton_photon_gains[i];
 
-        double phot_losses = st->electron_synchrotron.photon_losses[i] +
-                             st->proton_synchrotron.photon_losses[i] +
-                             st->positive_pion_synchrotron.photon_losses[i] +
-                             st->negative_pion_synchrotron.photon_losses[i] +
-                             st->positive_left_muon_synchrotron.photon_losses[i] +
-                             st->positive_right_muon_synchrotron.photon_losses[i] +
-                             st->negative_left_muon_synchrotron.photon_losses[i] +
-                             st->negative_right_muon_synchrotron.photon_losses[i] +
-                             st->inverse_compton_photon_losses[i] +
-                             st->pair_production_losses[i];
+        double L = (st->electron_synchrotron.photon_losses[i] +
+                    st->proton_synchrotron.photon_losses[i] +
+                    st->positive_pion_synchrotron.photon_losses[i] +
+                    st->negative_pion_synchrotron.photon_losses[i] +
+                    st->positive_left_muon_synchrotron.photon_losses[i] +
+                    st->positive_right_muon_synchrotron.photon_losses[i] +
+                    st->negative_left_muon_synchrotron.photon_losses[i] +
+                    st->negative_right_muon_synchrotron.photon_losses[i] +
+                    st->inverse_compton_photon_losses[i] +
+                    st->pair_production_losses[i]) / n +
+                   - 1 / st->photon_escape.t;
 
-        double L = phot_losses / st->photons.population[i] - 1 / st->photon_escape.t;
-        double tau = L * dt;
-        double aux = expm1(tau) / L;
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
 
-        double new_pop = st->photons.population[i] * exp(tau) + phot_gains * aux;
-
-        st->photons.tentative_population[i] = new_pop;
+        st->photons.tentative_population[i] = aux0 * n + aux1 * Q;
     }
 
 #if PROTON_STEADY_STATE == 0
