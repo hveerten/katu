@@ -464,8 +464,6 @@ void step_experimental_update_populations(state_t *st, double dt)
 #if 1
     st->electrons.tentative_population[0] = st->electrons.population[0];
     {
-        double electron_losses = 0;
-
         double aux1 = electron_aux1[1];
         double aux2 = electron_aux0[1] - 1/ st->electron_escape.t;
 
@@ -478,8 +476,6 @@ void step_experimental_update_populations(state_t *st, double dt)
     }
     for(i = 2; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover; i++)
     {
-        double electron_losses = 0;
-
         double aux1 = electron_aux1[i];
         double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
 
@@ -503,14 +499,10 @@ void step_experimental_update_populations(state_t *st, double dt)
         double electron_gains  = 0;
         double electron_losses = 0;
 
-        double L = electron_losses + \
-                   2 * st->electrons.energy[i] * (st->electron_synchrotron.particle_losses_factor + \
-                                                  st->inverse_compton_electron_losses_factor) - \
-                   1 / st->electron_acceleration.t - 1/ st->electron_escape.t;
+        double L = electron_losses + electron_aux0[i] - 1/ st->electron_escape.t;
         double tau = L * dt;
 
-        double aux1 = ((st->electron_synchrotron.particle_losses_factor + \
-                        st->inverse_compton_electron_losses_factor) * st->electrons.energy[i] - 1 / st->electron_acceleration.t) / dlng;
+        double aux1 = electron_aux1[i] / dlng;
         double aux2 = expm1(tau) / L;
 
         double new_pop;
@@ -530,11 +522,9 @@ void step_experimental_update_populations(state_t *st, double dt)
         double electron_gains  = 0;
         double electron_losses = 0;
 
-        double aux1 = ((st->electron_synchrotron.particle_losses_factor + \
-                        st->inverse_compton_electron_losses_factor) * st->electrons.energy[i] - 1 / st->electron_acceleration.t);
-        double aux2 = 2 * st->electrons.energy[i] * (st->electron_synchrotron.particle_losses_factor + \
-                                                     st->inverse_compton_electron_losses_factor) - \
-                        1 / st->electron_acceleration.t - 1/ st->electron_escape.t;
+        double aux1 = electron_aux1[i];
+        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
+
         double L = electron_losses + aux2 + aux1 * (st->electrons.log_population[i + 1] - st->electrons.log_population[i]) / dlng;
         double tau = L * dt;
 
@@ -551,13 +541,8 @@ void step_experimental_update_populations(state_t *st, double dt)
     for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)
     /*if(0)*/
     {
-        double electron_losses = 0;
-
-        double aux1 = ((st->electron_synchrotron.particle_losses_factor + \
-                        st->inverse_compton_electron_losses_factor) * st->electrons.energy[i] - 1 / st->electron_acceleration.t);
-        double aux2 = 2 * st->electrons.energy[i] * (st->electron_synchrotron.particle_losses_factor + \
-                                                     st->inverse_compton_electron_losses_factor) - \
-                        1 / st->electron_acceleration.t - 1/ st->electron_escape.t;
+        double aux1 = electron_aux1[i];
+        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
 
         double log_new_pop = log(st->electrons.tentative_population[i + 1]);
         if(i != st->electrons.size - 1)
