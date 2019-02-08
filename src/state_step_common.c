@@ -725,6 +725,420 @@ void step_experimental_update_populations(state_t *st, double dt)
 }
 }
 
+void step_experimental_update_populations_injection(state_t *st, double dt)
+{
+    unsigned int i;
+    double g_turnover;
+    double dlng;
+
+    for(i = 0; i < st->photons.size; i++)
+    {
+        double n = st->photons.population[i];
+        double Q = st->external_injection.photons[i] +
+                   st->electron_synchrotron.photon_gains[i] +
+                   st->proton_synchrotron.photon_gains[i] +
+                   st->positive_pion_synchrotron.photon_gains[i] +
+                   st->negative_pion_synchrotron.photon_gains[i] +
+                   st->positive_left_muon_synchrotron.photon_gains[i] +
+                   st->positive_right_muon_synchrotron.photon_gains[i] +
+                   st->negative_left_muon_synchrotron.photon_gains[i] +
+                   st->negative_right_muon_synchrotron.photon_gains[i] +
+                   st->inverse_compton_photon_gains[i];
+
+        double L = (st->electron_synchrotron.photon_losses[i] +
+                    st->proton_synchrotron.photon_losses[i] +
+                    st->positive_pion_synchrotron.photon_losses[i] +
+                    st->negative_pion_synchrotron.photon_losses[i] +
+                    st->positive_left_muon_synchrotron.photon_losses[i] +
+                    st->positive_right_muon_synchrotron.photon_losses[i] +
+                    st->negative_left_muon_synchrotron.photon_losses[i] +
+                    st->negative_right_muon_synchrotron.photon_losses[i] +
+                    st->inverse_compton_photon_losses[i] +
+                    st->pair_production_losses[i]) / n +
+                   - 1 / st->photon_escape.t;
+
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
+
+        st->photons.tentative_population[i] = aux0 * n + aux1 * Q;
+    }
+
+#if PROTON_STEADY_STATE == 0
+    g_turnover = 1 / (st->proton_acceleration.t * st->proton_synchrotron.particle_losses_factor);
+    dlng = st->protons.log_energy[1] - st->protons.log_energy[0];
+    for(i = 0; i < st->protons.size && st->protons.energy[i] < g_turnover; i++)
+    {
+        double proton_gains =
+             st->external_injection.protons[i] +
+             st->multi_resonances_proton_gains[i] +
+             st->direct_pion_production_proton_gains[i];
+
+        double proton_losses =
+             st->multi_resonances_proton_losses[i] +
+             st->direct_pion_production_proton_losses[i];
+
+        double L = proton_losses / st->protons.population[i] +
+                   2 * st->protons.energy[i] * st->proton_synchrotron.particle_losses_factor +
+                   - 1 / st->proton_acceleration.t - 1 / st->proton_escape.t;
+        double tau = L * dt;
+
+        double aux1 = (st->proton_synchrotron.particle_losses_factor * st->protons.energy[i] - 1 / st->proton_acceleration.t) / dlng;
+        double aux2 = expm1(tau) / L;
+
+        double new_pop;
+        if(i != 0)
+        {
+            new_pop = (st->protons.population[i] * exp(tau) + aux2 * (proton_gains - aux1 * st->protons.tentative_population[i - 1])) /
+                      (1 - aux1 * aux2);
+        }
+        else
+            new_pop = st->protons.population[i];
+
+        st->protons.tentative_population[i] = new_pop;
+    }
+    for(i = st->protons.size - 1; i < st->protons.size && g_turnover < st->protons.energy[i]; i--)
+    {
+        double proton_gains =
+             st->external_injection.protons[i] +
+             st->multi_resonances_proton_gains[i] +
+             st->direct_pion_production_proton_gains[i];
+
+        double proton_losses =
+             st->multi_resonances_proton_losses[i] +
+             st->direct_pion_production_proton_losses[i];
+
+        double L = proton_losses / st->protons.population[i] + 2 * st->protons.energy[i] * st->proton_synchrotron.particle_losses_factor - 1 / st->proton_acceleration.t;
+        double tau = L * dt;
+
+        double aux1 = (st->proton_synchrotron.particle_losses_factor * st->protons.energy[i] - 1 / st->proton_acceleration.t) / dlng;
+        double aux2 = expm1(tau) / L;
+
+        double new_pop;
+        if(i != st->protons.size - 1)
+        {
+            new_pop = (st->protons.population[i] * exp(tau) + aux2 * (proton_gains + aux1 * st->protons.tentative_population[i + 1])) /
+                      (1 + aux1 * aux2);
+        }
+        else
+            new_pop = st->protons.population[i];
+
+        st->protons.tentative_population[i] = new_pop;
+    }
+#endif
+
+    for(i = 0; i < st->neutrons.size; i++)
+    {
+        double n = st->neutrons.population[i];
+        double Q = st->external_injection.neutrons[i] +
+                   st->multi_resonances_neutron_gains[i] +
+                   st->direct_pion_production_neutron_gains[i];
+        double L = (st->multi_resonances_neutron_losses[i] +
+                    st->direct_pion_production_neutron_losses[i]) / n +
+                   - st->neutron_decay_and_escape.t[i];
+
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
+
+        st->neutrons.tentative_population[i] = aux0 * n + aux1 * Q;
+    }
+
+#if ELECTRON_STEADY_STATE == 0
+    double electron_aux0[st->electrons.size];
+    double electron_aux1[st->electrons.size];
+    for(i = 0; i < st->electrons.size; i++)
+    {
+        double g     = st->electrons.energy[i];
+        double S     = st->electron_synchrotron.particle_losses_factor;
+        double IC    = st->inverse_compton_electron_losses_factor;
+        double t_acc = st->electron_acceleration.t;
+
+        electron_aux0[i] = 2 * g * (S + IC) - 1 / t_acc;
+        electron_aux1[i] =     g * (S + IC) - 1 / t_acc;
+    }
+
+    g_turnover = 1 / (st->electron_acceleration.t * (st->electron_synchrotron.particle_losses_factor + st->inverse_compton_electron_losses_factor));
+    double g_max = st->electrons.energy[0] * exp(st->t / st->electron_acceleration.t) / (st->electrons.energy[0] / g_turnover * expm1(st->t / st->electron_acceleration.t) + 1);
+    dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
+
+#if 0
+    st->electrons.tentative_population[0] = st->electrons.population[0];
+    for(i = 1; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover; i++)
+    /*for(i = 1; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover && st->electrons.energy[i] < g_max; i++)*/
+    {
+        /*double electron_gains  = 1e-2 * pow(st->electrons.energy[i], -2.3);*/
+        double electron_gains  = 0;
+        double electron_losses = 0;
+
+        double L = electron_losses + electron_aux0[i] - 1/ st->electron_escape.t;
+        double tau = L * dt;
+
+        double aux1 = electron_aux1[i] / dlng;
+        double aux2 = expm1(tau) / L;
+
+        double new_pop = (st->electrons.population[i] * exp(tau) + aux2 * (electron_gains - aux1 * st->electrons.tentative_population[i - 1])) /
+                         (1 - aux1 * aux2);
+
+        st->electrons.tentative_population[i] = new_pop;
+    }
+#endif
+
+#if 1
+    st->electrons.tentative_population[0] = st->electrons.population[0];
+    {
+        double aux1 = electron_aux1[1];
+        double aux2 = electron_aux0[1] - 1/ st->electron_escape.t;
+
+        double log_new_pop = log(st->electrons.tentative_population[0]);
+
+        log_new_pop = (st->electrons.log_population[1] + st->dt * (aux2 - aux1 * log_new_pop / dlng)) /
+                        (1 - aux1 * st->dt / dlng);
+
+        st->electrons.tentative_population[1] = exp(log_new_pop);
+    }
+    for(i = 2; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover; i++)
+    {
+        double aux1 = electron_aux1[i];
+        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
+
+        double log_new_pop = log(st->electrons.tentative_population[i - 1]);
+        double log_old_pop = log(st->electrons.tentative_population[i - 2]);
+
+        log_new_pop = (st->electrons.log_population[i] + st->dt * (aux2 - aux1 * (4*log_new_pop - log_old_pop) / dlng/2)) /
+                        (1 - 3*aux1 * st->dt / dlng/2);
+
+        st->electrons.tentative_population[i] = exp(log_new_pop);
+    }
+    st->electrons.tentative_population[0] = st->electrons.population[0];
+#endif
+
+
+    // ELECTRON COOLING BELOW
+    /*for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)*/
+    if(0)
+    {
+        /*double electron_gains  = 1e-1 * pow(st->electrons.energy[i], -2.3);*/
+        double electron_gains  = 0;
+        double electron_losses = 0;
+
+        double L = electron_losses + electron_aux0[i] - 1/ st->electron_escape.t;
+        double tau = L * dt;
+
+        double aux1 = electron_aux1[i] / dlng;
+        double aux2 = expm1(tau) / L;
+
+        double new_pop;
+        if(i != st->electrons.size - 1)
+        {
+            new_pop = (st->electrons.population[i] * exp(tau) + aux2 * (electron_gains + aux1 * st->electrons.tentative_population[i + 1])) /
+                      (1 + aux1 * aux2);
+        }
+        else
+            new_pop = st->electrons.population[i];
+
+        st->electrons.tentative_population[i] = new_pop;
+    }
+    /*for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)*/
+    if(0)
+    {
+        double electron_gains  = 0;
+        double electron_losses = 0;
+
+        double aux1 = electron_aux1[i];
+        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
+
+        double L = electron_losses + aux2 + aux1 * (st->electrons.log_population[i + 1] - st->electrons.log_population[i]) / dlng;
+        double tau = L * dt;
+
+        double new_pop;
+        if(i != st->electrons.size - 1)
+        {
+            new_pop = st->electrons.population[i] * exp(tau);
+        }
+        else
+            new_pop = st->electrons.population[i];
+
+        st->electrons.tentative_population[i] = new_pop;
+    }
+    for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)
+    /*if(0)*/
+    {
+        double aux1 = electron_aux1[i];
+        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
+
+        double log_new_pop = log(st->electrons.tentative_population[i + 1]);
+        if(i != st->electrons.size - 1)
+        {
+            log_new_pop = (st->electrons.log_population[i] + st->dt * (aux2 + aux1 * log_new_pop / dlng)) /
+                          (1 + aux1 * st->dt / dlng);
+        }
+        else
+            log_new_pop = st->electrons.log_population[i];
+
+        st->electrons.tentative_population[i] = exp(log_new_pop);
+    }
+#endif
+
+    for(i = 0; i < st->neutral_pions.size; i++)
+    {
+        double n = st->neutral_pions.population[i];
+        double Q = st->external_injection.neutral_pions[i] +
+                   st->multi_resonances_neutral_pion_gains[i] +
+                   st->direct_neutral_pion_gains[i];
+        double L = -st->neutral_pion_decay_and_escape.t[i];
+
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
+
+        st->neutral_pions.tentative_population[i] =
+            aux0 * n + aux1 * Q;
+    }
+
+    dlng = st->positive_pions.log_energy[1] - st->positive_pions.log_energy[0];
+    double pp_new_pop = st->positive_pions.population[st->positive_pions.size - 1];
+    st->positive_pions.tentative_population[st->positive_pions.size - 1] = pp_new_pop;
+
+    for(i = st->positive_pions.size - 2; i < st->positive_pions.size; i--)
+    {
+        double S   = st->positive_pion_synchrotron.particle_losses_factor;
+        double g   = st->positive_pions.energy[i];
+        double tau = 1 / st->positive_pion_decay_and_escape.t[i];
+        double aux = st->dt / dlng;
+
+        double n = st->positive_pions.population[i];
+
+        double Q = st->external_injection.positive_pions[i] +
+                   st->multi_resonances_positive_pion_gains[i] +
+                   st->direct_positive_pion_gains[i];
+
+        double L = 2 * g * S - 1 / tau;
+
+        pp_new_pop = (n + aux * (dlng * Q + g * S * pp_new_pop)) /
+                    (1 - aux * (dlng * L - g * S));
+
+        st->positive_pions.tentative_population[i] = pp_new_pop;
+    }
+
+    dlng = st->negative_pions.log_energy[1] - st->negative_pions.log_energy[0];
+    double np_new_pop = st->negative_pions.population[st->negative_pions.size - 1];
+    st->negative_pions.tentative_population[st->negative_pions.size - 1] = np_new_pop;
+
+    for(i = st->negative_pions.size - 2; i < st->negative_pions.size; i--)
+    {
+        double S   = st->negative_pion_synchrotron.particle_losses_factor;
+        double g   = st->negative_pions.energy[i];
+        double tau = 1 / st->negative_pion_decay_and_escape.t[i];
+        double aux = st->dt / dlng;
+
+        double n = st->negative_pions.population[i];
+
+        double Q = st->external_injection.negative_pions[i] +
+                   st->multi_resonances_negative_pion_gains[i] +
+                   st->direct_negative_pion_gains[i];
+
+        double L = 2 * g * S - 1 / tau;
+
+        np_new_pop = (n + aux * (dlng * Q + g * S * np_new_pop)) /
+                    (1 - aux * (dlng * L - g * S));
+
+        st->negative_pions.tentative_population[i] = np_new_pop;
+    }
+
+
+    // Muon Updater
+{
+    double plm_new_pop = st->positive_left_muons.population [st->positive_left_muons.size - 1];
+    double prm_new_pop = st->positive_right_muons.population[st->positive_right_muons.size - 1];
+    double nlm_new_pop = st->negative_left_muons.population [st->negative_left_muons.size - 1];
+    double nrm_new_pop = st->negative_right_muons.population[st->negative_right_muons.size - 1];
+
+    st->positive_left_muons.tentative_population [st->positive_left_muons.size - 1]  = plm_new_pop;
+    st->positive_right_muons.tentative_population[st->positive_right_muons.size - 1] = prm_new_pop;
+    st->negative_left_muons.tentative_population [st->negative_left_muons.size - 1]  = nlm_new_pop;
+    st->negative_right_muons.tentative_population[st->negative_right_muons.size - 1] = nrm_new_pop;
+
+    dlng = st->positive_right_muons.log_energy[1] - st->positive_right_muons.log_energy[0];
+
+    for(i = st->positive_right_muons.size - 2; i < st->positive_right_muons.size; i--)
+    {
+        double S   = st->positive_right_muon_synchrotron.particle_losses_factor;
+        double g   = st->positive_right_muons.energy[i];
+        double tau = 1 / st->positive_right_muon_decay_and_escape.t[i];
+        double aux = st->dt / dlng;
+
+        double n_plm = st->positive_left_muons.population[i];
+        double n_prm = st->positive_right_muons.population[i];
+        double n_nlm = st->negative_left_muons.population[i];
+        double n_nrm = st->negative_right_muons.population[i];
+
+        double Q_plm = st->external_injection.positive_left_muons[i]  + st->pion_decay_positive_left_muon_gains[i];
+        double Q_prm = st->external_injection.positive_right_muons[i] + st->pion_decay_positive_right_muon_gains[i];
+        double Q_nlm = st->external_injection.negative_left_muons[i]  + st->pion_decay_negative_left_muon_gains[i];
+        double Q_nrm = st->external_injection.negative_right_muons[i] + st->pion_decay_negative_right_muon_gains[i];
+
+        double L = 2 * g * S - 1 / tau;
+
+        plm_new_pop = (n_plm + aux * (dlng * Q_plm + g * S * plm_new_pop)) / (1 - aux * (dlng * L - g * S));
+        prm_new_pop = (n_prm + aux * (dlng * Q_prm + g * S * prm_new_pop)) / (1 - aux * (dlng * L - g * S));
+        nlm_new_pop = (n_nlm + aux * (dlng * Q_nlm + g * S * nlm_new_pop)) / (1 - aux * (dlng * L - g * S));
+        nrm_new_pop = (n_nrm + aux * (dlng * Q_nrm + g * S * nrm_new_pop)) / (1 - aux * (dlng * L - g * S));
+
+        st->positive_left_muons.tentative_population[i]  = plm_new_pop;
+        st->positive_right_muons.tentative_population[i] = prm_new_pop;
+        st->negative_left_muons.tentative_population[i]  = nlm_new_pop;
+        st->negative_right_muons.tentative_population[i] = nrm_new_pop;
+    }
+}
+
+    // Neutrino Updater
+{
+    double en_new_pop = st->electron_neutrinos.population    [st->electron_neutrinos.size - 1];
+    double ea_new_pop = st->electron_antineutrinos.population[st->electron_antineutrinos.size - 1];
+    double mn_new_pop = st->muon_neutrinos.population        [st->muon_neutrinos.size - 1];
+    double ma_new_pop = st->muon_antineutrinos.population    [st->muon_antineutrinos.size - 1];
+
+    st->electron_neutrinos.tentative_population    [st->electron_neutrinos.size - 1]     = en_new_pop;
+    st->electron_antineutrinos.tentative_population[st->electron_antineutrinos.size - 1] = ea_new_pop;
+    st->muon_neutrinos.tentative_population        [st->muon_neutrinos.size - 1]         = mn_new_pop;
+    st->muon_antineutrinos.tentative_population    [st->muon_antineutrinos.size - 1]     = ma_new_pop;
+
+    dlng = st->electron_neutrinos.log_energy[1] - st->electron_neutrinos.log_energy[0];
+
+    for(i = st->electron_neutrinos.size - 2; i < st->electron_neutrinos.size; i--)
+    {
+        double n_en = st->electron_neutrinos.population[i];
+        double n_ea = st->electron_antineutrinos.population[i];
+        double n_mn = st->muon_neutrinos.population[i];
+        double n_ma = st->muon_antineutrinos.population[i];
+
+        double Q_en = st->external_injection.electron_neutrinos[i] +
+                      st->muon_decay_electron_neutrino_gains[i];
+        double Q_ea = st->external_injection.electron_antineutrinos[i] +
+                      st->muon_decay_electron_antineutrino_gains[i];
+        double Q_mn = st->external_injection.muon_neutrinos[i] +
+                      st->pion_decay_muon_neutrino_gains[i] +
+                      st->muon_decay_muon_neutrino_gains[i];
+        double Q_ma = st->external_injection.muon_antineutrinos[i] +
+                      st->pion_decay_muon_antineutrino_gains[i] +
+                      st->muon_decay_muon_antineutrino_gains[i];
+
+        double L = -1 / st->electron_neutrino_escape.t;
+
+        double aux0 = exp(L * st->dt);
+        double aux1 = expm1(L * st->dt) / L;
+
+        en_new_pop = n_en * aux0 + Q_en * aux1;
+        ea_new_pop = n_ea * aux0 + Q_ea * aux1;
+        mn_new_pop = n_mn * aux0 + Q_mn * aux1;
+        ma_new_pop = n_ma * aux0 + Q_ma * aux1;
+
+        st->electron_neutrinos.tentative_population[i]     = en_new_pop;
+        st->electron_antineutrinos.tentative_population[i] = ea_new_pop;
+        st->muon_neutrinos.tentative_population[i]         = mn_new_pop;
+        st->muon_antineutrinos.tentative_population[i]     = ma_new_pop;
+    }
+}
+}
+
 /* Check that the new populations are sensible.
  *
  * Hence, what we do is first check for infinities, and in those cases
