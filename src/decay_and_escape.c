@@ -53,6 +53,7 @@ void init_decay_and_escape(struct state_t *st, decay_and_escape_t *dae, enum par
 
         case neutral_pion:
             dae->decay_lifetime = NEUTRAL_PION_LIFETIME;
+            break;
 
         case positive_pion:
         case negative_pion:
