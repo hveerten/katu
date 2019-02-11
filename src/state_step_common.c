@@ -851,139 +851,58 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     }
 
 #if ELECTRON_STEADY_STATE == 0
-    double electron_aux0[st->electrons.size];
-    double electron_aux1[st->electrons.size];
+{
+    double t_acc = st->electron_acceleration.t;
+    double t_esc = st->electron_escape.t;
+    double S     = st->electron_synchrotron.particle_losses_factor;
+    double IC    = st->inverse_compton_electron_losses_factor;
+
+    double electron_turnover = 1 / (t_acc * (S + IC));
+
+    double aux1[st->electrons.size];
+    double aux2[st->electrons.size];
     for(i = 0; i < st->electrons.size; i++)
     {
-        double g     = st->electrons.energy[i];
-        double S     = st->electron_synchrotron.particle_losses_factor;
-        double IC    = st->inverse_compton_electron_losses_factor;
-        double t_acc = st->electron_acceleration.t;
+        double g = st->electrons.energy[i];
 
-        electron_aux0[i] = 2 * g * (S + IC) - 1 / t_acc;
-        electron_aux1[i] =     g * (S + IC) - 1 / t_acc;
+        aux1[i] =     g * (S + IC) - 1 / t_acc;
+        aux2[i] = 2 * g * (S + IC) - 1 / t_acc - 1/ t_esc;
     }
 
-    g_turnover = 1 / (st->electron_acceleration.t * (st->electron_synchrotron.particle_losses_factor + st->inverse_compton_electron_losses_factor));
-    double g_max = st->electrons.energy[0] * exp(st->t / st->electron_acceleration.t) / (st->electrons.energy[0] / g_turnover * expm1(st->t / st->electron_acceleration.t) + 1);
     dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
-#if 0
-    st->electrons.tentative_population[0] = st->electrons.population[0];
-    for(i = 1; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover; i++)
-    /*for(i = 1; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover && st->electrons.energy[i] < g_max; i++)*/
+    double electron_log_new_pop = log(st->electrons.population[0] + st->dt * st->external_injection.electrons[0]);
+    st->electrons.tentative_population[0] = exp(electron_log_new_pop);
+
+    for(i = 1; i < st->electrons.size && st->electrons.energy[i] < electron_turnover; i++)
     {
-        /*double electron_gains  = 1e-2 * pow(st->electrons.energy[i], -2.3);*/
-        double electron_gains  = 0;
-        double electron_losses = 0;
+        double  n = st->electrons.population[i];
+        double ln = st->electrons.log_population[i];
 
-        double L = electron_losses + electron_aux0[i] - 1/ st->electron_escape.t;
-        double tau = L * dt;
+        double Q = st->external_injection.electrons[i];
 
-        double aux1 = electron_aux1[i] / dlng;
-        double aux2 = expm1(tau) / L;
+        electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * electron_log_new_pop / dlng)) /
+                        (1 - aux1[i] * st->dt / dlng);
 
-        double new_pop = (st->electrons.population[i] * exp(tau) + aux2 * (electron_gains - aux1 * st->electrons.tentative_population[i - 1])) /
-                         (1 - aux1 * aux2);
-
-        st->electrons.tentative_population[i] = new_pop;
+        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
     }
-#endif
 
-#if 1
-    st->electrons.tentative_population[0] = st->electrons.population[0];
+    electron_log_new_pop = log(st->electrons.population[st->electrons.size - 1]);
+    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+
+    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
     {
-        double aux1 = electron_aux1[1];
-        double aux2 = electron_aux0[1] - 1/ st->electron_escape.t;
+        double  n = st->electrons.population[i];
+        double ln = st->electrons.log_population[i];
 
-        double log_new_pop = log(st->electrons.tentative_population[0]);
+        double Q = st->external_injection.electrons[i];
 
-        log_new_pop = (st->electrons.log_population[1] + st->dt * (aux2 - aux1 * log_new_pop / dlng)) /
-                        (1 - aux1 * st->dt / dlng);
+        electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] + aux1[i] * electron_log_new_pop / dlng)) /
+                        (1 + aux1[i] * st->dt / dlng);
 
-        st->electrons.tentative_population[1] = exp(log_new_pop);
+        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
     }
-    for(i = 2; i < st->electrons.size - 1 && st->electrons.energy[i] < g_turnover; i++)
-    {
-        double aux1 = electron_aux1[i];
-        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
-
-        double log_new_pop = log(st->electrons.tentative_population[i - 1]);
-        double log_old_pop = log(st->electrons.tentative_population[i - 2]);
-
-        log_new_pop = (st->electrons.log_population[i] + st->dt * (aux2 - aux1 * (4*log_new_pop - log_old_pop) / dlng/2)) /
-                        (1 - 3*aux1 * st->dt / dlng/2);
-
-        st->electrons.tentative_population[i] = exp(log_new_pop);
-    }
-    st->electrons.tentative_population[0] = st->electrons.population[0];
-#endif
-
-
-    // ELECTRON COOLING BELOW
-    /*for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)*/
-    if(0)
-    {
-        /*double electron_gains  = 1e-1 * pow(st->electrons.energy[i], -2.3);*/
-        double electron_gains  = 0;
-        double electron_losses = 0;
-
-        double L = electron_losses + electron_aux0[i] - 1/ st->electron_escape.t;
-        double tau = L * dt;
-
-        double aux1 = electron_aux1[i] / dlng;
-        double aux2 = expm1(tau) / L;
-
-        double new_pop;
-        if(i != st->electrons.size - 1)
-        {
-            new_pop = (st->electrons.population[i] * exp(tau) + aux2 * (electron_gains + aux1 * st->electrons.tentative_population[i + 1])) /
-                      (1 + aux1 * aux2);
-        }
-        else
-            new_pop = st->electrons.population[i];
-
-        st->electrons.tentative_population[i] = new_pop;
-    }
-    /*for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)*/
-    if(0)
-    {
-        double electron_gains  = 0;
-        double electron_losses = 0;
-
-        double aux1 = electron_aux1[i];
-        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
-
-        double L = electron_losses + aux2 + aux1 * (st->electrons.log_population[i + 1] - st->electrons.log_population[i]) / dlng;
-        double tau = L * dt;
-
-        double new_pop;
-        if(i != st->electrons.size - 1)
-        {
-            new_pop = st->electrons.population[i] * exp(tau);
-        }
-        else
-            new_pop = st->electrons.population[i];
-
-        st->electrons.tentative_population[i] = new_pop;
-    }
-    for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)
-    /*if(0)*/
-    {
-        double aux1 = electron_aux1[i];
-        double aux2 = electron_aux0[i] - 1/ st->electron_escape.t;
-
-        double log_new_pop = log(st->electrons.tentative_population[i + 1]);
-        if(i != st->electrons.size - 1)
-        {
-            log_new_pop = (st->electrons.log_population[i] + st->dt * (aux2 + aux1 * log_new_pop / dlng)) /
-                          (1 + aux1 * st->dt / dlng);
-        }
-        else
-            log_new_pop = st->electrons.log_population[i];
-
-        st->electrons.tentative_population[i] = exp(log_new_pop);
-    }
+}
 #endif
 
     for(i = 0; i < st->neutral_pions.size; i++)
