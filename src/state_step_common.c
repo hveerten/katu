@@ -557,7 +557,7 @@ void step_experimental_update_populations(state_t *st, double dt)
 
         st->electrons.tentative_population[i] = new_pop;
     }
-    for(i = st->electrons.size - 1; i != 0 && g_turnover < st->electrons.energy[i]; i--)
+    for(i = st->electrons.size - 1; i < st->electrons.size && g_turnover < st->electrons.energy[i]; i--)
     /*if(0)*/
     {
         double aux1 = electron_aux1[i];
