@@ -732,7 +732,6 @@ void step_experimental_update_populations(state_t *st, double dt)
 void step_experimental_update_populations_injection(state_t *st, double dt)
 {
     unsigned int i;
-    double g_turnover;
     double dlng;
 
     for(i = 0; i < st->photons.size; i++)
