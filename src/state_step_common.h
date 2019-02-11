@@ -43,6 +43,7 @@ void step_calculate_processes(state_t *st);
 void step_update_populations(state_t *st, double dt);
 
 void step_experimental_update_populations(state_t *st, double dt);
+void step_experimental_update_populations_injection(state_t *st, double dt);
 
 bool step_check_tentative_populations(state_t *st);
 void step_fix_tentative_zeros(state_t *st);
