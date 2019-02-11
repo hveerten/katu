@@ -776,7 +776,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
     dlng = st->protons.log_energy[1] - st->protons.log_energy[0];
 
-    double proton_new_pop = st->protons.population[0];
+    double proton_new_pop = st->protons.population[0] + st->dt * st->external_injection.protons[0];
     st->protons.tentative_population[0] = proton_new_pop;
 
     for(i = 1; i < st->protons.size && st->protons.energy[i] < proton_g_turnover; i++)
