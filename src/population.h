@@ -42,6 +42,7 @@ void generate_population(population_t *p,
         enum distribution_type dt, double *params);
 
 double calculate_population(population_t *p);
+double calculate_energy(population_t *p);
 
 /*
  *void init_population(state_t *st, enum particle_type pt,

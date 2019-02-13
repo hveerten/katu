@@ -126,3 +126,20 @@ double calculate_population(population_t *p)
 
     return pop;
 }
+
+double calculate_energy(population_t *p)
+{
+    unsigned int i;
+
+    double energy = 0;
+    double dlng = p->log_energy[1] - p->log_energy[0];
+
+    energy += p->population[0]           * p->energy[0]           * p->energy[0];
+    energy += p->population[p->size - 1] * p->energy[p->size - 1] * p->energy[p->size - 1];
+
+    for(i = 1; i < p->size - 1; i++)
+        energy += 2 * p->population[i] * p->energy[i] * p->energy[i];
+    energy *= dlng / 2;
+
+    return energy;
+}
