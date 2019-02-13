@@ -109,3 +109,20 @@ void generate_population(population_t *p,
     for(i = 0; i < p->size; i++)
         p->log_population[i] = log(p->population[i]);
 }
+
+double calculate_population(population_t *p)
+{
+    unsigned int i;
+
+    double pop = 0;
+    double dlng = p->log_energy[1] - p->log_energy[0];
+
+    pop += p->population[0]           * p->energy[0];
+    pop += p->population[p->size - 1] * p->energy[p->size - 1];
+
+    for(i = 1; i < p->size - 1; i++)
+        pop += 2 * p->population[i] * p->energy[i];
+    pop *= dlng / 2;
+
+    return pop;
+}
