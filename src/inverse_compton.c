@@ -295,18 +295,9 @@ void inverse_compton_process_electron_losses(state_t *st)
     unsigned int i;
     double factor;
 
-    double dlne = st->photons.log_energy[1] - st->photons.log_energy[0];
     double dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
-    double photon_energy = 0;
-    for(i = 0; i < st->photons.size; i++)
-    {
-        double e = st->photons.energy[i];
-        double n = st->photons.population[i];
-
-        photon_energy += 2 * e * e * n;
-    }
-    photon_energy *= dlne;
+    double photon_energy = calculate_energy(&st->photons);
 
     factor = (4 * LIGHT_SPEED * THOMSON_CROSS_SECTION) / 3 * photon_energy;
     st->photon_energy = photon_energy;
