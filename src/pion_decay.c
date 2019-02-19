@@ -91,8 +91,8 @@ void charged_pion_decay(state_t *st)
 
             if(x < 1 - MASSES_RATIO && x < 1)
             {
-                muon_neutrino_production     += 2 * n_positive_pion / (g_pion * g_pion * (1 - MASSES_RATIO)) * (ELECTRON_MASS / PION_MASS);
-                muon_antineutrino_production += 2 * n_negative_pion / (g_pion * g_pion * (1 - MASSES_RATIO)) * (ELECTRON_MASS / PION_MASS);
+                muon_neutrino_production     += 2 * n_positive_pion / (g_pion * (1 - MASSES_RATIO)) * (ELECTRON_MASS / PION_MASS);
+                muon_antineutrino_production += 2 * n_negative_pion / (g_pion * (1 - MASSES_RATIO)) * (ELECTRON_MASS / PION_MASS);
             }
         }
 
@@ -166,8 +166,8 @@ void calculate_pion_decay_LUT_muon_functions(state_t *st)
             double g_pion = st->positive_pions.energy[j];
             double x = g_muon * MUON_MASS / (g_pion * PION_MASS);
 
-            st->pion_decay_LUT_positive_right[index_base + j] = f_positive_right(x) / (g_pion * g_pion) * (MUON_MASS / PION_MASS);
-            st->pion_decay_LUT_positive_left [index_base + j] = f_positive_left(x)  / (g_pion * g_pion) * (MUON_MASS / PION_MASS);
+            st->pion_decay_LUT_positive_right[index_base + j] = f_positive_right(x) / g_pion * (MUON_MASS / PION_MASS);
+            st->pion_decay_LUT_positive_left [index_base + j] = f_positive_left(x)  / g_pion * (MUON_MASS / PION_MASS);
         }
     }
 }
