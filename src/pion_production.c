@@ -756,7 +756,7 @@ void calculate_multi_resonances_LUT_pion_gains(state_t *st)
                 double y = e * g_proton;
                 double f = f_function(y, cross_section, low_threshold, high_threshold);
 
-                st->multi_resonances_LUT_pion_gains[index] = f * e * ELECTRON_ENERGY_EV / (1e9 * energy_ratio);
+                st->multi_resonances_LUT_pion_gains[index] = f * e / energy_ratio;
             }
         }
     }
@@ -800,7 +800,7 @@ void calculate_multi_resonances_LUT_hadron_losses(state_t *st)
                             f_function_multi_resonance(y, low_threshold, high_threshold) * 1e-30:
                             f_function(y, cross_section, low_threshold, high_threshold));
 
-                st->multi_resonances_LUT_hadron_losses[index] = f * e * ELECTRON_ENERGY_EV / 1e9;
+                st->multi_resonances_LUT_hadron_losses[index] = f * e;
             }
         }
     }
@@ -845,7 +845,7 @@ void calculate_multi_resonances_LUT_hadron_gains(state_t *st)
                             f_function_multi_resonance(y, low_threshold, high_threshold) * 1e-30:
                             f_function(y, cross_section, low_threshold, high_threshold));
 
-                st->multi_resonances_LUT_hadron_gains[index] = f * e * ELECTRON_ENERGY_EV / ((1 - inelasticity) * 1e9);
+                st->multi_resonances_LUT_hadron_gains[index] = f * e / (1 - inelasticity);
             }
         }
     }
@@ -889,7 +889,7 @@ void calculate_direct_LUT_pion_gains(state_t *st)
                                 f_function_direct_one_pion (y, low_threshold, high_threshold) :
                                 f_function_direct_two_pions(y, low_threshold, high_threshold));
 
-                st->direct_LUT_pion_gains[index] = f * e * ELECTRON_ENERGY_EV * 1e-30 / (1e9 * energy_ratio);
+                st->direct_LUT_pion_gains[index] = f * e * 1e-30 / energy_ratio;
             }
         }
     }
@@ -932,7 +932,7 @@ void calculate_direct_pion_production_LUT_hadron_losses(state_t *st)
                                 f_function_direct_one_pion (y, low_threshold, high_threshold) :
                                 f_function_direct_two_pions(y, low_threshold, high_threshold));
 
-                st->direct_pion_production_LUT_hadron_losses[index] = f * e * 1e-30 * ELECTRON_ENERGY_EV / 1e9;
+                st->direct_pion_production_LUT_hadron_losses[index] = f * e * 1e-30;
             }
         }
     }
@@ -976,7 +976,7 @@ void calculate_direct_pion_production_LUT_hadron_gains(state_t *st)
                                 f_function_direct_one_pion (y, low_threshold, high_threshold) :
                                 f_function_direct_two_pions(y, low_threshold, high_threshold));
 
-                st->direct_pion_production_LUT_hadron_gains[index] = f * e * 1e-30 * ELECTRON_ENERGY_EV / 1e9;
+                st->direct_pion_production_LUT_hadron_gains[index] = f * e * 1e-30;
             }
         }
     }
