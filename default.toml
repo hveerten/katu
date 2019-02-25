@@ -1,0 +1,56 @@
+[general]
+density = 1e-22
+magnetic_field = 0.1
+dt = 0.1
+dt_max = 1e3
+t_max = 1e7
+eta = 1
+
+[volume]
+shape = "sphere"
+R = 1e16
+h = 1e14
+
+[electrons]
+gamma_min = 1e1
+gamma_max = 1e5
+size      = 256
+
+distribution_type = "broken_power_law"
+break_point  = 1e4
+first_slope  = 2.15
+second_slope = 4.00
+
+[protons]
+gamma_min = 10
+gamma_max = 1e5
+size      = 256
+
+distribution_type = "power_law"
+slope = 2
+
+[photons]
+epsilon_min = 1e-12
+epsilon_max = 1e5
+size        = 160
+
+[external_injection]
+    [external_injection.electrons]
+    luminosity = 0.0
+
+    distribution_type = "broken_power_law"
+    break_point  = 1e4
+    first_slope  = 2.15
+    second_slope = 4.00
+
+    [external_injection.protons]
+    luminosity = 0.0
+
+    distribution_type = "power_law"
+    slope = 2
+
+    [external_injection.photons]
+    luminosity = 0.0
+
+    distribution_type = "maxwell_juttner"
+    temperature = 1
