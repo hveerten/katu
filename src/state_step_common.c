@@ -20,6 +20,7 @@ void step_calculate_processes(state_t *st)
 #if USE_THREADS
     pthread_t electron_synchrotron_thread;
     pthread_t proton_synchrotron_thread;
+
     pthread_t positive_pion_synchrotron_thread;
     pthread_t negative_pion_synchrotron_thread;
 
@@ -32,61 +33,73 @@ void step_calculate_processes(state_t *st)
     pthread_t inverse_compton_downscattering_thread;
     pthread_t inverse_compton_photon_losses_thread;
     pthread_t inverse_compton_electron_losses_thread;
-    pthread_t muon_decay_thread;
+
     pthread_t pair_production_photon_losses_thread;
-    pthread_t charged_pion_decay_thread;
+
     pthread_t multi_resonance_pion_production_thread;
     pthread_t multi_resonance_pion_production_hadron_losses_thread;
     pthread_t multi_resonance_pion_production_hadron_gains_thread;
+
     pthread_t direct_pion_production_thread;
     pthread_t direct_pion_production_hadron_losses_thread;
     pthread_t direct_pion_production_hadron_gains_thread;
 
-    pthread_create(&electron_synchrotron_thread, NULL, st->electron_synchrotron.synchrotron_function, &st->electron_synchrotron);
-    pthread_create(&proton_synchrotron_thread, NULL, st->proton_synchrotron.synchrotron_function, &st->proton_synchrotron);
-    pthread_create(&positive_pion_synchrotron_thread, NULL, st->positive_pion_synchrotron.synchrotron_function, &st->positive_pion_synchrotron);
-    pthread_create(&negative_pion_synchrotron_thread, NULL, st->negative_pion_synchrotron.synchrotron_function, &st->negative_pion_synchrotron);
-    pthread_create(&positive_left_muon_synchrotron_thread, NULL,  st->positive_left_muon_synchrotron.synchrotron_function,  &st->positive_left_muon_synchrotron);
-    pthread_create(&positive_right_muon_synchrotron_thread, NULL, st->positive_right_muon_synchrotron.synchrotron_function, &st->positive_right_muon_synchrotron);
-    pthread_create(&negative_left_muon_synchrotron_thread, NULL,  st->negative_left_muon_synchrotron.synchrotron_function,  &st->negative_left_muon_synchrotron);
-    pthread_create(&negative_right_muon_synchrotron_thread, NULL, st->negative_right_muon_synchrotron.synchrotron_function, &st->negative_right_muon_synchrotron);
-    pthread_create(&inverse_compton_upscattering_thread, NULL, inverse_compton_head_on_upscattering_wrapper, st);
-    pthread_create(&inverse_compton_downscattering_thread, NULL, inverse_compton_head_on_downscattering_wrapper, st);
-    pthread_create(&inverse_compton_photon_losses_thread, NULL, inverse_compton_photon_losses_wrapper, st);
-    pthread_create(&inverse_compton_electron_losses_thread, NULL, inverse_compton_electron_losses_wrapper, st);
-    pthread_create(&muon_decay_thread, NULL, muon_decay_wrapper, st);
-    pthread_create(&pair_production_photon_losses_thread, NULL, pair_production_photon_losses_wrapper, st);
-    pthread_create(&charged_pion_decay_thread, NULL, charged_pion_decay_wrapper, st);
+    pthread_t muon_decay_thread;
+    pthread_t charged_pion_decay_thread;
 
-    pthread_create(&multi_resonance_pion_production_thread, NULL, multi_resonance_pion_production_wrapper, st);
-    pthread_create(&multi_resonance_pion_production_hadron_gains_thread, NULL,  multi_resonance_pion_production_hadron_gains_wrapper, st);
+    pthread_create(&electron_synchrotron_thread,            NULL, st->electron_synchrotron.synchrotron_function,            &st->electron_synchrotron);
+    pthread_create(&proton_synchrotron_thread,              NULL, st->proton_synchrotron.synchrotron_function,              &st->proton_synchrotron);
+    pthread_create(&positive_pion_synchrotron_thread,       NULL, st->positive_pion_synchrotron.synchrotron_function,       &st->positive_pion_synchrotron);
+    pthread_create(&negative_pion_synchrotron_thread,       NULL, st->negative_pion_synchrotron.synchrotron_function,       &st->negative_pion_synchrotron);
+    pthread_create(&positive_left_muon_synchrotron_thread,  NULL, st->positive_left_muon_synchrotron.synchrotron_function,  &st->positive_left_muon_synchrotron);
+    pthread_create(&positive_right_muon_synchrotron_thread, NULL, st->positive_right_muon_synchrotron.synchrotron_function, &st->positive_right_muon_synchrotron);
+    pthread_create(&negative_left_muon_synchrotron_thread,  NULL, st->negative_left_muon_synchrotron.synchrotron_function,  &st->negative_left_muon_synchrotron);
+    pthread_create(&negative_right_muon_synchrotron_thread, NULL, st->negative_right_muon_synchrotron.synchrotron_function, &st->negative_right_muon_synchrotron);
+
+    pthread_create(&inverse_compton_upscattering_thread,    NULL, inverse_compton_head_on_upscattering_wrapper,   st);
+    pthread_create(&inverse_compton_downscattering_thread,  NULL, inverse_compton_head_on_downscattering_wrapper, st);
+    pthread_create(&inverse_compton_photon_losses_thread,   NULL, inverse_compton_photon_losses_wrapper,          st);
+    pthread_create(&inverse_compton_electron_losses_thread, NULL, inverse_compton_electron_losses_wrapper,        st);
+
+    pthread_create(&pair_production_photon_losses_thread, NULL, pair_production_photon_losses_wrapper, st);
+
+    pthread_create(&multi_resonance_pion_production_thread,               NULL, multi_resonance_pion_production_wrapper,               st);
+    pthread_create(&multi_resonance_pion_production_hadron_gains_thread,  NULL, multi_resonance_pion_production_hadron_gains_wrapper,  st);
     pthread_create(&multi_resonance_pion_production_hadron_losses_thread, NULL, multi_resonance_pion_production_hadron_losses_wrapper, st);
-    pthread_create(&direct_pion_production_thread, NULL, direct_pion_production_wrapper, st);
-    pthread_create(&direct_pion_production_hadron_gains_thread, NULL,  direct_pion_production_hadron_gains_wrapper, st);
+
+    pthread_create(&direct_pion_production_thread,               NULL, direct_pion_production_wrapper,               st);
+    pthread_create(&direct_pion_production_hadron_gains_thread,  NULL, direct_pion_production_hadron_gains_wrapper,  st);
     pthread_create(&direct_pion_production_hadron_losses_thread, NULL, direct_pion_production_hadron_losses_wrapper, st);
 
-    pthread_join(electron_synchrotron_thread, NULL);
-    pthread_join(proton_synchrotron_thread, NULL);
-    pthread_join(positive_pion_synchrotron_thread, NULL);
-    pthread_join(negative_pion_synchrotron_thread, NULL);
-    pthread_join(positive_left_muon_synchrotron_thread, NULL);
-    pthread_join(positive_right_muon_synchrotron_thread, NULL);
-    pthread_join(negative_left_muon_synchrotron_thread, NULL);
-    pthread_join(negative_right_muon_synchrotron_thread, NULL);
-    pthread_join(inverse_compton_upscattering_thread, NULL);
-    pthread_join(inverse_compton_downscattering_thread, NULL);
-    pthread_join(inverse_compton_photon_losses_thread, NULL);
-    pthread_join(inverse_compton_electron_losses_thread, NULL);
-    pthread_join(muon_decay_thread, NULL);
-    pthread_join(pair_production_photon_losses_thread, NULL);
-    pthread_join(charged_pion_decay_thread, NULL);
+    pthread_create(&muon_decay_thread,         NULL, muon_decay_wrapper,         st);
+    pthread_create(&charged_pion_decay_thread, NULL, charged_pion_decay_wrapper, st);
 
-    pthread_join(multi_resonance_pion_production_thread, NULL);
-    pthread_join(multi_resonance_pion_production_hadron_gains_thread, NULL);
+    pthread_join(electron_synchrotron_thread,            NULL);
+    pthread_join(proton_synchrotron_thread,              NULL);
+    pthread_join(positive_pion_synchrotron_thread,       NULL);
+    pthread_join(negative_pion_synchrotron_thread,       NULL);
+    pthread_join(positive_left_muon_synchrotron_thread,  NULL);
+    pthread_join(positive_right_muon_synchrotron_thread, NULL);
+    pthread_join(negative_left_muon_synchrotron_thread,  NULL);
+    pthread_join(negative_right_muon_synchrotron_thread, NULL);
+
+    pthread_join(inverse_compton_upscattering_thread,    NULL);
+    pthread_join(inverse_compton_downscattering_thread,  NULL);
+    pthread_join(inverse_compton_photon_losses_thread,   NULL);
+    pthread_join(inverse_compton_electron_losses_thread, NULL);
+
+    pthread_join(pair_production_photon_losses_thread, NULL);
+
+    pthread_join(multi_resonance_pion_production_thread,               NULL);
+    pthread_join(multi_resonance_pion_production_hadron_gains_thread,  NULL);
     pthread_join(multi_resonance_pion_production_hadron_losses_thread, NULL);
-    pthread_join(direct_pion_production_thread, NULL);
-    pthread_join(direct_pion_production_hadron_gains_thread, NULL);
+
+    pthread_join(direct_pion_production_thread,               NULL);
+    pthread_join(direct_pion_production_hadron_gains_thread,  NULL);
     pthread_join(direct_pion_production_hadron_losses_thread, NULL);
+
+    pthread_join(charged_pion_decay_thread, NULL);
+    pthread_join(muon_decay_thread,         NULL);
 
     st->electron_acceleration.acceleration_function(&st->electron_acceleration);
     /*st->proton_acceleration.acceleration_function(&st->proton_acceleration);*/
