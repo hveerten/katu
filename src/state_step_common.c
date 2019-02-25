@@ -35,6 +35,7 @@ void step_calculate_processes(state_t *st)
     pthread_t inverse_compton_electron_losses_thread;
 
     pthread_t pair_production_photon_losses_thread;
+    pthread_t pair_production_lepton_gains_thread;
 
     pthread_t multi_resonance_pion_production_thread;
     pthread_t multi_resonance_pion_production_hadron_losses_thread;
@@ -62,6 +63,7 @@ void step_calculate_processes(state_t *st)
     pthread_create(&inverse_compton_electron_losses_thread, NULL, inverse_compton_electron_losses_wrapper,        st);
 
     pthread_create(&pair_production_photon_losses_thread, NULL, pair_production_photon_losses_wrapper, st);
+    pthread_create(&pair_production_lepton_gains_thread,  NULL, pair_production_lepton_gains_wrapper,  st);
 
     pthread_create(&multi_resonance_pion_production_thread,               NULL, multi_resonance_pion_production_wrapper,               st);
     pthread_create(&multi_resonance_pion_production_hadron_gains_thread,  NULL, multi_resonance_pion_production_hadron_gains_wrapper,  st);
@@ -89,6 +91,7 @@ void step_calculate_processes(state_t *st)
     pthread_join(inverse_compton_electron_losses_thread, NULL);
 
     pthread_join(pair_production_photon_losses_thread, NULL);
+    pthread_join(pair_production_lepton_gains_thread,  NULL);
 
     pthread_join(multi_resonance_pion_production_thread,               NULL);
     pthread_join(multi_resonance_pion_production_hadron_gains_thread,  NULL);
@@ -117,6 +120,7 @@ void step_calculate_processes(state_t *st)
     inverse_compton_process_photon_losses(st);
     inverse_compton_process_electron_losses(st);
     pair_production_process_photon_losses(st);
+    pair_production_process_lepton_gains(st);
     multi_resonance_pion_production(st);
     charged_pion_decay(st);
     muon_decay(st);
