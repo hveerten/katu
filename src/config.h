@@ -4,6 +4,12 @@
 
 #include "distribution.h"
 
+enum volume_type
+{
+    sphere,
+    shell
+};
+
 typedef struct
 {
     double density;
@@ -11,9 +17,11 @@ typedef struct
     double dt;
     double dt_max;
     double t_max;
-    double R;
-
     double eta;
+
+    enum volume_type v;
+    double R;
+    double h;
 
     double electron_gamma_min;
     double electron_gamma_max;

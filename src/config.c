@@ -92,6 +92,7 @@ void config_read_file(config_t *cfg, char *filename)
 {
     toml_table_t *conf;
     toml_table_t *general_table;
+    toml_table_t *volume_table;
     toml_table_t *photon_table;
     toml_table_t *proton_table;
     toml_table_t *electron_table;
@@ -123,8 +124,33 @@ void config_read_file(config_t *cfg, char *filename)
         TOML_READ_DOUBLE(general_table, "dt",             cfg->dt,             "time step",                0.1);
         TOML_READ_DOUBLE(general_table, "dt_max",         cfg->dt_max,         "maximum time step",        1e3);
         TOML_READ_DOUBLE(general_table, "t_max",          cfg->t_max,          "maximum time",             1e7);
-        TOML_READ_DOUBLE(general_table, "R",              cfg->R,              "radius",                   1e16);
         TOML_READ_DOUBLE(general_table, "eta",            cfg->eta,            "proton to electron_ratio", 1.0);
+    }
+
+    volume_table = toml_table_in(conf, "volume");
+    if(volume_table != 0)
+    {
+        TOML_READ_DOUBLE(volume_table, "R", cfg->R, "radius", 1e16);
+        TOML_READ_DOUBLE(volume_table, "h", cfg->h, "height", 1e16);
+
+        char *shape;
+        raw = toml_raw_in(volume_table, "shape");
+
+        if(raw != 0)
+        {
+            if(toml_rtos(raw, &shape))
+            {
+                fprintf(stderr,"Error reading the shape of the volume\n");
+                exit(1);
+            }
+
+            if(strcmp(shape, "sphere") == 0) cfg->v = sphere;
+            if(strcmp(shape, "shell") == 0)  cfg->v = shell;
+
+            free(shape);
+        }
+        else
+            cfg->v = sphere;
     }
 
     electron_table = toml_table_in(conf, "electrons");
