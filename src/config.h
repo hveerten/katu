@@ -38,6 +38,18 @@ typedef struct
     double photon_epsilon_min;
     double photon_epsilon_max;
     double photon_size;
+
+    double external_injection_electron_luminosity;
+    enum distribution_type external_injection_electron_distribution_type;
+    double external_injection_electron_params[3];
+
+    double external_injection_proton_luminosity;
+    enum distribution_type external_injection_proton_distribution_type;
+    double external_injection_proton_params[3];
+
+    double external_injection_photon_luminosity;
+    enum distribution_type external_injection_photon_distribution_type;
+    double external_injection_photon_params[3];
 } config_t;
 
 void config_read_file(config_t *cfg, char *filename);

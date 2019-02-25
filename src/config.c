@@ -97,6 +97,11 @@ void config_read_file(config_t *cfg, char *filename)
     toml_table_t *proton_table;
     toml_table_t *electron_table;
 
+    toml_table_t *external_injection_table;
+    toml_table_t *external_injection_photon_table;
+    toml_table_t *external_injection_proton_table;
+    toml_table_t *external_injection_electron_table;
+
     FILE *fin = fopen(filename, "r");
     const char *raw;
     char errbuf[256];
@@ -179,6 +184,34 @@ void config_read_file(config_t *cfg, char *filename)
         TOML_READ_DOUBLE(photon_table, "epsilon_min", cfg->photon_epsilon_min, "photon minimum epsilon", 1e-12);
         TOML_READ_DOUBLE(photon_table, "epsilon_max", cfg->photon_epsilon_max, "photon maximum epsilon", 1e5);
         TOML_READ_DOUBLE(photon_table, "size",        cfg->photon_size,        "number of points for photons", 160);
+    }
+
+    external_injection_table  = toml_table_in(conf, "external_injection");
+    if(external_injection_table != 0)
+    {
+        external_injection_electron_table = toml_table_in(external_injection_table, "electrons");
+        if(external_injection_electron_table != 0)
+        {
+            TOML_READ_DOUBLE(external_injection_electron_table, "luminosity", cfg->external_injection_electron_luminosity, "luminosity", 0.0);
+
+            config_read_distribution_type(external_injection_electron_table, "electrons", &cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
+        }
+
+        external_injection_proton_table = toml_table_in(external_injection_table, "protons");
+        if(external_injection_proton_table != 0)
+        {
+            TOML_READ_DOUBLE(external_injection_proton_table, "luminosity", cfg->external_injection_proton_luminosity, "luminosity", 0.0);
+
+            config_read_distribution_type(external_injection_proton_table, "protons", &cfg->external_injection_proton_distribution_type, cfg->external_injection_proton_params);
+        }
+
+        external_injection_photon_table = toml_table_in(external_injection_table, "photons");
+        if(external_injection_photon_table != 0)
+        {
+            TOML_READ_DOUBLE(external_injection_photon_table, "luminosity", cfg->external_injection_photon_luminosity, "luminosity", 0.0);
+
+            config_read_distribution_type(external_injection_photon_table, "photons", &cfg->external_injection_photon_distribution_type, cfg->external_injection_photon_params);
+        }
     }
 
     toml_free(conf);
