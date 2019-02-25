@@ -6,8 +6,8 @@
 
 void pair_production_process_photon_losses(state_t *st);
 
-void init_pair_production_LUT(state_t *st);
-void calculate_pair_production_LUT(state_t *st);
+void init_pair_production_LUT_photon_losses(state_t *st);
+void calculate_pair_production_LUT_photon_losses(state_t *st);
 
 #ifdef USE_THREADS
 #include <stdlib.h>

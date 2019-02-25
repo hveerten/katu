@@ -171,7 +171,7 @@ void step_update_populations(state_t *st, double dt)
              st->negative_right_muon_synchrotron.photon_gains[i] +
              st->negative_right_muon_synchrotron.photon_losses[i] +
              st->inverse_compton_photon_gains[i] + st->inverse_compton_photon_losses[i] +
-             st->pair_production_losses[i] +
+             st->pair_production_photon_losses[i] +
              st->photon_escape.losses[i]);
     }
 
@@ -351,7 +351,7 @@ void step_experimental_update_populations(state_t *st, double dt)
                     st->negative_left_muon_synchrotron.photon_losses[i] +
                     st->negative_right_muon_synchrotron.photon_losses[i] +
                     st->inverse_compton_photon_losses[i] +
-                    st->pair_production_losses[i]) / n +
+                    st->pair_production_photon_losses[i]) / n +
                    - 1 / st->photon_escape.t;
 
         double aux0 = exp(L * st->dt);
@@ -757,7 +757,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
                     st->negative_left_muon_synchrotron.photon_losses[i] +
                     st->negative_right_muon_synchrotron.photon_losses[i] +
                     st->inverse_compton_photon_losses[i] +
-                    st->pair_production_losses[i]) / n +
+                    st->pair_production_photon_losses[i]) / n +
                    - 1 / st->photon_escape.t;
 
         double aux0 = exp(L * st->dt);
@@ -1198,7 +1198,7 @@ void step_report_population_update(state_t *st, enum particle_type pt)
                         st->proton_synchrotron.photon_losses[i],
                         st->inverse_compton_photon_gains[i],
                         st->inverse_compton_photon_losses[i],
-                        st->pair_production_losses[i],
+                        st->pair_production_photon_losses[i],
                         st->photon_escape.losses[i]);
             }
             break;

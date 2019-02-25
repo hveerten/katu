@@ -107,7 +107,7 @@ static void step_calculate_deltas_RK(state_t *st, unsigned int stage)
              st->negative_right_muon_synchrotron.photon_gains[i] +
              st->negative_right_muon_synchrotron.photon_losses[i] +
              st->inverse_compton_photon_gains[i] + st->inverse_compton_photon_losses[i] +
-             st->pair_production_losses[i] +
+             st->pair_production_photon_losses[i] +
              st->photon_escape.losses[i]);
     }
 

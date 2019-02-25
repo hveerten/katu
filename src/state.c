@@ -166,7 +166,7 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->inverse_compton_inner_upscattering,   st->electrons.size);
     MEM_PREPARE(st->inverse_compton_inner_downscattering, st->electrons.size);
 
-    MEM_PREPARE(st->pair_production_losses, st->photons.size);
+    MEM_PREPARE(st->pair_production_photon_losses, st->photons.size);
 
     MEM_PREPARE(st->multi_resonances_neutral_pion_gains , st->neutral_pions.size);
     MEM_PREPARE(st->multi_resonances_positive_pion_gains, st->positive_pions.size);
@@ -229,7 +229,7 @@ void state_init_LUTs(state_t *st)
      * initializing the synchrotron objects */
     init_inverse_compton_LUT_g1_g2(st);
     init_inverse_compton_LUT_losses_reaction_rate(st);
-    init_pair_production_LUT(st);
+    init_pair_production_LUT_photon_losses(st);
     init_muon_decay_LUT_neutrino_functions(st);
     init_pion_decay_LUT_muon_functions(st);
     init_multi_resonances_LUT_pion_gains(st);
@@ -241,7 +241,7 @@ void state_init_LUTs(state_t *st)
 
     calculate_inverse_compton_LUT_g1_g2(st);
     calculate_inverse_compton_LUT_losses_reaction_rate(st);
-    calculate_pair_production_LUT(st);
+    calculate_pair_production_LUT_photon_losses(st);
     calculate_muon_decay_LUT_neutrino_functions(st);
     calculate_pion_decay_LUT_muon_functions(st);
     calculate_multi_resonances_LUT_pion_gains(st);
@@ -332,7 +332,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->negative_left_muon_synchrotron.photon_losses[i],
                         st->negative_right_muon_synchrotron.photon_losses[i],
                         st->inverse_compton_photon_losses[i],
-                        st->pair_production_losses[i],
+                        st->pair_production_photon_losses[i],
                         st->photon_escape.losses[i]);
             }
             break;

@@ -35,38 +35,38 @@ void pair_production_process_photon_losses(state_t *st)
         double n = st->photons.population[i];
 
         unsigned int index_base = i * st->photons.size;
-        unsigned int index_e_min = st->pair_production_LUT_index_e_min[i];
+        unsigned int index_e_min = st->pair_production_LUT_photon_losses_index_e_min[i];
         unsigned int index_e_max = st->photons.size - 1;
 
         if(index_e_min >= index_e_max) continue;
 
         double losses = 0;
 
-        losses += st->photons.population[index_e_min] * st->pair_production_LUT_R[index_base + index_e_min];
-        losses += st->photons.population[index_e_max] * st->pair_production_LUT_R[index_base + index_e_max];
+        losses += st->photons.population[index_e_min] * st->pair_production_LUT_photon_losses_R[index_base + index_e_min];
+        losses += st->photons.population[index_e_max] * st->pair_production_LUT_photon_losses_R[index_base + index_e_max];
 
         for(j = index_e_min + 1; j < index_e_max; j++)
         {
             double nn = st->photons.population[j];
 
-            losses += 2 * nn * st->pair_production_LUT_R[index_base + j];
+            losses += 2 * nn * st->pair_production_LUT_photon_losses_R[index_base + j];
         }
 
         losses *= dlnx / 2;
 
-        st->pair_production_losses[i] = -factor * n * losses;
+        st->pair_production_photon_losses[i] = -factor * n * losses;
     }
 }
 
-void init_pair_production_LUT(state_t *st)
+void init_pair_production_LUT_photon_losses(state_t *st)
 {
     size_t size = st->photons.size * st->photons.size;
 
-    posix_memalign((void **) &st->pair_production_LUT_R, 32, sizeof(double) * size);
-    posix_memalign((void **) &st->pair_production_LUT_index_e_min, 32, sizeof(double) * st->photons.size);
+    posix_memalign((void **) &st->pair_production_LUT_photon_losses_R, 32, sizeof(double) * size);
+    posix_memalign((void **) &st->pair_production_LUT_photon_losses_index_e_min, 32, sizeof(double) * st->photons.size);
 }
 
-void calculate_pair_production_LUT(state_t *st)
+void calculate_pair_production_LUT_photon_losses(state_t *st)
 {
     unsigned int i, j;
 
@@ -80,7 +80,7 @@ void calculate_pair_production_LUT(state_t *st)
         {
         }
 
-        st->pair_production_LUT_index_e_min[i] = index_e_min;
+        st->pair_production_LUT_photon_losses_index_e_min[i] = index_e_min;
 
         for(j = 0; j < st->photons.size; j++)
         {
@@ -88,7 +88,7 @@ void calculate_pair_production_LUT(state_t *st)
 
             double ee = st->photons.energy[j];
 
-            st->pair_production_LUT_R[index_base + j] = R(e * ee) * ee;
+            st->pair_production_LUT_photon_losses_R[index_base + j] = R(e * ee) * ee;
         }
     }
 }
