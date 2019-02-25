@@ -886,20 +886,43 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         st->electrons.tentative_population[i] = exp(electron_log_new_pop);
     }
 
-    electron_log_new_pop = log(st->electrons.population[st->electrons.size - 1]);
-    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+/*
+ *    electron_log_new_pop = log(st->electrons.population[st->electrons.size - 1]);
+ *    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+ *
+ *    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+ *    {
+ *        double  n = st->electrons.population[i];
+ *        double ln = st->electrons.log_population[i];
+ *
+ *        double Q = st->external_injection.electrons[i];
+ *
+ *        electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] + aux1[i] * electron_log_new_pop / dlng)) /
+ *                        (1 + aux1[i] * st->dt / dlng);
+ *
+ *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+ *
+ *        if(i == st->electrons.size - 2)
+ *        {
+ *            fprintf(stderr,"%lg\t%lg\t%lg\n",st->dt, st->electrons.tentative_population[i], electron_log_new_pop);
+ *            fprintf(stderr,"%lg\t%lg\t%lg\n", Q/n, aux2[i], aux1[i]);
+ *        }
+ *    }
+ */
+
+    double electron_new_pop = st->electrons.population[st->electrons.size - 1];
+    st->electrons.tentative_population[st->electrons.size - 1] = electron_new_pop;
 
     for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
     {
-        double  n = st->electrons.population[i];
-        double ln = st->electrons.log_population[i];
+        double n = st->electrons.population[i];
 
         double Q = st->external_injection.electrons[i];
 
-        electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] + aux1[i] * electron_log_new_pop / dlng)) /
-                        (1 + aux1[i] * st->dt / dlng);
+        electron_new_pop = (n + st->dt * (Q + aux1[i] * electron_new_pop / dlng)) /
+                        (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
 
-        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+        st->electrons.tentative_population[i] = electron_new_pop;
     }
 }
 #endif
