@@ -1251,8 +1251,9 @@ void step_report_population_update(state_t *st, enum particle_type pt)
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->electrons.population[i], st->electrons.tentative_population[i]);
-                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\n",
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->electron_acceleration.gains[i],
+                        st->pair_production_electron_gains[i],
                         st->electron_synchrotron.particle_losses[i],
                         st->inverse_compton_electron_losses[i],
                         st->electron_escape.losses[i]);

@@ -384,14 +384,16 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
             fprintf(temp_file,
                     "#Energy\tPopulation\t" \
                     "Acc_gains\t" \
+                    "Pair_production\t" \
                     "Sync_losses\tIC_Losses\tEscape\n");
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(temp_file,"%lg\t%lg\t",
                         st->electrons.energy[i], st->electrons.population[i]);
 
-                fprintf(temp_file,"%lg\t",
-                        st->electron_acceleration.gains[i]);
+                fprintf(temp_file,"%lg\t%lg\t",
+                        st->electron_acceleration.gains[i],
+                        st->pair_production_electron_gains[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\n",
                         st->electron_synchrotron.particle_losses[i],
