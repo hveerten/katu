@@ -31,16 +31,16 @@ static double H_0(double e, double ee, double d)
     return a + b;
 }
 
-static double Hpm(double e, double ee, double c, double d)
+static double Hpm(double e, double e2, double ee, double c, double d)
 {
-    double aux = sqrt(ee + c * e * e);
+    double aux = sqrt(ee + c * e2);
 
     double Ipm = c > 0 ?
                     1 / sqrt(c) * log(e * sqrt(c) + aux) :
                     1 / sqrt(-c) * asin(e * sqrt(-c/ee));
 
     double aux1 = - e / (8 * aux) * (d / ee + 2 / c);
-    double aux2 = (2 - (ee - 1) / c) * Ipm / 4;
+    double aux2 = Ipm / 4 * (2 - (ee - 1) / c);
     double aux3 = aux / 4 * (e / c + 1 / (e * ee));
 
     return aux1 + aux2 + aux3;
@@ -57,20 +57,40 @@ static double rate_lepton_gains(double e1, double e2, double g)
     double dm = e2 * e2 + ee - g * (e2 - e1);
 
     double aux = g * (E - g) + 1;
-    double e_min_aux = sqrt((aux - sqrt(aux * aux - E * E)) / 2);
-    double e_max_aux = sqrt((aux + sqrt(aux * aux - E * E)) / 2);
+    /*double e_min_aux2 = (aux - sqrt(aux * aux - E * E)) / 2;*/
+    /*double e_max_aux2 = (aux + sqrt(aux * aux - E * E)) / 2;*/
+    double e_min_aux2 = aux * (1 - sqrt(1 - E * E / aux / aux)) / 2;
+    double e_max_aux2 = aux * (1 + sqrt(1 - E * E / aux / aux)) / 2;
 
-    double e_min = fmax(1            , e_min_aux);
-    double e_max = fmin(sqrt(e1 * e2), e_max_aux);
+    if(E / aux < 1e-5)
+    {
+        e_min_aux2 = E * E / aux / 4;
+        e_max_aux2 = aux * (2 - E * E / aux / aux/2) / 2;
+    }
 
+    double e_min2 = fmax(1      , e_min_aux2);
+    double e_max2 = fmin(e1 * e2, e_max_aux2);
+    double e_min  = sqrt(e_min2);
+    double e_max  = sqrt(e_max2);
 
-    double aux1 = sqrt(E*E - 4 * e_max * e_max) / 4;
-    double aux2 = cp != 0 ? Hpm(e_max, ee, cp, dp) : H_0(e_max, ee, dp);
-    double aux3 = cm != 0 ? Hpm(e_max, ee, cm, dm) : H_0(e_max, ee, dm);
+    if(e_min > e_max) return 0;
 
-    double aux4 = sqrt(E*E - 4 * e_min * e_min) / 4;
-    double aux5 = cp != 0 ? Hpm(e_min, ee, cp, dp) : H_0(e_min, ee, dp);
-    double aux6 = cm != 0 ? Hpm(e_min, ee, cm, dm) : H_0(e_min, ee, dm);
+    double aux1 = sqrt(E*E - 4 * e_max2) / 4;
+    /*double aux2 = cp != 0 ? Hpm(e_max, ee, cp, dp) : H_0(e_max, ee, dp);*/
+    /*double aux3 = cm != 0 ? Hpm(e_max, ee, cm, dm) : H_0(e_max, ee, dm);*/
+    double aux2 = e1 - g != 1 ? Hpm(e_max, e_max2, ee, cp, dp) : H_0(e_max, ee, dp);
+    double aux3 = e2 - g != 1 ? Hpm(e_max, e_max2, ee, cm, dm) : H_0(e_max, ee, dm);
+
+    double aux4 = sqrt(E*E - 4 * e_min2) / 4;
+    /*double aux5 = cp != 0 ? Hpm(e_min, ee, cp, dp) : H_0(e_min, ee, dp);*/
+    /*double aux6 = cm != 0 ? Hpm(e_min, ee, cm, dm) : H_0(e_min, ee, dm);*/
+    double aux5 = e1 - g != 1 ? Hpm(e_min, e_min2, ee, cp, dp) : H_0(e_min, ee, dp);
+    double aux6 = e2 - g != 1 ? Hpm(e_min, e_min2, ee, cm, dm) : H_0(e_min, ee, dm);
+
+    if(E / aux < 1e-5)
+    {
+        aux4 = E * sqrt(1 - 1 / aux) / 4;
+    }
 
     return (aux1 + aux2 + aux3 - aux4 - aux5 - aux6) / ee;
 }
@@ -230,7 +250,7 @@ void calculate_pair_production_LUT_lepton_gains(state_t *st)
 
             unsigned int index_base2 = (index_base1 + j) * st->photons.size;
 
-            for(k = 0; k < st->photons.size; k++)
+            for(k = index_e_min; k < st->photons.size; k++)
             {
                 unsigned int index = index_base2 + k;
 
