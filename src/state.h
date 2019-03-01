@@ -216,8 +216,9 @@ void init_state_decay_and_escape(state_t *st, double t);
 void init_state_populations(state_t *st,
         double g_electron_min, double g_electron_max, unsigned int electron_size,
         double g_proton_min, double g_proton_max, unsigned int proton_size,
+        double e_proton_min, double e_proton_max, unsigned int photon_size,
         unsigned int pion_size, unsigned int muon_size,
-        unsigned int photon_size, unsigned int neutrino_size);
+        unsigned int neutrino_size);
 
 void init_state_aux_memory(state_t *st);
 

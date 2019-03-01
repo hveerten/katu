@@ -67,8 +67,9 @@ void init_state_decay_and_escape(state_t *st, double t)
 void init_state_populations(state_t *st,
         double g_electron_min, double g_electron_max, unsigned int electron_size,
         double g_proton_min, double g_proton_max, unsigned int proton_size,
+        double e_photon_min, double e_photon_max, unsigned int photon_size,
         unsigned int pion_size, unsigned int muon_size,
-        unsigned int photon_size, unsigned int neutrino_size)
+        unsigned int neutrino_size)
 {
     /*double proton_nu_0   = 3 / (4 * M_PI) * ELECTRON_CHARGE * st->B / (PROTON_MASS * LIGHT_SPEED);*/
     /*double electron_nu_0 = 3 / (4 * M_PI) * ELECTRON_CHARGE * st->B / (ELECTRON_MASS * LIGHT_SPEED);*/
@@ -91,8 +92,8 @@ void init_state_populations(state_t *st,
      *         electron_nu_0 * pow(g_electron_max, 2));
      */
 
-    double e_photon_min = pow(10, -12);
-    double e_photon_max = g_electron_max;
+    /*double e_photon_min = pow(10, -12);*/
+    /*double e_photon_max = g_electron_max;*/
 
     /* The limits for pions are derived from the limits for protons
      * using the formulas for pion production.
