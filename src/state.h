@@ -24,6 +24,7 @@ typedef struct state_t
     double B;
     double R;
     double density;
+    double volume;
 
     // For now, we won't use this
     /*double *big_chunk_of_memory;*/
