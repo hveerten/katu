@@ -19,12 +19,15 @@ typedef struct
 
 typedef struct state_t
 {
-    double t, dt, dt_max;
+    double  t,  t_max;
+    double dt, dt_max;
 
     double B;
     double R;
     double density;
     double volume;
+
+    double eta;
 
     // For now, we won't use this
     /*double *big_chunk_of_memory;*/
