@@ -1,5 +1,6 @@
 #include "state.h"
 #include "constants.h"
+#include "config.h"
 #include "acceleration.h"
 #include "distribution.h"
 #include "synchrotron.h"
@@ -9,6 +10,7 @@
 #include "pair_production.h"
 #include "muon_decay.h"
 
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +25,90 @@
         memset(X, '\0', sizeof(double) * (S));\
         \
     } while(0);
+
+void state_init_from_config(state_t *st, config_t *cfg)
+{
+    unsigned int i;
+    unsigned int size = 256;
+    unsigned int pion_size = size;
+    unsigned int muon_size = size;
+    unsigned int neutrino_size = size;
+
+    st->t       = 0;
+    st->t_max   = cfg->t_max;
+    st->dt      = cfg->dt;
+    st->dt_max  = cfg->dt_max;
+    st->R       = cfg->R;
+    st->density = cfg->density;
+    st->eta     = cfg->eta;
+
+    switch(cfg->v)
+    {
+        case sphere: st->volume = 4. / 3 * M_PI * pow(cfg->R, 3); break;
+        case shell:  st->volume = cfg->h * M_PI * pow(cfg->R, 2); break;
+        default: break;
+    }
+
+    init_state_populations(st,
+            cfg->electron_gamma_min, cfg->electron_gamma_max, (unsigned int) cfg->electron_size,
+            cfg->proton_gamma_min,   cfg->proton_gamma_max,   (unsigned int) cfg->proton_size,
+            cfg->photon_epsilon_min, cfg->photon_epsilon_max, (unsigned int) cfg->photon_size,
+            pion_size, muon_size, neutrino_size);
+    init_state_synchrotron(st, cfg->magnetic_field);
+    init_state_aux_memory(st);
+
+    double t_acc = 1e100;
+    init_acceleration(st, &st->electron_acceleration, electron, t_acc);
+    init_acceleration(st, &st->proton_acceleration,   proton,   t_acc);
+
+    double t_esc = 1e100;
+    switch(cfg->v)
+    {
+        case sphere: t_esc = 3.   / 4 * cfg->R / LIGHT_SPEED; break;
+        case shell:  t_esc = M_PI / 4 * cfg->h / LIGHT_SPEED; break;
+        default: break;
+    }
+
+    init_state_escape(st, t_esc);
+    init_state_decay_and_escape(st, t_esc);
+
+    state_init_LUTs(st);
+
+    state_init_RK_information(st);
+
+    // Use the 'real populations' as aux arrays for the distributions
+    // of the injections
+    generate_population(&st->electrons, cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
+    generate_population(&st->protons,   cfg->external_injection_proton_distribution_type,   cfg->external_injection_proton_params);
+
+    for(i = 0; i < st->electrons.size; i++)
+        st->external_injection.electrons[i] = st->electrons.population[i] * cfg->external_injection_electron_luminosity / (st->volume * ELECTRON_ENERGY);
+    for(i = 0; i < st->protons.size; i++)
+        st->external_injection.protons[i] = st->protons.population[i] * cfg->external_injection_proton_luminosity / (st->volume * PROTON_ENERGY);
+
+    // Generate the real initial populations
+    generate_population(&st->electrons, cfg->electron_distribution_type, cfg->electron_params);
+    generate_population(&st->protons,   cfg->proton_distribution_type,   cfg->proton_params);
+
+    double particle_density = cfg->density / (cfg->eta * PROTON_MASS + ELECTRON_MASS);
+
+    for(i = 0; i < st->electrons.size; i++)
+    {
+        st->electrons.population[i] *= particle_density;
+        st->electrons.log_population[i] = log(st->electrons.population[i]);
+    }
+
+    for(i = 0; i < st->protons.size; i++)
+    {
+        st->protons.population[i] *= particle_density * cfg->eta;
+        st->protons.log_population[i] = log(st->protons.population[i]);
+    }
+
+    st->electrons.population[st->electrons.size - 1] = DBL_MIN;
+    st->electrons.log_population[st->electrons.size - 1] = log(DBL_MIN);
+    st->protons.population[st->protons.size - 1] = DBL_MIN;
+    st->protons.log_population[st->protons.size - 1] = log(DBL_MIN);
+}
 
 void init_state_synchrotron(state_t *st, double B)
 {

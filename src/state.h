@@ -2,6 +2,8 @@
 #define STATE_H
 #pragma once
 
+#include "config.h"
+
 #include "acceleration.h"
 #include "distribution.h"
 #include "escape.h"
@@ -212,6 +214,8 @@ typedef struct state_t
         double *muon_antineutrinos;
     }  external_injection;
 } state_t;
+
+void state_init_from_config(state_t *st, config_t *cfg);
 
 void init_state_synchrotron(state_t *st, double B);
 void init_state_escape(state_t *st, double t);
