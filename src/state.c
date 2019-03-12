@@ -373,6 +373,60 @@ void state_init_RK_information(state_t *st)
 #undef MEM_PREPARE_EXTRA
 }
 
+void state_report_general_info(state_t *st)
+{
+    fprintf(stderr,"Density:\t%lg\n", st->density);
+    fprintf(stderr,"Proton To Electron Ratio:\t%lg\n", st->eta);
+    fprintf(stderr,"B:\t%lg\n", st->B);
+    fprintf(stderr,"dt:\t%lg\n", st->dt);
+    fprintf(stderr,"Max time:\t%lg\n", st->t_max);
+#define FORMAT_ARGUMENTS(X) st->X.energy[0], log10(st->X.energy[0]), st->X.energy[st->X.size - 1], log10(st->X.energy[st->X.size - 1]), st->X.size
+    fprintf(stderr, "Photons:  \t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(photons));
+    fprintf(stderr, "Protons:  \t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(protons));
+    fprintf(stderr, "Neutrons: \t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(neutrons));
+    fprintf(stderr, "Electrons:\t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(electrons));
+    fprintf(stderr, "Pions:    \t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(neutral_pions));
+    fprintf(stderr, "Muons:    \t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(negative_left_muons));
+    fprintf(stderr, "Neutrinos:\t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(electron_neutrinos));
+#undef FORMAT_ARGUMENTS
+    fprintf(stderr, "# Proton   Population:\t%lg\n", calculate_population(&st->protons));
+    fprintf(stderr, "# Electron Population:\t%lg\n", calculate_population(&st->electrons));
+
+    fprintf(stderr,"\n");
+    fprintf(stderr,"Timescales\t     Escape\tAcceleration\tSynchrotron\t   Decay(1)\tDecay(g_min)\tDecay(g_max)\n");
+    fprintf(stderr,"Photons:\t%11lg\n", st->photon_escape.t);
+    fprintf(stderr,"Electrons:\t%11lg\t%11lg\t%11lg\n",
+            st->electron_escape.t,
+            st->electron_acceleration.t,
+            1 / (st->electron_synchrotron.particle_losses_factor * pow(st->electrons.energy[st->electrons.size - 1], 2)));
+    fprintf(stderr,"Protons:\t%11lg\t%11lg\t%11lg\n",
+            st->proton_escape.t,
+            st->proton_acceleration.t,
+            1 / (st->proton_synchrotron.particle_losses_factor * pow(st->protons.energy[st->protons.size - 1], 2)));
+    fprintf(stderr,"Neutrons:\t%11lg\t\t\t\t\t%11lg\t%11lg\t%11lg\n",
+            st->neutron_decay_and_escape.escape_lifetime,
+            st->neutron_decay_and_escape.decay_lifetime,
+            1/st->neutron_decay_and_escape.t[0],
+            1/st->neutron_decay_and_escape.t[st->neutrons.size - 1]);
+    fprintf(stderr,"Neutral Pions:\t%11lg\t\t\t\t\t%11lg\t%11lg\t%11lg\n",
+            st->neutral_pion_decay_and_escape.escape_lifetime,
+            st->neutral_pion_decay_and_escape.decay_lifetime,
+            1/st->neutral_pion_decay_and_escape.t[0],
+            1/st->neutral_pion_decay_and_escape.t[st->neutral_pions.size - 1]);
+    fprintf(stderr,"Charged Pions:\t%11lg\t\t\t%11lg\t%11lg\t%11lg\t%11lg\n",
+            st->positive_pion_decay_and_escape.escape_lifetime,
+            1 / (st->positive_pion_synchrotron.particle_losses_factor * pow(st->positive_pions.energy[st->positive_pions.size - 1], 2)),
+            st->positive_pion_decay_and_escape.decay_lifetime,
+            1/st->positive_pion_decay_and_escape.t[0],
+            1/st->positive_pion_decay_and_escape.t[st->positive_pions.size - 1]);
+    fprintf(stderr,"Muons:  \t%11lg\t\t\t%11lg\t%11lg\t%11lg\t%11lg\n",
+            st->positive_left_muon_decay_and_escape.escape_lifetime,
+            1 / (st->positive_left_muon_synchrotron.particle_losses_factor * pow(st->positive_left_muons.energy[st->positive_left_muons.size - 1], 2)),
+            st->positive_left_muon_decay_and_escape.decay_lifetime,
+            1/st->positive_left_muon_decay_and_escape.t[0],
+            1/st->positive_left_muon_decay_and_escape.t[st->positive_left_muons.size - 1]);
+}
+
 void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename)
 {
     unsigned int i;

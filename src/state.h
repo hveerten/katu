@@ -237,6 +237,8 @@ void state_init_RK_information(state_t *st);
 void step(state_t *st);
 void step_tentative(state_t *st, bool try_new_step);
 
+void state_report_general_info(state_t *st);
+
 void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename);
 
 void state_save_state_to_file(state_t *st, char *filename);
