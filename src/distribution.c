@@ -181,3 +181,68 @@ void generate_connected_power_law(double *population, double *energy,
     gsl_integration_workspace_free(w);
 }
 
+
+
+
+struct mj_average_params { double theta; };
+static double mj_average(double x, void *params)
+{
+    struct hybrid_norm_mj_params p = *(struct hybrid_norm_mj_params *)params;
+
+    return x*x * sqrt(x*x - 1) * exp(-x/p.theta);
+}
+
+double maxwell_juttner_average(double theta)
+{
+    double norm = 1 / (theta * gsl_sf_bessel_Kn(2, 1 / theta));
+
+    double e;
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc(256);
+
+    gsl_function F;
+    F.function = &mj_average;
+    F.params = &theta;
+
+    double average;
+    gsl_integration_qags(&F, 1, 1e10, 0, 1e-7, 256, w, &average, &e);
+
+    return norm * average;
+}
+
+double power_law_average(double energy_min, double energy_max, double p)
+{
+    double norm = p == 1 ?
+                    log(energy_min / energy_max) :
+                    (1 - p) / (pow(energy_max, 1-p) - pow(energy_min, 1-p));
+
+    double average = p == 2 ?
+                        log(energy_max / energy_min) :
+                        (pow(energy_max, 2-p) - pow(energy_min, 2-p)) / (2 - p);
+
+    return average * norm;
+}
+
+double broken_power_law_average(double energy_min, double energy_max,
+        double energy_break, double p1, double p2)
+{
+    double norm1 = p1 == 1 ?
+                    log(energy_min / energy_break) :
+                    (pow(energy_break, 1-p1) - pow(energy_min, 1-p1)) / (1 - p1);
+
+    double norm2 = p2 == 1 ?
+                    log(energy_break / energy_max) :
+                    (pow(energy_max, 1-p2) - pow(energy_break, 1-p2)) / (1 - p2);
+
+    double avg1 = p1 == 2 ?
+                    log(energy_break / energy_min) :
+                    (pow(energy_break, 2-p1) - pow(energy_min, 2-p1)) / (2 - p1);
+
+    double avg2 = p2 == 2 ?
+                    log(energy_max / energy_break) :
+                    (pow(energy_max, 2-p2) - pow(energy_break, 2-p2)) / (2 - p2);
+
+    double aux  = pow(energy_break, p2 - p1);
+    double norm = 1/(norm1 + aux * norm2);
+
+    return norm * (avg1 + aux * avg2);
+}
