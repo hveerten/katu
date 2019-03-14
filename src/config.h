@@ -39,11 +39,12 @@ typedef struct
     double photon_epsilon_max;
     double photon_size;
 
-    double external_injection_electron_luminosity;
+    double external_injection_luminosity;
+    double external_injection_eta;
+
     enum distribution_type external_injection_electron_distribution_type;
     double external_injection_electron_params[3];
 
-    double external_injection_proton_luminosity;
     enum distribution_type external_injection_proton_distribution_type;
     double external_injection_proton_params[3];
 

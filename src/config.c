@@ -189,19 +189,18 @@ void config_read_file(config_t *cfg, char *filename)
     external_injection_table  = toml_table_in(conf, "external_injection");
     if(external_injection_table != 0)
     {
+        TOML_READ_DOUBLE(external_injection_table, "luminosity", cfg->external_injection_luminosity, "luminosity",               0.0);
+        TOML_READ_DOUBLE(external_injection_table, "eta",        cfg->external_injection_eta,        "proton to electron_ratio", 1.0);
+
         external_injection_electron_table = toml_table_in(external_injection_table, "electrons");
         if(external_injection_electron_table != 0)
         {
-            TOML_READ_DOUBLE(external_injection_electron_table, "luminosity", cfg->external_injection_electron_luminosity, "luminosity", 0.0);
-
             config_read_distribution_type(external_injection_electron_table, "electrons", &cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
         }
 
         external_injection_proton_table = toml_table_in(external_injection_table, "protons");
         if(external_injection_proton_table != 0)
         {
-            TOML_READ_DOUBLE(external_injection_proton_table, "luminosity", cfg->external_injection_proton_luminosity, "luminosity", 0.0);
-
             config_read_distribution_type(external_injection_proton_table, "protons", &cfg->external_injection_proton_distribution_type, cfg->external_injection_proton_params);
         }
 

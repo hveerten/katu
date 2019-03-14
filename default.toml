@@ -35,17 +35,16 @@ epsilon_max = 1e5
 size        = 160
 
 [external_injection]
-    [external_injection.electrons]
     luminosity = 0.0
+    eta        = 1.0
 
+    [external_injection.electrons]
     distribution_type = "broken_power_law"
     break_point  = 1e4
     first_slope  = 2.15
     second_slope = 4.00
 
     [external_injection.protons]
-    luminosity = 0.0
-
     distribution_type = "power_law"
     slope = 2
 

@@ -81,10 +81,25 @@ void state_init_from_config(state_t *st, config_t *cfg)
     generate_population(&st->electrons, cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
     generate_population(&st->protons,   cfg->external_injection_proton_distribution_type,   cfg->external_injection_proton_params);
 
+    double electron_energy_average = broken_power_law_average(
+            cfg->electron_gamma_min,
+            cfg->electron_gamma_max,
+            cfg->external_injection_electron_params[0],
+            cfg->external_injection_electron_params[1],
+            cfg->external_injection_electron_params[2]);
+    double proton_energy_average = power_law_average(
+            cfg->proton_gamma_min,
+            cfg->proton_gamma_max,
+            cfg->external_injection_proton_params[0]);
+
+    double Q_e = cfg->external_injection_luminosity / st->volume /
+                    (electron_energy_average * ELECTRON_ENERGY +
+                     proton_energy_average   * PROTON_ENERGY * cfg->external_injection_eta);
+
     for(i = 0; i < st->electrons.size; i++)
-        st->external_injection.electrons[i] = st->electrons.population[i] * cfg->external_injection_electron_luminosity / (st->volume * ELECTRON_ENERGY);
+        st->external_injection.electrons[i] = st->electrons.population[i] * Q_e;
     for(i = 0; i < st->protons.size; i++)
-        st->external_injection.protons[i] = st->protons.population[i] * cfg->external_injection_proton_luminosity / (st->volume * PROTON_ENERGY);
+        st->external_injection.protons[i] = st->protons.population[i] * Q_e * cfg->external_injection_eta;
 
     // Generate the real initial populations
     generate_population(&st->electrons, cfg->electron_distribution_type, cfg->electron_params);
