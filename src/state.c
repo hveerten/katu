@@ -10,6 +10,9 @@
 #include "pair_production.h"
 #include "muon_decay.h"
 
+#include "state_step.h"
+#include "state_step_common.h"
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -123,6 +126,14 @@ void state_init_from_config(state_t *st, config_t *cfg)
     st->electrons.log_population[st->electrons.size - 1] = log(DBL_MIN);
     st->protons.population[st->protons.size - 1] = DBL_MIN;
     st->protons.log_population[st->protons.size - 1] = log(DBL_MIN);
+
+    if(cfg->external_injection_luminosity != 0)
+        st->update_function = &step_experimental_update_populations_injection;
+    else
+        st->update_function = &step_experimental_update_populations;
+
+    st->step_function           = &step;
+    st->tentative_step_function = &step_tentative;
 }
 
 void init_state_synchrotron(state_t *st, double B)

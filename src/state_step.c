@@ -17,7 +17,7 @@
 void step(state_t *st)
 {
     step_calculate_processes(st);
-    step_update_populations(st, st->dt);
+    st->update_function(st, st->dt);
 
     if(step_check_tentative_populations(st))
         assert(0);
@@ -43,8 +43,7 @@ void step_tentative(state_t *st, bool try_new_step)
         dt_old = st->dt / 1.1;
 
     step_calculate_processes(st);
-    //step_update_populations(st, st->dt);
-    step_experimental_update_populations(st, st->dt);
+    st->update_function(st, st->dt);
 
     if(step_check_tentative_populations(st))
         goto abort;

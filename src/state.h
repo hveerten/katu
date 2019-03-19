@@ -213,6 +213,10 @@ typedef struct state_t
         double *muon_neutrinos;
         double *muon_antineutrinos;
     }  external_injection;
+
+    void (*step_function)(struct state_t *st);
+    void (*tentative_step_function)(struct state_t *st, bool try_new_step);
+    void (*update_function)(struct state_t *st, double dt);
 } state_t;
 
 void state_init_from_config(state_t *st, config_t *cfg);
