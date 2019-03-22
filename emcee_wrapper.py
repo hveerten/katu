@@ -1,5 +1,7 @@
 import emcee
 
+from importlib import import_module
+
 import subprocess
 import numpy as np
 import scipy.integrate as integ
@@ -12,6 +14,7 @@ import time
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 import corner
 
 from emcee_wrapper_utils.obs_data import     \
@@ -57,6 +60,8 @@ params_to_theta = getattr(utils, 'params_to_theta')
 get_gamma = getattr(utils, 'get_gamma')
 get_R     = getattr(utils, 'get_R')
 
+assert_consistency = getattr(utils, 'assert_consistency')
+
 S_f_prefactor = ELECTRON_ENERGY * LIGHT_SPEED / D_l**2
 if   volume == "shell":  S_f_prefactor *= 1 / np.pi
 elif volume == "sphere": S_f_prefactor *= 4 / 9
@@ -85,7 +90,7 @@ def lnlike(theta):
     Gamma = get_gamma(theta)
     R     = get_R(theta)
 
-    S_f = S_f_prefactor (R * Gamma)**2
+    S_f = S_f_prefactor * (R * Gamma)**2
 
     sim_data, energy_injection = generate_sim_data(theta)
 
@@ -145,7 +150,12 @@ print(initial_theta[1])
 print(initial_params)
 
 # Assert that theta_to_params and params_to_theta are actually inverse functions
-np.testing.assert_allclose(params_to_theta(initial_params),initial_theta[1])
+# np.testing.assert_allclose(params_to_theta(initial_params), initial_theta[1])
+# # Assert that you are not forgetting R or Gamma
+# np.testing.assert_allclose(initial_params[6], get_gamma(initial_theta[1]))
+# np.testing.assert_allclose(initial_params[8], get_R(initial_theta[1]))
+
+assert_consistency(initial_theta[1])
 
 input_parameters_lnprob, input_parameters_data = lnprob(initial_theta[1])
 

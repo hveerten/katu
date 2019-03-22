@@ -1,7 +1,7 @@
 import numpy as np
 from string import Template
 
-ndim = 11
+ndim = 10
 
 labels=["$\\left( p_1 - 1 \\right) \\log_{10}\\left(\\gamma_{min}\\right)$", \
         "$\\log_{10}\\left(\\Gamma \\cdot B \\cdot \\gamma_{break}^2\\right)$", \
@@ -11,7 +11,6 @@ labels=["$\\left( p_1 - 1 \\right) \\log_{10}\\left(\\gamma_{min}\\right)$", \
         "$\\log_{10}\\left(B\\right)$", \
         "$\\log_{10}\\left(\\Gamma \\cdot B \\right)$", \
         "$\\log_{10}\\left(h \\cdot R^2 \\right)$", \
-        "$\\log_{10}\\left(\\Gamma \\cdot B \\cdot R \\right)$", \
         "$\\log_{10}\\left(\\Gamma \\cdot B \\cdot R \\right)$", \
         "$\\log_{10}\\left(\\rho \cdot h \cdot \\sqrt[3]{\\frac{\\gamma_{min}^{2}} {\\Gamma \\cdot B}} \\right)$"]
 
@@ -24,7 +23,6 @@ initial_theta = [[-2.55,-18.46, 2.86],
                  [-0.56, -5.84, 0.53],
                  [-0.24, -1.15, 0.24],
                  [-0.38,  0.07, 0.43],
-                 [-0.38,  0.07, 0.43],
                  [-0.07, 18.35, 0.07]]
 initial_theta = np.array(initial_theta).T
 
@@ -32,10 +30,13 @@ config_template = Template("""
     [general]
     density = 1e-25
     magnetic_field = $mag
-    dt = 0.1
+    dt = 1
+    dt_max = $dt_max
     t_max = 1e7
 
     eta = 1
+
+    gamma = $gamma # not used
 
     [volume]
     shape = "shell"
@@ -60,16 +61,16 @@ config_template = Template("""
     size = 128
 
     [external_injection]
-        [external_injection.electrons]
-        luminosity = $L_e
+        luminosity = $L
+        eta        = 1
 
+        [external_injection.electrons]
         distribution_type = "broken_power_law"
         break_point  = $g_break
         first_slope  = $p1
         second_slope = $p2
 
         [external_injection.protons]
-        luminosity = $L_p
 
         distribution_type = "power_law"
         slope = 2
@@ -80,8 +81,7 @@ def lnprior(theta):
     p1, p2,                             \
     B, Gamma,                           \
     h, R,                               \
-    proton_luminosity,                  \
-    electron_luminosity = theta_to_params(theta)
+    luminosity = theta_to_params(theta)
 
     if (1e1 < gamma_min < gamma_break < gamma_max < 1e10 and
 
@@ -90,8 +90,7 @@ def lnprior(theta):
         0.005 < B       < 0.5  and
         2     < Gamma   < 192  and
 
-        1e38 < proton_luminosity   < 1e50 and
-        1e38 < electron_luminosity < 1e50):
+        1e38 < luminosity < 1e50):
            return 0
     else:
         return -np.inf
@@ -101,8 +100,7 @@ def theta_to_config(theta):
     p1, p2,                             \
     B, Gamma,                           \
     h, R,                               \
-    proton_luminosity,                  \
-    electron_luminosity = theta_to_params(theta)
+    luminosity = theta_to_params(theta)
 
     config = config_template.substitute(
                 g_min = gamma_min,
@@ -111,10 +109,12 @@ def theta_to_config(theta):
                 p1 = p1,
                 p2 = p2,
                 mag = B,
+                gamma = Gamma,
                 height = h,
                 radius = R,
-                L_p = proton_luminosity,
-                L_e = electron_luminosity)
+                L = luminosity,
+                # set dt_max to a tenth of the escape time (more or less)
+                dt_max = h / 3e10 / 10)
 
     return config
 
@@ -128,8 +128,7 @@ def theta_to_params(theta):
     log_B,          \
     log_Gamma_B,    \
     log_Gamma_B_R,  \
-    log_L_p,        \
-    log_L_e = theta
+    log_L = theta
 
     log_g_break = (log_nu_br - log_Gamma_B) / 2
     p1 = 4  + log_opt_gamma / log_g_break
@@ -153,16 +152,14 @@ def theta_to_params(theta):
                      10**(log_Gamma_B - log_B),
                      10**(log_h),
                      10**(log_R),
-                     10**(log_L_p),
-                     10**(log_L_e)])
+                     10**(log_L)])
 
 def params_to_theta(params):
     gamma_min, gamma_break, gamma_max,  \
     p1, p2,          \
     B, Gamma,                           \
     h, R,                               \
-    proton_luminosity,                  \
-    electron_luminosity = params
+    luminosity = params
 
     N = (p1 - 1) * np.power(gamma_min, p1 - 1)
     nu_br = Gamma * B * gamma_break**2
@@ -177,8 +174,7 @@ def params_to_theta(params):
                      np.log10(B),
                      np.log10(Gamma * B),
                      np.log10(Gamma * B * R),
-                     np.log10(proton_luminosity),
-                     np.log10(electron_luminosity)])
+                     np.log10(luminosity)])
 
 def get_gamma(theta):
     log_N,          \
@@ -190,8 +186,7 @@ def get_gamma(theta):
     log_B,          \
     log_Gamma_B,    \
     log_Gamma_B_R,  \
-    log_L_p,        \
-    log_L_e = theta
+    log_L = theta
 
     return 10**(log_Gamma_B - log_B)
 
@@ -205,9 +200,19 @@ def get_R(theta):
     log_B,          \
     log_Gamma_B,    \
     log_Gamma_B_R,  \
-    log_L_p,        \
-    log_L_e = theta
+    log_L = theta
 
     log_R = log_Gamma_B_R - log_Gamma_B
 
     return 10**(log_R)
+
+def assert_consistency(theta):
+    params = theta_to_params(theta)
+    # Assert that theta_to_params and params_to_theta are actually inverse functions
+    np.testing.assert_allclose(params_to_theta(params), theta)
+
+    # Assert that you are not forgetting R or Gamma
+    np.testing.assert_allclose(params[6], get_gamma(theta))
+    np.testing.assert_allclose(params[8], get_R(theta))
+
+    return True
