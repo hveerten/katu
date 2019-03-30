@@ -12,6 +12,26 @@ enum distribution_type
     connected_power_law
 };
 
+typedef struct _distribution_metadata_t
+{
+    enum distribution_type dt;
+    double min, max;
+
+    union {
+        double t;   // maxwell juttner && hybrid
+        double p;   // power-law
+        struct      // broken power-law with exp cuttoff
+        {
+            double p, e;
+        };
+        struct      // broken power-law && connected power-law
+        {
+            double gc, p1, p2;
+        };
+    };
+    
+} distribution_metadata_t;
+
 void generate_maxwell_juttner(double *population, double *energy, double theta, unsigned int size);
 void generate_power_law(double *population, double *energy, double p, unsigned int size);
 void generate_broken_power_law(double *population, double *energy, double gc, double p1, double p2, unsigned int size);
