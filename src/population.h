@@ -38,6 +38,8 @@ typedef struct
 void init_population(population_t *p, enum particle_type pt,
         double min_energy, double max_energy, unsigned int size);
 
+void free_population(population_t *p);
+
 void generate_population(population_t *p,
         enum distribution_type dt, double *params);
 

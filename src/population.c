@@ -66,6 +66,15 @@ void init_population(population_t *p, enum particle_type pt,
         p->population[i] = DBL_MIN;
 }
 
+void free_population(population_t *p)
+{
+    free(p->energy);
+    free(p->log_energy);
+    free(p->population);
+    free(p->log_population);
+    free(p->tentative_population);
+}
+
 void generate_population(population_t *p,
         enum distribution_type dt, double *params)
 {
