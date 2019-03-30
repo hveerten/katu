@@ -122,7 +122,8 @@ static void state_init_injection(state_t *st, config_t *cfg)
            g_proton > proton_aux_pop.energy[proton_aux_pop.size - 1])
             st->external_injection.protons[i] = 0.0;
         else
-            st->external_injection.protons[i] = Q_e * exp(gsl_spline_eval(proton_spline, log(g_proton), proton_accelerator));
+            st->external_injection.protons[i] =
+                cfg->external_injection_eta * Q_e * exp(gsl_spline_eval(proton_spline, log(g_proton), proton_accelerator));
     }
 
     st->update_function = &step_experimental_update_populations_injection;
