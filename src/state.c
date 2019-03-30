@@ -19,6 +19,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <gsl/gsl_interp.h>
+#include <gsl/gsl_spline.h>
+
 #include <assert.h>
 
 #define MEM_PREPARE(X,S) \
@@ -28,6 +31,109 @@
         memset(X, '\0', sizeof(double) * (S));\
         \
     } while(0);
+
+static void state_init_injection(state_t *st, config_t *cfg)
+{
+    unsigned int i;
+
+    population_t electron_aux_pop;
+    population_t proton_aux_pop;
+
+    init_population(&electron_aux_pop, electron, cfg->electron_gamma_min, cfg->electron_gamma_max, st->electrons.size);
+    init_population(&proton_aux_pop,   proton,   cfg->proton_gamma_min,   cfg->proton_gamma_max,   st->protons.size);
+
+    generate_population(&electron_aux_pop, cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
+    generate_population(&proton_aux_pop,   cfg->external_injection_proton_distribution_type,   cfg->external_injection_proton_params);
+
+    double electron_energy_average;
+    switch(cfg->external_injection_electron_distribution_type)
+    {
+        case power_law:
+            electron_energy_average = power_law_average(
+                    cfg->electron_gamma_min,
+                    cfg->electron_gamma_max,
+                    cfg->external_injection_electron_params[0]);
+            break;
+
+        case broken_power_law:
+            electron_energy_average = broken_power_law_average(
+                    cfg->electron_gamma_min,
+                    cfg->electron_gamma_max,
+                    cfg->external_injection_electron_params[0],
+                    cfg->external_injection_electron_params[1],
+                    cfg->external_injection_electron_params[2]);
+            break;
+
+        default:
+            assert(0);
+    }
+
+    double proton_energy_average;
+    switch(cfg->external_injection_proton_distribution_type)
+    {
+        case power_law:
+            proton_energy_average = power_law_average(
+                    cfg->proton_gamma_min,
+                    cfg->proton_gamma_max,
+                    cfg->external_injection_proton_params[0]);
+            break;
+
+        case broken_power_law:
+            proton_energy_average = broken_power_law_average(
+                    cfg->proton_gamma_min,
+                    cfg->proton_gamma_max,
+                    cfg->external_injection_proton_params[0],
+                    cfg->external_injection_proton_params[1],
+                    cfg->external_injection_proton_params[2]);
+            break;
+
+        default:
+            assert(0);
+    }
+
+    double Q_e = cfg->external_injection_luminosity / st->volume /
+                    (electron_energy_average * ELECTRON_ENERGY +
+                     proton_energy_average   * PROTON_ENERGY * cfg->external_injection_eta);
+
+    gsl_spline       *electron_spline      = gsl_spline_alloc(gsl_interp_steffen, electron_aux_pop.size);
+    gsl_interp_accel *electron_accelerator = gsl_interp_accel_alloc();
+    gsl_spline_init(electron_spline, electron_aux_pop.log_energy, electron_aux_pop.log_population, electron_aux_pop.size);
+
+    gsl_spline       *proton_spline      = gsl_spline_alloc(gsl_interp_steffen, proton_aux_pop.size);
+    gsl_interp_accel *proton_accelerator = gsl_interp_accel_alloc();
+    gsl_spline_init(proton_spline, proton_aux_pop.log_energy, proton_aux_pop.log_population, proton_aux_pop.size);
+
+    for(i = 0; i < st->electrons.size; i++)
+    {
+        double g_electron = st->electrons.energy[i];
+
+        if(g_electron < electron_aux_pop.energy[0] ||
+           g_electron > electron_aux_pop.energy[electron_aux_pop.size - 1])
+            st->external_injection.electrons[i] = 0.0;
+        else
+            st->external_injection.electrons[i] = Q_e * exp(gsl_spline_eval(electron_spline, log(g_electron), electron_accelerator));
+    }
+
+    for(i = 0; i < st->protons.size; i++)
+    {
+        double g_proton = st->protons.energy[i];
+
+        if(g_proton < proton_aux_pop.energy[0] ||
+           g_proton > proton_aux_pop.energy[proton_aux_pop.size - 1])
+            st->external_injection.protons[i] = 0.0;
+        else
+            st->external_injection.protons[i] = Q_e * exp(gsl_spline_eval(proton_spline, log(g_proton), proton_accelerator));
+    }
+
+    st->update_function = &step_experimental_update_populations_injection;
+
+    gsl_spline_free(electron_spline);
+    gsl_spline_free(proton_spline);
+    gsl_interp_accel_free(electron_accelerator);
+    gsl_interp_accel_free(proton_accelerator);
+    free_population(&electron_aux_pop);
+    free_population(&proton_aux_pop);
+}
 
 void state_init_from_config(state_t *st, config_t *cfg)
 {
@@ -79,32 +185,6 @@ void state_init_from_config(state_t *st, config_t *cfg)
 
     state_init_RK_information(st);
 
-    // Use the 'real populations' as aux arrays for the distributions
-    // of the injections
-    generate_population(&st->electrons, cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
-    generate_population(&st->protons,   cfg->external_injection_proton_distribution_type,   cfg->external_injection_proton_params);
-
-    double electron_energy_average = broken_power_law_average(
-            cfg->electron_gamma_min,
-            cfg->electron_gamma_max,
-            cfg->external_injection_electron_params[0],
-            cfg->external_injection_electron_params[1],
-            cfg->external_injection_electron_params[2]);
-    double proton_energy_average = power_law_average(
-            cfg->proton_gamma_min,
-            cfg->proton_gamma_max,
-            cfg->external_injection_proton_params[0]);
-
-    double Q_e = cfg->external_injection_luminosity / st->volume /
-                    (electron_energy_average * ELECTRON_ENERGY +
-                     proton_energy_average   * PROTON_ENERGY * cfg->external_injection_eta);
-
-    for(i = 0; i < st->electrons.size; i++)
-        st->external_injection.electrons[i] = st->electrons.population[i] * Q_e;
-    for(i = 0; i < st->protons.size; i++)
-        st->external_injection.protons[i] = st->protons.population[i] * Q_e * cfg->external_injection_eta;
-
-    // Generate the real initial populations
     generate_population(&st->electrons, cfg->electron_distribution_type, cfg->electron_params);
     generate_population(&st->protons,   cfg->proton_distribution_type,   cfg->proton_params);
 
@@ -127,13 +207,12 @@ void state_init_from_config(state_t *st, config_t *cfg)
     st->protons.population[st->protons.size - 1] = DBL_MIN;
     st->protons.log_population[st->protons.size - 1] = log(DBL_MIN);
 
-    if(cfg->external_injection_luminosity != 0)
-        st->update_function = &step_experimental_update_populations_injection;
-    else
-        st->update_function = &step_experimental_update_populations;
-
     st->step_function           = &step;
     st->tentative_step_function = &step_tentative;
+    st->update_function = &step_experimental_update_populations;
+
+    if(cfg->external_injection_luminosity != 0)
+        state_init_injection(st, cfg);
 }
 
 void init_state_synchrotron(state_t *st, double B)
