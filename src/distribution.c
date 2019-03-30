@@ -1,5 +1,6 @@
 #include "distribution.h"
 
+#include <assert.h>
 #include <math.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_integration.h>
@@ -216,6 +217,36 @@ void generate_connected_power_law(double *population, double *energy,
 }
 
 
+double distribution_average(distribution_metadata_t *dm)
+{
+    switch(dm->dt)
+    {
+        case maxwell_juttner:
+            return maxwell_juttner_average(dm->t);
+
+        case power_law:
+            return power_law_average(dm->min, dm->max, dm->p);
+
+        case broken_power_law:
+            return broken_power_law_average(dm->min, dm->max, dm->gc, dm->p1, dm->p2);
+
+        case power_law_with_exponential_cutoff:
+            assert(0);
+            break;
+
+        case hybrid:
+            assert(0);
+            break;
+
+        case connected_power_law:
+            assert(0);
+            break;
+
+        default:
+            assert(0);
+            break;
+    }
+}
 
 
 struct mj_average_params { double theta; };
