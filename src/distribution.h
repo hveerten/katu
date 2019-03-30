@@ -19,8 +19,7 @@ typedef struct _distribution_metadata_t
 
     union {
         double t;   // maxwell juttner && hybrid
-        double p;   // power-law
-        struct      // broken power-law with exp cuttoff
+        struct      // power-law && power-law with exp cuttoff
         {
             double p, e;
         };
@@ -31,6 +30,8 @@ typedef struct _distribution_metadata_t
     };
     
 } distribution_metadata_t;
+
+void generate_distribution(double *population, double *energy, distribution_metadata_t *dm, unsigned int size);
 
 void generate_maxwell_juttner(double *population, double *energy, double theta, unsigned int size);
 void generate_power_law(double *population, double *energy, double p, unsigned int size);

@@ -4,6 +4,40 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_integration.h>
 
+void generate_distribution(double *population, double *energy,
+        distribution_metadata_t *dm, unsigned int size)
+{
+    switch(dm->dt)
+    {
+        case maxwell_juttner:
+            generate_maxwell_juttner(population, energy, dm->t, size);
+            break;
+
+        case power_law:
+            generate_power_law(population, energy, dm->p, size);
+            break;
+
+        case broken_power_law:
+            generate_broken_power_law(population, energy, dm->gc, dm->p1, dm->p2, size);
+            break;
+
+        case power_law_with_exponential_cutoff:
+            generate_power_law_with_exponential_cutoff(population, energy, dm->p, dm->e, size);
+            break;
+
+        case hybrid:
+            generate_hybrid(population, energy, dm->t, size);
+            break;
+
+        case connected_power_law:
+            generate_connected_power_law(population, energy, dm->gc, dm->p1, dm->p2, size);
+            break;
+
+        default:
+            break;
+    }
+}
+
 void generate_maxwell_juttner(double *population, double *energy,
         double theta, unsigned int size)
 {
