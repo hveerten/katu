@@ -75,51 +75,7 @@ void free_population(population_t *p)
     free(p->tentative_population);
 }
 
-void generate_population(population_t *p,
-        enum distribution_type dt, double *params)
-{
-    unsigned int i;
-
-    switch(dt)
-    {
-        case maxwell_juttner:
-            generate_maxwell_juttner(p->population, p->energy, params[0], p->size);
-            break;
-
-        case power_law:
-            generate_power_law(p->population, p->energy, params[0], p->size);
-            break;
-
-        case broken_power_law:
-            generate_broken_power_law(p->population, p->energy, params[0], params[1], params[2], p->size);
-            break;
-
-        case power_law_with_exponential_cutoff:
-            generate_power_law_with_exponential_cutoff(p->population, p->energy, params[0], params[1], p->size);
-            break;
-
-        case hybrid:
-            generate_hybrid(p->population, p->energy, params[0], p->size);
-            break;
-
-        case connected_power_law:
-            generate_connected_power_law(p->population, p->energy, params[0], params[1], params[2], p->size);
-            break;
-
-        default:
-            break;
-    }
-
-    // Some distributions (MJ for example) can leave high energy particles
-    // at 0, so to avoid infs and nans down the road, replace 0 by DBL_MIN
-    for(i = 0; i < p->size; i++)
-        p->population[i] = p->population[i] ? p->population[i] : DBL_MIN;
-
-    for(i = 0; i < p->size; i++)
-        p->log_population[i] = log(p->population[i]);
-}
-
-void generate_population2(population_t *p, distribution_metadata_t *dm)
+void generate_population(population_t *p, distribution_metadata_t *dm)
 {
     unsigned int i;
 

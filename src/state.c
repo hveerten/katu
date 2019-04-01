@@ -42,10 +42,8 @@ static void state_init_injection(state_t *st, config_t *cfg)
     init_population(&electron_aux_pop, electron, cfg->ei.electron_distribution.min, cfg->ei.electron_distribution.max, st->electrons.size);
     init_population(&proton_aux_pop,   proton,   cfg->ei.proton_distribution.min,   cfg->ei.proton_distribution.max,   st->protons.size);
 
-    /*generate_population(&electron_aux_pop, cfg->ei.electron_distribution_type, cfg->ei.electron_params);*/
-    /*generate_population(&proton_aux_pop,   cfg->ei.proton_distribution_type,   cfg->ei.proton_params);*/
-    generate_population2(&electron_aux_pop, &cfg->ei.electron_distribution);
-    generate_population2(&proton_aux_pop,   &cfg->ei.proton_distribution);
+    generate_population(&electron_aux_pop, &cfg->ei.electron_distribution);
+    generate_population(&proton_aux_pop,   &cfg->ei.proton_distribution);
 
     double electron_energy_average = distribution_average(&cfg->ei.electron_distribution);
     double proton_energy_average   = distribution_average(&cfg->ei.proton_distribution);
@@ -145,10 +143,8 @@ void state_init_from_config(state_t *st, config_t *cfg)
 
     state_init_RK_information(st);
 
-    /*generate_population(&st->electrons, cfg->electron_distribution_type, cfg->electron_params);*/
-    /*generate_population(&st->protons,   cfg->proton_distribution_type,   cfg->proton_params);*/
-    generate_population2(&st->electrons, &cfg->electron_distribution);
-    generate_population2(&st->protons,   &cfg->proton_distribution);
+    generate_population(&st->electrons, &cfg->electron_distribution);
+    generate_population(&st->protons,   &cfg->proton_distribution);
 
     double particle_density = cfg->density / (cfg->eta * PROTON_MASS + ELECTRON_MASS);
 
