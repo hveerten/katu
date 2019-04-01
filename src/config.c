@@ -93,11 +93,12 @@ static void config_read_distribution_type2(
         distribution_metadata_t *dm)
 {
     const char *raw;
-    char *dist_type;
 
     raw = toml_raw_in(part_table, "distribution_type");
     if(raw != 0)
     {
+        char *dist_type;
+
         if(toml_rtos(raw, &dist_type))
         {
             fprintf(stderr,"Error reading the distribution type for %s\n", part_txt);
@@ -110,6 +111,8 @@ static void config_read_distribution_type2(
         if(strcmp(dist_type, "power_law_with_exponential_cutoff") == 0)  dm->dt = power_law_with_exponential_cutoff;
         if(strcmp(dist_type, "hybrid") == 0)                             dm->dt = hybrid;
         if(strcmp(dist_type, "connected_power_law") == 0)                dm->dt = connected_power_law;
+
+        free(dist_type);
     }
     else
         dm->dt = broken_power_law;
@@ -165,8 +168,6 @@ static void config_read_distribution_type2(
         default:
             assert(0);
     }
-
-    free(dist_type);
 }
 
 void config_read_file(config_t *cfg, char *filename)
