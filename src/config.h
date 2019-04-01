@@ -24,22 +24,12 @@ typedef struct
     double h;
 
     distribution_metadata_t electron_distribution;
-    double electron_gamma_min;
-    double electron_gamma_max;
     double electron_size;
-    enum distribution_type electron_distribution_type;
-    double electron_params[3];
 
     distribution_metadata_t proton_distribution;
-    double proton_gamma_min;
-    double proton_gamma_max;
     double proton_size;
-    enum distribution_type proton_distribution_type;
-    double proton_params[3];
 
     distribution_metadata_t photon_distribution;
-    double photon_epsilon_min;
-    double photon_epsilon_max;
     double photon_size;
 
     struct
@@ -48,17 +38,10 @@ typedef struct
         double eta;
 
         distribution_metadata_t electron_distribution;
-        enum distribution_type electron_distribution_type;
-        double electron_params[3];
-
         distribution_metadata_t proton_distribution;
-        enum distribution_type proton_distribution_type;
-        double proton_params[3];
 
         double photon_luminosity;
         distribution_metadata_t photon_distribution;
-        enum distribution_type photon_distribution_type;
-        double photon_params[3];
     } ei;
 
 } config_t;

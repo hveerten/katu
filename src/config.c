@@ -25,71 +25,6 @@
 
 static void config_read_distribution_type(
         toml_table_t *part_table, char *part_txt,
-        enum distribution_type *part_dist_type, double *part_params)
-{
-    const char *raw;
-    char *dist_type;
-
-    raw = toml_raw_in(part_table, "distribution_type");
-    if(raw != 0)
-    {
-        if(toml_rtos(raw, &dist_type))
-        {
-            fprintf(stderr,"Error reading the distribution type for %s\n", part_txt);
-            exit(1);
-        }
-
-        if(strcmp(dist_type, "maxwell_juttner") == 0)                    *part_dist_type = maxwell_juttner;
-        if(strcmp(dist_type, "power_law") == 0)                          *part_dist_type = power_law;
-        if(strcmp(dist_type, "broken_power_law") == 0)                   *part_dist_type = broken_power_law;
-        if(strcmp(dist_type, "power_law_with_exponential_cutoff") == 0)  *part_dist_type = power_law_with_exponential_cutoff;
-        if(strcmp(dist_type, "hybrid") == 0)                             *part_dist_type = hybrid;
-        if(strcmp(dist_type, "connected_power_law") == 0)                *part_dist_type = connected_power_law;
-    }
-    else
-        *part_dist_type = broken_power_law;
-
-    switch(*part_dist_type)
-    {
-        case maxwell_juttner:
-            TOML_READ_DOUBLE(part_table, "temperature", part_params[0], "temperature", 0.5)
-            break;
-
-        case power_law:
-            TOML_READ_DOUBLE(part_table, "slope", part_params[0], "slope", 2.3)
-            break;
-
-        case broken_power_law:
-            TOML_READ_DOUBLE(part_table, "break_point",  part_params[0], "break point", 1e4)
-            TOML_READ_DOUBLE(part_table, "first_slope",  part_params[1], "first slope", 2.15)
-            TOML_READ_DOUBLE(part_table, "second_slope", part_params[2], "second slope", 4.0)
-            break;
-
-        case power_law_with_exponential_cutoff:
-            TOML_READ_DOUBLE(part_table, "slope",       part_params[0], "slope", -2.3)
-            TOML_READ_DOUBLE(part_table, "break_point", part_params[1], "break point", 1e4)
-            break;
-
-        case hybrid:
-            TOML_READ_DOUBLE(part_table, "temperature", part_params[0], "temperature", 0.5)
-            TOML_READ_DOUBLE(part_table, "slope",       part_params[1], "slope", -2.3)
-            break;
-
-        case connected_power_law:
-            TOML_READ_DOUBLE(part_table, "connection_point", part_params[0], "connection point", 1e4)
-            TOML_READ_DOUBLE(part_table, "first_slope",      part_params[1], "first slope", -2.3)
-            TOML_READ_DOUBLE(part_table, "second_slope",     part_params[2], "second slope", 4.0)
-            break;
-
-        default:
-            assert(0);
-    }
-
-    free(dist_type);
-}
-
-static void config_read_distribution_type2(
-        toml_table_t *part_table, char *part_txt,
         distribution_metadata_t *dm)
 {
     const char *raw;
@@ -243,34 +178,25 @@ void config_read_file(config_t *cfg, char *filename)
     electron_table = toml_table_in(conf, "electrons");
     if(electron_table != 0)
     {
-        TOML_READ_DOUBLE(electron_table, "gamma_min", cfg->electron_gamma_min, "electron minimum gamma", 1e1);
-        TOML_READ_DOUBLE(electron_table, "gamma_max", cfg->electron_gamma_max, "electron maximum gamma", 1e5);
         TOML_READ_DOUBLE(electron_table, "size",      cfg->electron_size,      "number of points for electrons", 256);
 
-        config_read_distribution_type(electron_table, "electrons", &cfg->electron_distribution_type, cfg->electron_params);
-
-        config_read_distribution_type2(electron_table, "electrons", &cfg->electron_distribution);
+        config_read_distribution_type(electron_table, "electrons", &cfg->electron_distribution);
     }
 
     proton_table = toml_table_in(conf, "protons");
     if(proton_table != 0)
     {
-        TOML_READ_DOUBLE(proton_table, "gamma_min", cfg->proton_gamma_min, "proton minimum gamma", 1e1);
-        TOML_READ_DOUBLE(proton_table, "gamma_max", cfg->proton_gamma_max, "proton maximum gamma", 1e5);
         TOML_READ_DOUBLE(proton_table, "size",      cfg->proton_size,      "number of points for protons", 256);
 
-        config_read_distribution_type(proton_table, "protons", &cfg->proton_distribution_type, cfg->proton_params);
-        config_read_distribution_type2(proton_table, "protons", &cfg->proton_distribution);
+        config_read_distribution_type(proton_table, "protons", &cfg->proton_distribution);
     }
 
     photon_table = toml_table_in(conf, "photons");
     if(photon_table != 0)
     {
-        TOML_READ_DOUBLE(photon_table, "epsilon_min", cfg->photon_epsilon_min, "photon minimum epsilon", 1e-12);
-        TOML_READ_DOUBLE(photon_table, "epsilon_max", cfg->photon_epsilon_max, "photon maximum epsilon", 1e5);
         TOML_READ_DOUBLE(photon_table, "size",        cfg->photon_size,        "number of points for photons", 160);
 
-        config_read_distribution_type2(photon_table, "photons", &cfg->photon_distribution);
+        config_read_distribution_type(photon_table, "photons", &cfg->photon_distribution);
     }
 
     external_injection_table  = toml_table_in(conf, "external_injection");
@@ -282,15 +208,13 @@ void config_read_file(config_t *cfg, char *filename)
         external_injection_electron_table = toml_table_in(external_injection_table, "electrons");
         if(external_injection_electron_table != 0)
         {
-            config_read_distribution_type(external_injection_electron_table, "electrons", &cfg->ei.electron_distribution_type, cfg->ei.electron_params);
-            config_read_distribution_type2(external_injection_electron_table, "electrons", &cfg->ei.electron_distribution);
+            config_read_distribution_type(external_injection_electron_table, "electrons", &cfg->ei.electron_distribution);
         }
 
         external_injection_proton_table = toml_table_in(external_injection_table, "protons");
         if(external_injection_proton_table != 0)
         {
-            config_read_distribution_type(external_injection_proton_table, "protons", &cfg->ei.proton_distribution_type, cfg->ei.proton_params);
-            config_read_distribution_type2(external_injection_proton_table, "protons", &cfg->ei.proton_distribution);
+            config_read_distribution_type(external_injection_proton_table, "protons", &cfg->ei.proton_distribution);
         }
 
         external_injection_photon_table = toml_table_in(external_injection_table, "photons");
@@ -298,8 +222,7 @@ void config_read_file(config_t *cfg, char *filename)
         {
             TOML_READ_DOUBLE(external_injection_photon_table, "luminosity", cfg->ei.photon_luminosity, "luminosity", 0.0);
 
-            config_read_distribution_type(external_injection_photon_table, "photons", &cfg->ei.photon_distribution_type, cfg->ei.photon_params);
-            config_read_distribution_type2(external_injection_photon_table, "photons", &cfg->ei.photon_distribution);
+            config_read_distribution_type(external_injection_photon_table, "photons", &cfg->ei.photon_distribution);
         }
     }
 
