@@ -39,61 +39,20 @@ static void state_init_injection(state_t *st, config_t *cfg)
     population_t electron_aux_pop;
     population_t proton_aux_pop;
 
-    init_population(&electron_aux_pop, electron, cfg->electron_gamma_min, cfg->electron_gamma_max, st->electrons.size);
-    init_population(&proton_aux_pop,   proton,   cfg->proton_gamma_min,   cfg->proton_gamma_max,   st->protons.size);
+    init_population(&electron_aux_pop, electron, cfg->ei.electron_distribution.min, cfg->ei.electron_distribution.max, st->electrons.size);
+    init_population(&proton_aux_pop,   proton,   cfg->ei.proton_distribution.min,   cfg->ei.proton_distribution.max,   st->protons.size);
 
-    generate_population(&electron_aux_pop, cfg->external_injection_electron_distribution_type, cfg->external_injection_electron_params);
-    generate_population(&proton_aux_pop,   cfg->external_injection_proton_distribution_type,   cfg->external_injection_proton_params);
+    /*generate_population(&electron_aux_pop, cfg->ei.electron_distribution_type, cfg->ei.electron_params);*/
+    /*generate_population(&proton_aux_pop,   cfg->ei.proton_distribution_type,   cfg->ei.proton_params);*/
+    generate_population2(&electron_aux_pop, &cfg->ei.electron_distribution);
+    generate_population2(&proton_aux_pop,   &cfg->ei.proton_distribution);
 
-    double electron_energy_average;
-    switch(cfg->external_injection_electron_distribution_type)
-    {
-        case power_law:
-            electron_energy_average = power_law_average(
-                    cfg->electron_gamma_min,
-                    cfg->electron_gamma_max,
-                    cfg->external_injection_electron_params[0]);
-            break;
+    double electron_energy_average = distribution_average(&cfg->ei.electron_distribution);
+    double proton_energy_average   = distribution_average(&cfg->ei.proton_distribution);
 
-        case broken_power_law:
-            electron_energy_average = broken_power_law_average(
-                    cfg->electron_gamma_min,
-                    cfg->electron_gamma_max,
-                    cfg->external_injection_electron_params[0],
-                    cfg->external_injection_electron_params[1],
-                    cfg->external_injection_electron_params[2]);
-            break;
-
-        default:
-            assert(0);
-    }
-
-    double proton_energy_average;
-    switch(cfg->external_injection_proton_distribution_type)
-    {
-        case power_law:
-            proton_energy_average = power_law_average(
-                    cfg->proton_gamma_min,
-                    cfg->proton_gamma_max,
-                    cfg->external_injection_proton_params[0]);
-            break;
-
-        case broken_power_law:
-            proton_energy_average = broken_power_law_average(
-                    cfg->proton_gamma_min,
-                    cfg->proton_gamma_max,
-                    cfg->external_injection_proton_params[0],
-                    cfg->external_injection_proton_params[1],
-                    cfg->external_injection_proton_params[2]);
-            break;
-
-        default:
-            assert(0);
-    }
-
-    double Q_e = cfg->external_injection_luminosity / st->volume /
+    double Q_e = cfg->ei.luminosity / st->volume /
                     (electron_energy_average * ELECTRON_ENERGY +
-                     proton_energy_average   * PROTON_ENERGY * cfg->external_injection_eta);
+                     proton_energy_average   * PROTON_ENERGY * cfg->ei.eta);
 
     gsl_spline       *electron_spline      = gsl_spline_alloc(gsl_interp_steffen, electron_aux_pop.size);
     gsl_interp_accel *electron_accelerator = gsl_interp_accel_alloc();
@@ -123,7 +82,7 @@ static void state_init_injection(state_t *st, config_t *cfg)
             st->external_injection.protons[i] = 0.0;
         else
             st->external_injection.protons[i] =
-                cfg->external_injection_eta * Q_e * exp(gsl_spline_eval(proton_spline, log(g_proton), proton_accelerator));
+                cfg->ei.eta * Q_e * exp(gsl_spline_eval(proton_spline, log(g_proton), proton_accelerator));
     }
 
     st->update_function = &step_experimental_update_populations_injection;
@@ -160,9 +119,9 @@ void state_init_from_config(state_t *st, config_t *cfg)
     }
 
     init_state_populations(st,
-            cfg->electron_gamma_min, cfg->electron_gamma_max, (unsigned int) cfg->electron_size,
-            cfg->proton_gamma_min,   cfg->proton_gamma_max,   (unsigned int) cfg->proton_size,
-            cfg->photon_epsilon_min, cfg->photon_epsilon_max, (unsigned int) cfg->photon_size,
+            cfg->electron_distribution.min, cfg->electron_distribution.max, (unsigned int) cfg->electron_size,
+            cfg->proton_distribution.min,   cfg->proton_distribution.max,   (unsigned int) cfg->proton_size,
+            cfg->photon_distribution.min,   cfg->photon_distribution.max,   (unsigned int) cfg->photon_size,
             pion_size, muon_size, neutrino_size);
     init_state_synchrotron(st, cfg->magnetic_field);
     init_state_aux_memory(st);
@@ -186,8 +145,10 @@ void state_init_from_config(state_t *st, config_t *cfg)
 
     state_init_RK_information(st);
 
-    generate_population(&st->electrons, cfg->electron_distribution_type, cfg->electron_params);
-    generate_population(&st->protons,   cfg->proton_distribution_type,   cfg->proton_params);
+    /*generate_population(&st->electrons, cfg->electron_distribution_type, cfg->electron_params);*/
+    /*generate_population(&st->protons,   cfg->proton_distribution_type,   cfg->proton_params);*/
+    generate_population2(&st->electrons, &cfg->electron_distribution);
+    generate_population2(&st->protons,   &cfg->proton_distribution);
 
     double particle_density = cfg->density / (cfg->eta * PROTON_MASS + ELECTRON_MASS);
 
@@ -212,7 +173,7 @@ void state_init_from_config(state_t *st, config_t *cfg)
     st->tentative_step_function = &step_tentative;
     st->update_function = &step_experimental_update_populations;
 
-    if(cfg->external_injection_luminosity != 0)
+    if(cfg->ei.luminosity != 0)
         state_init_injection(st, cfg);
 }
 
