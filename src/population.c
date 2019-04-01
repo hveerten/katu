@@ -119,6 +119,21 @@ void generate_population(population_t *p,
         p->log_population[i] = log(p->population[i]);
 }
 
+void generate_population2(population_t *p, distribution_metadata_t *dm)
+{
+    unsigned int i;
+
+    generate_distribution(p->population, p->energy, dm, p->size);
+
+    // Some distributions (MJ for example) can leave high energy particles
+    // at 0, so to avoid infs and nans down the road, replace 0 by DBL_MIN
+    for(i = 0; i < p->size; i++)
+        p->population[i] = p->population[i] ? p->population[i] : DBL_MIN;
+
+    for(i = 0; i < p->size; i++)
+        p->log_population[i] = log(p->population[i]);
+}
+
 double calculate_population(population_t *p)
 {
     unsigned int i;

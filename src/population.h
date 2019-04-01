@@ -42,6 +42,7 @@ void free_population(population_t *p);
 
 void generate_population(population_t *p,
         enum distribution_type dt, double *params);
+void generate_population2(population_t *p, distribution_metadata_t *dm);
 
 double calculate_population(population_t *p);
 double calculate_energy(population_t *p);
