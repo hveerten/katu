@@ -1,3 +1,40 @@
+# This is the default configuration file, it should be used as a template for
+# writting new configurations.
+# Note that no change done to this file will reflect in the simulations, its
+# purpose is to show the defaults that a value will take in case they are
+# NOT specified in the read configuration
+
+# The distributions work a bit differently, in case that NO distribution is
+# specified, then a broken power law with no parameters is used. In case that
+# NO parameters are specified, then those from the default distributions are used.
+
+## Default distributions:
+
+# distribution_type = maxwell_juttner
+# temperature = 0.5
+
+# distribution_type = power_law
+# slope = 2.3
+
+# distribution_type = broken_power_law
+# break_point  = 1e4
+# first_slope  = 2.15
+# second_slope = 4.0
+
+# distribution_type = power_law_with_exponential_cuttoff
+# slope       = -2.3
+# break_point = 1e4
+
+# distribution_type = hybrid
+# temperature = 2.3
+# slope       = -2.3
+
+# distribution_type = connected_power_law
+# connection_point = 1e4
+# first_slope      = -2.3
+# second_slope     =  4.0
+
+
 [general]
 density = 1e-22
 magnetic_field = 0.1
@@ -9,7 +46,7 @@ eta = 1
 [volume]
 shape = "sphere"
 R = 1e16
-h = 1e14
+h = 1e16
 
 [electrons]
 gamma_min = 1e1
@@ -39,17 +76,26 @@ size        = 160
     eta        = 1.0
 
     [external_injection.electrons]
+    gamma_min = 1e1
+    gamma_max = 1e5
+
     distribution_type = "broken_power_law"
     break_point  = 1e4
     first_slope  = 2.15
     second_slope = 4.00
 
     [external_injection.protons]
+    gamma_min = 10
+    gamma_max = 1e5
+
     distribution_type = "power_law"
     slope = 2
 
     [external_injection.photons]
     luminosity = 0.0
+
+    epsilon_min = 1e-12
+    epsilon_max = 1e5
 
     distribution_type = "maxwell_juttner"
     temperature = 1
