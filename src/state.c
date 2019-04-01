@@ -488,6 +488,33 @@ void state_report_general_info(state_t *st)
             st->positive_left_muon_decay_and_escape.decay_lifetime,
             1/st->positive_left_muon_decay_and_escape.t[0],
             1/st->positive_left_muon_decay_and_escape.t[st->positive_left_muons.size - 1]);
+    fprintf(stderr,"\n\n");
+}
+
+// If, at some point, we add the ei data to the state, remove the
+// config parameter
+void state_report_injection_info(state_t *st, config_t *cfg)
+{
+    double electron_energy_average = distribution_average(&cfg->ei.electron_distribution);
+    double proton_energy_average   = distribution_average(&cfg->ei.proton_distribution);
+
+    double Q_e = cfg->ei.luminosity / st->volume /
+                    (electron_energy_average * ELECTRON_ENERGY +
+                     proton_energy_average   * PROTON_ENERGY * cfg->ei.eta);
+
+    fprintf(stderr,"Luminosity:\t%lg\n", cfg->ei.luminosity);
+    fprintf(stderr,"Injection density:\t%lg\n", Q_e);
+    fprintf(stderr,"Proton To Electron Ratio:\t%lg\n", st->eta);
+    fprintf(stderr,"Photon Luminosity:\t%lg\n", cfg->ei.photon_luminosity);
+#define FORMAT_ARGUMENTS(X) \
+    "\t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\n",  \
+    cfg->ei.X##_distribution.min, log10(cfg->ei.X##_distribution.min), \
+    cfg->ei.X##_distribution.max, log10(cfg->ei.X##_distribution.max)
+    fprintf(stderr, "Photons:  " FORMAT_ARGUMENTS(photon));
+    fprintf(stderr, "Protons:  " FORMAT_ARGUMENTS(proton));
+    fprintf(stderr, "Electrons:" FORMAT_ARGUMENTS(electron));
+#undef FORMAT_ARGUMENTS
+    fprintf(stderr,"\n\n");
 }
 
 void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename)

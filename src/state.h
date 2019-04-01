@@ -242,6 +242,7 @@ void step(state_t *st);
 void step_tentative(state_t *st, bool try_new_step);
 
 void state_report_general_info(state_t *st);
+void state_report_injection_info(state_t *st, config_t *cfg);
 
 void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename);
 
