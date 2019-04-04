@@ -75,4 +75,8 @@ gamma_rays_obs = np.array([
 gamma_rays_obs_data = obs_to_data(gamma_rays_obs)
 # Assume that the upper errors in gamma ray data are small
 # but the lower errors are awful
-gamma_rays_obs_errors = [0.5 * gamma_rays_obs_data[1], (0.2 + 0.5) * gamma_rays_obs_data[1]]
+gamma_rays_obs_errors = np.array([0.5 * gamma_rays_obs_data[1], 0.7 * gamma_rays_obs_data[1]])
+
+# Data from Agile, taken From the extra materials, page S23
+gamma_rays_obs_data[:,1]   = [2e8,     8.8e-11]
+gamma_rays_obs_errors[:,1] = [3.5e-11, 3.5e-11]
