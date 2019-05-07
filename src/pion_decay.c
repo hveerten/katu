@@ -108,37 +108,30 @@ void neutral_pion_decay(state_t *st)
 {
     unsigned int i, j;
 
-    double factor = ELECTRON_MASS / PION_MASS;
+    double mass_factor = ELECTRON_MASS / PION_MASS;
     double dlng = st->neutral_pions.log_energy[1] - st->neutral_pions.log_energy[0];
 
     for(i = 0; i < st->photons.size; i++)
     {
-        double e = st->photons.energy[i];
-
-        double aux = 2 * e * factor;
-
-        double g_min = 0;
-        if(factor < 1)
-            g_min = 1 / (2 * aux);
-        else
-            g_min = aux / 2;
-
-        g_min = fmin(g_min, 1);
+        double e     = st->photons.energy[i];
+        double g_min = fmin(e * mass_factor, 1);
 
         for(j = 0; j < st->neutral_pions.size && st->neutral_pions.energy[j] < g_min; j++)
         {
         }
 
-        double gains = 0;
+        double photon_gains = 0;
         for(     ; j < st->neutral_pions.size; j++)
         {
-            gains += st->dt *
+            double g = st->neutral_pions.energy[j];
+
+            photon_gains += g *
                 (st->multi_resonances_neutral_pion_gains[i] +
                  st->direct_neutral_pion_gains[j]);
         }
-        gains *= dlng;
+        photon_gains *= dlng;
 
-        st->pion_decay_photon_gains[i] = gains * 4 * M_PI / PION_MASS;
+        st->pion_decay_photon_gains[i] = photon_gains * 4 * M_PI;
     }
 }
 
