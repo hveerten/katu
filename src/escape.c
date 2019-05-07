@@ -65,6 +65,16 @@ void update_escape(struct state_t *st, escape_t *esc, double t)
         esc->escape_factor[i] = expm1(-esc->dt / t) / esc->dt;
 }
 
+void update_charged_escape(struct state_t *st, escape_t *esc, double t)
+{
+    esc->t = t;
+    esc->dt = st->dt;
+
+    unsigned int i;
+    for(i = 0; i < esc->particles->size; i++)
+        esc->escape_factor[i] = expm1(-esc->dt * esc->particles->energy[i] / t) / esc->dt;
+}
+
 void free_escape(escape_t *esc)
 {
     unsigned int i;

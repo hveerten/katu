@@ -24,6 +24,7 @@ typedef struct escape_t
 void init_escape(struct state_t *st, escape_t *esc, enum particle_type pt, double t);
 
 void update_escape(struct state_t *st, escape_t *esc, double t);
+void update_charged_escape(struct state_t *st, escape_t *esc, double t);
 
 void free_escape(escape_t *esc);
 
