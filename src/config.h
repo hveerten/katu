@@ -18,6 +18,7 @@ typedef struct
     double dt_max;
     double t_max;
     double eta;
+    double cfe_ratio;
 
     enum volume_type v;
     double R;

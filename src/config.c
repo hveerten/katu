@@ -147,6 +147,7 @@ void config_read_file(config_t *cfg, char *filename)
         TOML_READ_DOUBLE(general_table, "dt_max",         cfg->dt_max,         "maximum time step",        1e3);
         TOML_READ_DOUBLE(general_table, "t_max",          cfg->t_max,          "maximum time",             1e7);
         TOML_READ_DOUBLE(general_table, "eta",            cfg->eta,            "proton to electron_ratio", 1.0);
+        TOML_READ_DOUBLE(general_table, "cfe_ratio",      cfg->cfe_ratio,      "charged free escape ratio", 1.0);
     }
 
     volume_table = toml_table_in(conf, "volume");
