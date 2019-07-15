@@ -136,7 +136,7 @@ void state_init_from_config(state_t *st, config_t *cfg)
         default: break;
     }
 
-    init_state_escape(st, t_esc);
+    init_state_escape(st, t_esc, cfg->cfe_ratio);
     init_state_decay_and_escape(st, t_esc);
 
     state_init_LUTs(st);
@@ -187,11 +187,11 @@ void init_state_synchrotron(state_t *st, double B)
     init_synchrotron(st, &st->negative_right_muon_synchrotron, negative_right_muon);
 }
 
-void init_state_escape(state_t *st, double t)
+void init_state_escape(state_t *st, double t, double cfe_ratio)
 {
     init_escape(st, &st->photon_escape,   photon,   t);
-    init_escape(st, &st->electron_escape, electron, t);
-    init_escape(st, &st->proton_escape,   proton,   t);
+    init_escape(st, &st->electron_escape, electron, t * cfe_ratio);
+    init_escape(st, &st->proton_escape,   proton,   t * cfe_ratio);
 
     init_escape(st, &st->electron_neutrino_escape,     electron_neutrino,     t);
     init_escape(st, &st->electron_antineutrino_escape, electron_antineutrino, t);
@@ -908,7 +908,7 @@ void state_load_state_from_file(state_t *st, char *filename)
     init_acceleration(st, &st->proton_acceleration,   proton,   proton_acceleration_timescale);
     init_acceleration(st, &st->electron_acceleration, electron, electron_acceleration_timescale);
 
-    init_state_escape(st, electron_escape_timescale);
+    init_state_escape(st, electron_escape_timescale, 1);
 
     state_init_LUTs(st);
 

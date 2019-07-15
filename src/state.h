@@ -222,7 +222,7 @@ typedef struct state_t
 void state_init_from_config(state_t *st, config_t *cfg);
 
 void init_state_synchrotron(state_t *st, double B);
-void init_state_escape(state_t *st, double t);
+void init_state_escape(state_t *st, double t, double cfe_ratio);
 void init_state_decay_and_escape(state_t *st, double t);
 
 void init_state_populations(state_t *st,
