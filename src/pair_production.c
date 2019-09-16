@@ -31,9 +31,12 @@ static double H_0(double e, double ee, double d)
     return a + b;
 }
 
-static double Hpm(double e, double e2, double ee, double c, double d)
+static double Hpm(double e, double e2, double ee, double eg, double d)
 {
-    double aux = sqrt(ee + c * e2);
+    double c = eg * eg - 1;
+
+    /*double aux = sqrt(ee + c * e2);*/
+    double aux = sqrt((ee + eg * eg * e2) - e2);
 
     double Ipm = c > 0 ?
                     1 / sqrt(c) * log(e * sqrt(c) + aux) :
@@ -51,8 +54,8 @@ static double rate_lepton_gains(double e1, double e2, double g)
     double ee = e1 * e2;
     double E  = e1 + e2;
 
-    double cp = pow(e1 - g, 2) - 1;
-    double cm = pow(e2 - g, 2) - 1;
+    /*double cp = pow(e1 - g, 2) - 1;*/
+    /*double cm = pow(e2 - g, 2) - 1;*/
     double dp = e1 * e1 + ee + g * (e2 - e1);
     double dm = e2 * e2 + ee - g * (e2 - e1);
 
@@ -78,14 +81,18 @@ static double rate_lepton_gains(double e1, double e2, double g)
     double aux1 = sqrt(E*E - 4 * e_max2) / 4;
     /*double aux2 = cp != 0 ? Hpm(e_max, ee, cp, dp) : H_0(e_max, ee, dp);*/
     /*double aux3 = cm != 0 ? Hpm(e_max, ee, cm, dm) : H_0(e_max, ee, dm);*/
-    double aux2 = e1 - g != 1 ? Hpm(e_max, e_max2, ee, cp, dp) : H_0(e_max, ee, dp);
-    double aux3 = e2 - g != 1 ? Hpm(e_max, e_max2, ee, cm, dm) : H_0(e_max, ee, dm);
+    /*double aux2 = e1 - g != 1 ? Hpm(e_max, e_max2, ee, cp, dp) : H_0(e_max, ee, dp);*/
+    /*double aux3 = e2 - g != 1 ? Hpm(e_max, e_max2, ee, cm, dm) : H_0(e_max, ee, dm);*/
+    double aux2 = e1 - g != 1 ? Hpm(e_max, e_max2, ee, e1 - g, dp) : H_0(e_max, ee, dp);
+    double aux3 = e2 - g != 1 ? Hpm(e_max, e_max2, ee, e2 - g, dm) : H_0(e_max, ee, dm);
 
     double aux4 = sqrt(E*E - 4 * e_min2) / 4;
     /*double aux5 = cp != 0 ? Hpm(e_min, ee, cp, dp) : H_0(e_min, ee, dp);*/
     /*double aux6 = cm != 0 ? Hpm(e_min, ee, cm, dm) : H_0(e_min, ee, dm);*/
-    double aux5 = e1 - g != 1 ? Hpm(e_min, e_min2, ee, cp, dp) : H_0(e_min, ee, dp);
-    double aux6 = e2 - g != 1 ? Hpm(e_min, e_min2, ee, cm, dm) : H_0(e_min, ee, dm);
+    /*double aux5 = e1 - g != 1 ? Hpm(e_min, e_min2, ee, cp, dp) : H_0(e_min, ee, dp);*/
+    /*double aux6 = e2 - g != 1 ? Hpm(e_min, e_min2, ee, cm, dm) : H_0(e_min, ee, dm);*/
+    double aux5 = e1 - g != 1 ? Hpm(e_min, e_min2, ee, e1 - g, dp) : H_0(e_min, ee, dp);
+    double aux6 = e2 - g != 1 ? Hpm(e_min, e_min2, ee, e2 - g, dm) : H_0(e_min, ee, dm);
 
     if(E / aux < 1e-5)
     {
