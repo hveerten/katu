@@ -114,20 +114,21 @@ void neutral_pion_decay(state_t *st)
     for(i = 0; i < st->photons.size; i++)
     {
         double e     = st->photons.energy[i];
-        double g_min = fmin(e * mass_factor, 1);
+        double g_min = fmax(e * mass_factor, 1);
 
-        for(j = 0; j < st->neutral_pions.size && st->neutral_pions.energy[j] < g_min; j++)
-        {
-        }
+        unsigned int index_min = 0;
+
+        for(; index_min < st->neutral_pions.size && st->neutral_pions.energy[index_min] < g_min; index_min++)
+        { }
+
+        /*fprintf(stderr,"%u %u\n", i, index_min);*/
 
         double photon_gains = 0;
-        for(     ; j < st->neutral_pions.size; j++)
+        for(j = index_min; j < st->neutral_pions.size; j++)
         {
-            double g = st->neutral_pions.energy[j];
-
-            photon_gains += g *
-                (st->multi_resonances_neutral_pion_gains[i] +
-                 st->direct_neutral_pion_gains[j]);
+            /*photon_gains += (st->multi_resonances_neutral_pion_gains[j] + st->direct_neutral_pion_gains[j]) * st->neutral_pions.energy[j];*/
+            /*photon_gains += (st->multi_resonances_neutral_pion_gains[j] + st->direct_neutral_pion_gains[j]) / (st->neutral_pion_decay_and_escape.t[j] * st->neutral_pion_decay_and_escape.decay_lifetime) ;*/
+            photon_gains += st->neutral_pions.population[j] / st->neutral_pion_decay_and_escape.decay_lifetime;
         }
         photon_gains *= dlng;
 
