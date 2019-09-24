@@ -31,22 +31,67 @@ static double H_0(double e, double ee, double d)
     return a + b;
 }
 
-static double Hpm(double e, double e2, double ee, double eg, double d)
+static double Jpm(double e_min2, double e_max2, double ee, double eg, double d)
 {
     double c = eg * eg - 1;
+    double e_min = sqrt(e_min2);
+    double e_max = sqrt(e_max2);
 
-    /*double aux = sqrt(ee + c * e2);*/
-    double aux = sqrt((ee + eg * eg * e2) - e2);
+    double A_min = ee - e_min2 + eg * eg * e_min2;
+    double A_max = ee - e_max2 + eg * eg * e_max2;
 
-    double Ipm = c > 0 ?
-                    1 / sqrt(c) * log(e * sqrt(c) + aux) :
-                    1 / sqrt(-c) * asin(e * sqrt(-c/ee));
+    double B_min = sqrt(c) * sqrt(1 + ee/e_min2/c);
+    double B_max = sqrt(c) * sqrt(1 + ee/e_max2/c);
 
-    double aux1 = - e / (8 * aux) * (d / ee + 2 / c);
-    double aux2 = Ipm / 4 * (2 - (ee - 1) / c);
-    double aux3 = aux / 4 * (e / c + 1 / (e * ee));
+    double I_min = c > 0 ?
+                    1 / sqrt(c) * log(e_min * sqrt(c) + sqrt(A_min)) :
+                    1 / sqrt(-c) * asin(e_min * sqrt(-c/ee));
+    double I_max = c > 0 ?
+                    1 / sqrt(c) * log(e_max * sqrt(c) + sqrt(A_max)) :
+                    1 / sqrt(-c) * asin(e_max * sqrt(-c/ee));
 
-    return aux1 + aux2 + aux3;
+    if(c < 0)
+    {
+        B_min = sqrt(A_min) / e_min;
+        B_max = sqrt(A_max) / e_max;
+    }
+    if(c == -1)
+        B_max = sqrt(ee - e_max2) / e_max;
+
+    if(ee == e_max2)
+    {
+        I_max = c > 0 ?
+                    1 / sqrt(c) * (log(ee)/2 + asinh(sqrt(c))) :
+                    1 / sqrt(-c) * asin(sqrt(-c));
+
+        B_max = sqrt(1 + c);
+    }
+
+
+    double aux1 = (e_max2 + 1 / e_max2) / B_max -
+                  (e_min2 + 1 / e_min2) / B_min;
+
+    double aux2_factor = ((ee - 1)/c + (2*c-d)/(2*ee));
+
+    double aux2 = aux2_factor * (B_min - B_max) / (B_min * B_max);
+
+    if(c > 0)
+    {
+        if(ee/(e_min2*c) < 1e-5 && ee/(e_max2*c) < 1e-5)
+            aux2 = aux2_factor * (ee/(2*c) * (1/e_min2 - 1/e_max2)) / (B_min * sqrt(1 + ee/e_max2/c));
+    }
+
+    double aux3 = (I_max - I_min) * (2 - (ee - 1) / c);
+
+    /*fprintf(stderr,"Jpm\n");*/
+    /*fprintf(stderr,"A  %lg %lg\n", A_min, A_max);*/
+    /*fprintf(stderr,"B  %lg %lg\n", B_min, B_max);*/
+    /*fprintf(stderr,"c  %lg\n", c);*/
+    /*fprintf(stderr,"1  %lg\n", aux1);*/
+    /*fprintf(stderr,"2  %lg\n", aux2);*/
+    /*fprintf(stderr,"3  %lg\n", aux3);*/
+
+    return (aux1 + aux2 + aux3) / 4;
 }
 
 static double rate_lepton_gains(double e1, double e2, double g)
@@ -65,41 +110,69 @@ static double rate_lepton_gains(double e1, double e2, double g)
     double e_min_aux2 = aux * (1 - sqrt(1 - E * E / aux / aux)) / 2;
     double e_max_aux2 = aux * (1 + sqrt(1 - E * E / aux / aux)) / 2;
 
-    if(E / aux < 1e-5)
+    if(E / aux < 2e-5)
     {
-        e_min_aux2 = E * E / aux / 4;
+        double EE   = E/aux;
+        double eeee = EE*EE;
+
+        double t = E*EE/4;
+        double tt = t * (1 + eeee/4);
+
+        e_min_aux2 = tt;
         e_max_aux2 = aux * (2 - E * E / aux / aux/2) / 2;
+
+        if(e1 == g || e2 == g)
+            e_max_aux2 = ee + (4 - (e1 - e2)*(e1-e2)) / (4*(ee+1));
     }
 
-    double e_min2 = fmax(1      , e_min_aux2);
-    double e_max2 = fmin(e1 * e2, e_max_aux2);
+    if(ee == e_max_aux2 && ((e1 == g) || (e2 == g)))
+        e_max_aux2 = e_max_aux2 * (1 - 1e-15);
+
+    double e_min2 = fmax(1 , e_min_aux2);
+    double e_max2 = fmin(ee, e_max_aux2);
     double e_min  = sqrt(e_min2);
     double e_max  = sqrt(e_max2);
+
+    /*fprintf(stderr,"%lg %lg\n", ee, e_max_aux2);*/
+    /*fprintf(stderr,"%lg %lg\n", e_min, e_max);*/
 
     if(e_min > e_max) return 0;
 
     double aux1 = sqrt(E*E - 4 * e_max2) / 4;
-    /*double aux2 = cp != 0 ? Hpm(e_max, ee, cp, dp) : H_0(e_max, ee, dp);*/
-    /*double aux3 = cm != 0 ? Hpm(e_max, ee, cm, dm) : H_0(e_max, ee, dm);*/
-    /*double aux2 = e1 - g != 1 ? Hpm(e_max, e_max2, ee, cp, dp) : H_0(e_max, ee, dp);*/
-    /*double aux3 = e2 - g != 1 ? Hpm(e_max, e_max2, ee, cm, dm) : H_0(e_max, ee, dm);*/
-    double aux2 = e1 - g != 1 ? Hpm(e_max, e_max2, ee, e1 - g, dp) : H_0(e_max, ee, dp);
-    double aux3 = e2 - g != 1 ? Hpm(e_max, e_max2, ee, e2 - g, dm) : H_0(e_max, ee, dm);
-
     double aux4 = sqrt(E*E - 4 * e_min2) / 4;
-    /*double aux5 = cp != 0 ? Hpm(e_min, ee, cp, dp) : H_0(e_min, ee, dp);*/
-    /*double aux6 = cm != 0 ? Hpm(e_min, ee, cm, dm) : H_0(e_min, ee, dm);*/
-    /*double aux5 = e1 - g != 1 ? Hpm(e_min, e_min2, ee, cp, dp) : H_0(e_min, ee, dp);*/
-    /*double aux6 = e2 - g != 1 ? Hpm(e_min, e_min2, ee, cm, dm) : H_0(e_min, ee, dm);*/
-    double aux5 = e1 - g != 1 ? Hpm(e_min, e_min2, ee, e1 - g, dp) : H_0(e_min, ee, dp);
-    double aux6 = e2 - g != 1 ? Hpm(e_min, e_min2, ee, e2 - g, dm) : H_0(e_min, ee, dm);
 
-    if(E / aux < 1e-5)
+    double aux2 = fabs(e1 - g) != 1 ? Jpm(e_min2, e_max2, ee, e1 - g, dp) : H_0(e_max, ee, dp) - H_0(e_min, ee, dp);
+    double aux3 = fabs(e2 - g) != 1 ? Jpm(e_min2, e_max2, ee, e2 - g, dm) : H_0(e_max, ee, dm) - H_0(e_min, ee, dm);
+
+    /* This is a math result, not an approximation */
+    if(ee < e_max_aux2)
+        aux1 = fabs(e1 - e2) / 4;
+
+    if(E / aux < 5e-6)
     {
         aux4 = E * sqrt(1 - 1 / aux) / 4;
+        /*aux4 = E * sqrt(1 - (1+E*E/aux/aux/4) / aux) / 4;*/
+
+        if(e_max2 == ee)
+        {
+            aux1 = (-2*fmin(e1,e2) + E/(2*aux)) / 4;
+            aux4 = 0;
+        }
     }
 
-    return (aux1 + aux2 + aux3 - aux4 - aux5 - aux6) / ee;
+    /*fprintf(stderr,"cp cm %lg %lg\n", cp, cm);*/
+    /*fprintf(stderr,"dp dm %lg %lg\n", dp, dm);*/
+
+    /*fprintf(stderr,"%lg\n", aux1);*/
+    /*fprintf(stderr,"%lg\n", aux2);*/
+    /*fprintf(stderr,"%lg\n", aux3);*/
+    /*fprintf(stderr,"%lg\n", aux4);*/
+
+    /*fprintf(stderr,"1 - 4 %lg\n", aux1 - aux4);*/
+    /*fprintf(stderr,"2 %lg\n", aux2);*/
+    /*fprintf(stderr,"3 %lg\n", aux3);*/
+
+    return (aux1 - aux4 + aux2 + aux3) / ee;
 }
 
 void pair_production_process_photon_losses(state_t *st)
