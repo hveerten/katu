@@ -91,7 +91,7 @@ static double inelasticity_bethe_heitler_high(double e)
     double aux1 = -1.35 / loge;
     double aux2 =  2.5  / (loge * loge);
 
-    return M_PI * aux0 * (1 + aux1 + aux2);
+    return 2.542 * aux0 * (1 + aux1 + aux2);
 }
 
 // TODO: Find the correct global factor
