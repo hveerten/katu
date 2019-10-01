@@ -9,6 +9,7 @@
 #include "pion_decay.h"
 #include "pair_production.h"
 #include "muon_decay.h"
+#include "bethe_heitler.h"
 
 #include "state_step.h"
 #include "state_step_common.h"
@@ -320,6 +321,11 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->pair_production_electron_gains, st->electrons.size);
     MEM_PREPARE(st->pair_production_positron_gains, st->electrons.size);
 
+    /*MEM_PREPARE(st->bethe_heitler_photon_losses, st->electrons.size);*/
+    /*MEM_PREPARE(st->bethe_heitler_proton_losses, st->electrons.size);*/
+    MEM_PREPARE(st->bethe_heitler_electron_gains, st->electrons.size);
+    MEM_PREPARE(st->bethe_heitler_positron_gains, st->electrons.size);
+
     MEM_PREPARE(st->multi_resonances_neutral_pion_gains , st->neutral_pions.size);
     MEM_PREPARE(st->multi_resonances_positive_pion_gains, st->positive_pions.size);
     MEM_PREPARE(st->multi_resonances_negative_pion_gains, st->negative_pions.size);
@@ -391,6 +397,7 @@ void state_init_LUTs(state_t *st)
     init_direct_LUT_pion_gains(st);
     init_direct_pion_production_LUT_hadron_losses(st);
     init_direct_pion_production_LUT_hadron_gains(st);
+    init_bethe_heitler_LUT_lepton_gains(st);
 
     calculate_inverse_compton_LUT_g1_g2(st);
     calculate_inverse_compton_LUT_losses_reaction_rate(st);
@@ -404,6 +411,7 @@ void state_init_LUTs(state_t *st)
     calculate_direct_LUT_pion_gains(st);
     calculate_direct_pion_production_LUT_hadron_losses(st);
     calculate_direct_pion_production_LUT_hadron_gains(st);
+    calculate_bethe_heitler_LUT_lepton_gains(st);
 }
 
 void state_init_RK_information(state_t *st)
@@ -616,15 +624,17 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "#Energy\tPopulation\t" \
                     "Acc_gains\t" \
                     "Pair_production\t" \
+                    "Bethe_Heitler\t" \
                     "Sync_losses\tIC_Losses\tEscape\n");
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(temp_file,"%lg\t%lg\t",
                         st->electrons.energy[i], st->electrons.population[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t",
                         st->electron_acceleration.gains[i],
-                        st->pair_production_electron_gains[i]);
+                        st->pair_production_electron_gains[i],
+                        st->bethe_heitler_electron_gains[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\n",
                         st->electron_synchrotron.particle_losses[i],

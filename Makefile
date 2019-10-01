@@ -24,6 +24,7 @@ EXTERNAL_OBJECTS = \
 
 SOURCES = \
 	./src/acceleration.c 		\
+	./src/bethe_heitler.c 		\
 	./src/config.c		 		\
 	./src/distribution.c 		\
 	./src/escape.c				\
@@ -42,6 +43,7 @@ SOURCES = \
 
 OBJECTS = \
 	./src/acceleration.o 		\
+	./src/bethe_heitler.o 		\
 	./src/config.o		 		\
 	./src/distribution.o 		\
 	./src/escape.o				\
@@ -60,6 +62,7 @@ OBJECTS = \
 
 HEADERS = \
 	./src/acceleration.h 		\
+	./src/bethe_heitler.h 		\
 	./src/config.h		 		\
 	./src/constants.h			\
 	./src/distribution.h		\

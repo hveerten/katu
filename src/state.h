@@ -138,6 +138,15 @@ typedef struct state_t
     double *direct_pion_production_LUT_hadron_losses;
     double *direct_pion_production_LUT_hadron_losses_e_min_index;
 
+    double *bethe_heitler_LUT_proton_gamma;
+    double *bethe_heitler_LUT_inelasticity;
+    double *bethe_heitler_LUT_reaction_rate;
+
+    /*double *bethe_heitler_photon_losses;*/
+    /*double *bethe_heitler_proton_losses;*/
+    double *bethe_heitler_electron_gains;
+    double *bethe_heitler_positron_gains;
+
     double *pion_decay_positive_left_muon_gains;
     double *pion_decay_positive_right_muon_gains;
     double *pion_decay_negative_left_muon_gains;

@@ -8,6 +8,7 @@
 #include "pion_decay.h"
 #include "pair_production.h"
 #include "muon_decay.h"
+#include "bethe_heitler.h"
 
 #include <assert.h>
 #include <float.h>
@@ -45,6 +46,10 @@ void step_calculate_processes(state_t *st)
     pthread_t direct_pion_production_hadron_losses_thread;
     pthread_t direct_pion_production_hadron_gains_thread;
 
+    pthread_t bethe_heitler_lepton_gains_thread;
+    /*pthread_t bethe_heitler_photon_losses_thread;*/
+    /*pthread_t bethe_heitler_proton_losses_thread;*/
+
     pthread_t muon_decay_thread;
     pthread_t charged_pion_decay_thread;
 
@@ -72,6 +77,10 @@ void step_calculate_processes(state_t *st)
     pthread_create(&direct_pion_production_thread,               NULL, direct_pion_production_wrapper,               st);
     pthread_create(&direct_pion_production_hadron_gains_thread,  NULL, direct_pion_production_hadron_gains_wrapper,  st);
     pthread_create(&direct_pion_production_hadron_losses_thread, NULL, direct_pion_production_hadron_losses_wrapper, st);
+
+    pthread_create(&bethe_heitler_lepton_gains_thread,  NULL, bethe_heitler_lepton_gains_wrapper, st);
+    /*pthread_create(&bethe_heitler_photon_losses_thread, NULL, bethe_heitler_photon_losses_wrapper, st);*/
+    /*pthread_create(&bethe_heitler_proton_losses_thread, NULL, bethe_heitler_proton_losses_wrapper, st);*/
 
     pthread_create(&muon_decay_thread,         NULL, muon_decay_wrapper,         st);
     pthread_create(&charged_pion_decay_thread, NULL, charged_pion_decay_wrapper, st);
@@ -131,6 +140,10 @@ void step_calculate_processes(state_t *st)
     direct_pion_production_hadron_losses(st);
 
     direct_pion_production(st);
+
+    bethe_heitler_lepton_gains(st);
+    /*bethe_heitler_photon_losses(st);*/
+    /*bethe_heitler_proton_losses(st);*/
 
     st->electron_acceleration.acceleration_function(&st->electron_acceleration);
     st->proton_acceleration.acceleration_function(&st->proton_acceleration);
@@ -226,6 +239,7 @@ void step_update_populations(state_t *st, double dt)
              st->pair_production_electron_gains[i] +
              st->electron_synchrotron.particle_losses[i] +
              st->inverse_compton_electron_losses[i] +
+             st->bethe_heitler_electron_gains[i] +
              st->electron_acceleration.gains[i] +
              st->electron_escape.losses[i]);
     }
@@ -897,7 +911,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double ln = st->electrons.log_population[i];
 
         double Q = st->external_injection.electrons[i] +
-                   st->pair_production_electron_gains[i];
+                   st->pair_production_electron_gains[i] +
+                   st->bethe_heitler_electron_gains[i];
 
         electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * electron_log_new_pop / dlng)) /
                         (1 - aux1[i] * st->dt / dlng);
@@ -938,7 +953,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n = st->electrons.population[i];
 
         double Q = st->external_injection.electrons[i] +
-                   st->pair_production_electron_gains[i];
+                   st->pair_production_electron_gains[i] +
+                   st->bethe_heitler_electron_gains[i];
 
         electron_new_pop = (n + st->dt * (Q + aux1[i] * electron_new_pop / dlng)) /
                         (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
@@ -1251,9 +1267,10 @@ void step_report_population_update(state_t *st, enum particle_type pt)
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->electrons.population[i], st->electrons.tentative_population[i]);
-                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->electron_acceleration.gains[i],
                         st->pair_production_electron_gains[i],
+                        st->bethe_heitler_electron_gains[i],
                         st->electron_synchrotron.particle_losses[i],
                         st->inverse_compton_electron_losses[i],
                         st->electron_escape.losses[i]);
