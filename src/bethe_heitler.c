@@ -68,6 +68,20 @@ static double inelasticity_bethe_heitler_low(double e)
     return M_PI * aux0 * (1 + aux1 + aux2);
 }
 
+static double inelasticity_bethe_heitler_mid(double e)
+{
+    double e_max = 21.21;
+    double inelasticity_max = 2.818;
+
+    double eta  = (e - e_max) / (e + e_max);
+
+    double aux1 = -0.75 * eta;
+    double aux2 =  0.50 * eta * eta;
+    double aux3 =  0.25 * eta * eta * eta;
+
+    return inelasticity_max * (1 + aux1 + aux2 + aux3);
+}
+
 static double inelasticity_bethe_heitler_high(double e)
 {
     double loge = log(e);
@@ -84,10 +98,14 @@ static double inelasticity_bethe_heitler_high(double e)
 static double inelasticity_bethe_heitler(double e)
 {
     double factor = FINE_STRUCTURE_CONSTANT * ELECTRON_RADIUS * ELECTRON_RADIUS / 2;
-    if(e < 14.4)
-        return factor *inelasticity_bethe_heitler_low(e);
+    factor *= 1 / ELECTRON_MASS;
+
+    if(e < 8.5)
+        return factor * inelasticity_bethe_heitler_low(e);
+    else if(e < 60)
+        return factor * inelasticity_bethe_heitler_mid(e);
     else
-        return factor *inelasticity_bethe_heitler_high(e);
+        return factor * inelasticity_bethe_heitler_high(e);
 }
 
 
