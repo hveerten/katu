@@ -75,9 +75,9 @@ static double inelasticity_bethe_heitler_mid(double e)
 
     double eta  = (e - e_max) / (e + e_max);
 
-    double aux1 = -0.75 * eta;
-    double aux2 =  0.50 * eta * eta;
-    double aux3 =  0.25 * eta * eta * eta;
+    double aux1 = -0.75 * eta * eta;
+    double aux2 =  0.50 * eta * eta * eta;
+    double aux3 = -0.25 * eta * eta * eta * eta;
 
     return inelasticity_max * (1 + aux1 + aux2 + aux3);
 }
@@ -92,6 +92,7 @@ static double inelasticity_bethe_heitler_high(double e)
     double aux2 =  2.5  / (loge * loge);
 
     return 2.542 * aux0 * (1 + aux1 + aux2);
+    // 2.557    -1.57   3.5
 }
 
 // TODO: Find the correct global factor
@@ -184,9 +185,11 @@ void init_bethe_heitler_LUT_lepton_gains(state_t *st)
     posix_memalign((void **) &st->bethe_heitler_LUT_reaction_rate, 32, sizeof(double) * size1);
 }
 
-static double f(gp, ge, e)
+static double f(double loggp, double ge, double e)
 {
-    return gp - ge * ELECTRON_MASS / PROTON_MASS / inelasticity_bethe_heitler(gp * e);
+    double gp = exp(loggp);
+    /*return gp - ge * ELECTRON_MASS / PROTON_MASS / inelasticity_bethe_heitler(gp * e);*/
+    return loggp - log(ge) - log(ELECTRON_MASS / PROTON_MASS) + log(inelasticity_bethe_heitler(gp * e));
 }
 void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
 {
@@ -202,36 +205,45 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
         {
             double e = st->photons.energy[j];
 
-            double g_proton_min = fmax(st->protons.energy[0], 2 / e);
-            double g_proton_max = st->protons.energy[st->protons.size - 1];
-            double g_proton_mid = (g_proton_min + g_proton_max) / 2;
+            double logg_proton_min = fmax(st->protons.log_energy[0], log(2 / e));
+            double logg_proton_max = st->protons.log_energy[st->protons.size - 1];
+            double logg_proton_mid;
 
-            double value_min = f(g_proton_min, g, e);
-            double value_max = f(g_proton_max, g, e);
+            double value_min = f(logg_proton_min, g, e);
+            double value_max = f(logg_proton_max, g, e);
 
-            while(true)
+            st->bethe_heitler_LUT_proton_gamma[index_base + j]  = st->protons.energy[0];
+            st->bethe_heitler_LUT_inelasticity[index_base + j]  = INFINITY;
+            st->bethe_heitler_LUT_reaction_rate[index_base + j] = 0;
+
+            if(logg_proton_min < logg_proton_max && value_min * value_max < 0)
             {
-                double g_proton_mid = (g_proton_min + g_proton_max) / 2;
-                double value_mid = f(g_proton_mid, g, e);
-
-                if(fabs(value_mid) < 1)
-                    break;
-
-                if(value_min * value_mid > 0)
+                while(true)
                 {
-                    g_proton_min = g_proton_mid;
-                    value_min = value_mid;
+                    logg_proton_mid = (logg_proton_min + logg_proton_max) / 2;
+                    double value_mid = f(logg_proton_mid, g, e);
+
+                    if(fabs(value_mid) < 1e-4)
+                        break;
+
+                    if(value_min * value_mid > 0)
+                    {
+                        logg_proton_min = logg_proton_mid;
+                        value_min = value_mid;
+                    }
+                    else
+                    {
+                        logg_proton_max = logg_proton_mid;
+                        value_max = value_mid;
+                    }
                 }
-                else
-                {
-                    g_proton_max = g_proton_mid;
-                    value_max = value_mid;
-                }
+
+                double g_proton_mid = exp(logg_proton_mid);
+
+                st->bethe_heitler_LUT_proton_gamma[index_base + j]  = g_proton_mid;
+                st->bethe_heitler_LUT_inelasticity[index_base + j]  = inelasticity_bethe_heitler(g_proton_mid * e);
+                st->bethe_heitler_LUT_reaction_rate[index_base + j] = rate_bethe_heitler(g_proton_mid * e);
             }
-
-            st->bethe_heitler_LUT_proton_gamma[index_base + j]  = g_proton_mid;
-            st->bethe_heitler_LUT_inelasticity[index_base + j]  = inelasticity_bethe_heitler(g_proton_mid * e);
-            st->bethe_heitler_LUT_reaction_rate[index_base + j] = rate_bethe_heitler(g_proton_mid * e);
         }
     }
 }
