@@ -76,8 +76,8 @@ static double inelasticity_bethe_heitler_mid(double e)
     double eta  = (e - e_max) / (e + e_max);
 
     double aux1 = -0.75 * eta * eta;
-    double aux2 =  0.50 * eta * eta * eta;
-    double aux3 = -0.25 * eta * eta * eta * eta;
+    double aux2 =  0.46 * eta * eta * eta;
+    double aux3 = -0.40 * eta * eta * eta * eta;
 
     return inelasticity_max * (1 + aux1 + aux2 + aux3);
 }
@@ -101,9 +101,9 @@ static double inelasticity_bethe_heitler(double e)
     double factor = FINE_STRUCTURE_CONSTANT * ELECTRON_RADIUS * ELECTRON_RADIUS / 2;
     factor *= 1 / ELECTRON_MASS;
 
-    if(e < 8.5)
+    if(e < 8.2)
         return factor * inelasticity_bethe_heitler_low(e);
-    else if(e < 60)
+    else if(e < 121)
         return factor * inelasticity_bethe_heitler_mid(e);
     else
         return factor * inelasticity_bethe_heitler_high(e);
