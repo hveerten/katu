@@ -547,9 +547,10 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
         {
             fprintf(temp_file,
                     "#Energy\tEnergy_erg\tPopulation\t" \
+                    "Injection\t" \
                     "e_sync_gains\tp_sync_gains\tpp_sync_gains\tnp_sync_gains\t" \
                     "plm_sync_gains\tprm_sync_gains\tnlm_sync_gains\tnrm_sync_gains\t" \
-                    "IC_gains_up\tIC_gains_down\t" \
+                    "IC_gains_up\tIC_gains_down\tPi0_decay\t" \
                     "e_sync_losses\tp_sync_losses\tpp_sync_losses\tnp_sync_losses\t" \
                     "plm_sync_losses\tprm_sync_losses\tnlm_sync_losses\tnrm_sync_losses\t" \
                     "IC_losses\tPP_losses\tesc_losses\n");
@@ -561,7 +562,8 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->photons.population[i]);
 
                 fprintf(temp_file,
-                        "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t",
+                        "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t",
+                        st->external_injection.photons[i],
                         st->electron_synchrotron.photon_gains[i],
                         st->proton_synchrotron.photon_gains[i],
                         st->positive_pion_synchrotron.photon_gains[i],
@@ -571,7 +573,8 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->negative_left_muon_synchrotron.photon_gains[i],
                         st->negative_right_muon_synchrotron.photon_gains[i],
                         st->inverse_compton_photon_gains_upscattering[i],
-                        st->inverse_compton_photon_gains_downscattering[i]);
+                        st->inverse_compton_photon_gains_downscattering[i],
+                        st->pion_decay_photon_gains[i]);
 
                 fprintf(temp_file,
                         "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
@@ -593,6 +596,9 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
         case proton:
         case neutron:
         {
+            fprintf(temp_file, "# Proton Population:\t%lg\n",  calculate_population(&st->protons));
+            fprintf(temp_file, "# Neutron Population:\t%lg\n", calculate_population(&st->neutrons));
+
             fprintf(temp_file,
                     "#Energy\tP_Population\tN_Population\t" \
                     "MR_P_gains\tD_P_gains\tMR_N_gains\tD_N_gains\t" \
@@ -628,8 +634,11 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
         case electron:
         case positron:
         {
+            fprintf(temp_file, "# Electron Population:\t%lg\n", calculate_population(&st->electrons));
+
             fprintf(temp_file,
                     "#Energy\tPopulation\t" \
+                    "External_Injection\t" \
                     "Acc_gains\t" \
                     "Pair_production\t" \
                     "Bethe_Heitler\t" \
@@ -639,7 +648,8 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                 fprintf(temp_file,"%lg\t%lg\t",
                         st->electrons.energy[i], st->electrons.population[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t%lg\t",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
+                        st->external_injection.electrons[i],
                         st->electron_acceleration.gains[i],
                         st->pair_production_electron_gains[i],
                         st->bethe_heitler_electron_gains[i]);
