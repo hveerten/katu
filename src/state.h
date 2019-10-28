@@ -40,6 +40,7 @@ typedef struct state_t
 
     population_t photons;
     population_t electrons;
+    population_t positrons;
     population_t protons;
     population_t neutrons;
 
@@ -59,6 +60,7 @@ typedef struct state_t
 
     RK_information_t photons_RK_information;
     RK_information_t electrons_RK_information;
+    RK_information_t positrons_RK_information;
     RK_information_t protons_RK_information;
     RK_information_t neutrons_RK_information;
 
@@ -83,6 +85,7 @@ typedef struct state_t
     double *inverse_compton_photon_gains_upscattering;
     double *inverse_compton_photon_losses;
     double *inverse_compton_electron_losses;
+    double *inverse_compton_positron_losses;
 
     double *inverse_compton_inner_downscattering;
     double *inverse_compton_inner_upscattering;
@@ -173,10 +176,12 @@ typedef struct state_t
     double *muon_decay_LUT_positive_muon_plus_1;
 
     acceleration_t electron_acceleration;
+    acceleration_t positron_acceleration;
     acceleration_t proton_acceleration;
 
     escape_t photon_escape;
     escape_t electron_escape;
+    escape_t positron_escape;
     escape_t proton_escape;
     decay_and_escape_t neutron_decay_and_escape;
 
@@ -195,6 +200,7 @@ typedef struct state_t
     escape_t muon_antineutrino_escape;
 
     synchrotron_t electron_synchrotron;
+    synchrotron_t positron_synchrotron;
     synchrotron_t proton_synchrotron;
     synchrotron_t positive_pion_synchrotron;
     synchrotron_t negative_pion_synchrotron;
@@ -207,6 +213,7 @@ typedef struct state_t
     {
         double *photons;
         double *electrons;
+        double *positrons;
         double *protons;
         double *neutrons;
 
@@ -241,7 +248,7 @@ void init_state_escape(state_t *st, double t, double cfe_ratio);
 void init_state_decay_and_escape(state_t *st, double t);
 
 void init_state_populations(state_t *st,
-        double g_electron_min, double g_electron_max, unsigned int electron_size,
+        double g_lepton_min, double g_lepton_max, unsigned int lepton_size,
         double g_proton_min, double g_proton_max, unsigned int proton_size,
         double e_proton_min, double e_proton_max, unsigned int photon_size,
         unsigned int pion_size, unsigned int muon_size,

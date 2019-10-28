@@ -127,6 +127,7 @@ void state_init_from_config(state_t *st, config_t *cfg)
 
     double t_acc = 1e100;
     init_acceleration(st, &st->electron_acceleration, electron, t_acc);
+    init_acceleration(st, &st->positron_acceleration, positron, t_acc);
     init_acceleration(st, &st->proton_acceleration,   proton,   t_acc);
 
     double t_esc = 1e100;
@@ -183,6 +184,7 @@ void init_state_synchrotron(state_t *st, double B)
     st->B = B;
 
     init_synchrotron(st, &st->electron_synchrotron,            electron);
+    init_synchrotron(st, &st->positron_synchrotron,            positron);
     init_synchrotron(st, &st->proton_synchrotron,              proton);
     init_synchrotron(st, &st->positive_pion_synchrotron,       positive_pion);
     init_synchrotron(st, &st->negative_pion_synchrotron,       negative_pion);
@@ -196,6 +198,7 @@ void init_state_escape(state_t *st, double t, double cfe_ratio)
 {
     init_escape(st, &st->photon_escape,   photon,   t);
     init_escape(st, &st->electron_escape, electron, t * cfe_ratio);
+    init_escape(st, &st->positron_escape, positron, t * cfe_ratio);
     init_escape(st, &st->proton_escape,   proton,   t * cfe_ratio);
 
     init_escape(st, &st->electron_neutrino_escape,     electron_neutrino,     t);
@@ -219,7 +222,7 @@ void init_state_decay_and_escape(state_t *st, double t)
 }
 
 void init_state_populations(state_t *st,
-        double g_electron_min, double g_electron_max, unsigned int electron_size,
+        double g_lepton_min, double g_lepton_max, unsigned int lepton_size,
         double g_proton_min, double g_proton_max, unsigned int proton_size,
         double e_photon_min, double e_photon_max, unsigned int photon_size,
         unsigned int pion_size, unsigned int muon_size,
@@ -291,7 +294,8 @@ void init_state_populations(state_t *st,
 
     init_population(&st->photons,   photon,   e_photon_min, e_photon_max, photon_size);
 
-    init_population(&st->electrons, electron, g_electron_min, g_electron_max, electron_size);
+    init_population(&st->electrons, electron, g_lepton_min, g_lepton_max, lepton_size);
+    init_population(&st->positrons, positron, g_lepton_min, g_lepton_max, lepton_size);
 
     init_population(&st->protons,   proton,   g_proton_min, g_proton_max, proton_size);
     init_population(&st->neutrons,  neutron,  g_proton_min, g_proton_max, proton_size);
@@ -317,7 +321,9 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->inverse_compton_photon_gains_upscattering,   st->photons.size);
     MEM_PREPARE(st->inverse_compton_photon_gains_downscattering, st->photons.size);
     MEM_PREPARE(st->inverse_compton_photon_losses,               st->photons.size);
+
     MEM_PREPARE(st->inverse_compton_electron_losses,      st->electrons.size);
+    MEM_PREPARE(st->inverse_compton_positron_losses,      st->positrons.size);
     MEM_PREPARE(st->inverse_compton_inner_upscattering,   st->electrons.size);
     MEM_PREPARE(st->inverse_compton_inner_downscattering, st->electrons.size);
 
@@ -366,6 +372,7 @@ void init_state_aux_memory(state_t *st)
     // External Injection
     MEM_PREPARE(st->external_injection.photons,   st->photons.size);
     MEM_PREPARE(st->external_injection.electrons, st->electrons.size);
+    MEM_PREPARE(st->external_injection.positrons, st->positrons.size);
     MEM_PREPARE(st->external_injection.protons,   st->protons.size);
     MEM_PREPARE(st->external_injection.neutrons,  st->neutrons.size);
 
@@ -428,6 +435,7 @@ void state_init_RK_information(state_t *st)
 
     MEM_PREPARE_EXTRA(photons)
     MEM_PREPARE_EXTRA(electrons)
+    MEM_PREPARE_EXTRA(positrons)
     MEM_PREPARE_EXTRA(protons)
     MEM_PREPARE_EXTRA(neutrons)
 
