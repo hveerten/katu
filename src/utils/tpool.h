@@ -56,8 +56,8 @@ typedef struct _thread_pool_t
     bool   stop;        
 } thread_pool_t;
 
-void thread_pool_create(thread_pool_t *pool, size_t num);
-void thread_pool_destroy(thread_pool_t *pool);
+void thread_pool_init(thread_pool_t *pool, size_t num);
+void thread_pool_clear(thread_pool_t *pool);
 
 bool thread_pool_add_work(thread_pool_t *pool, thread_fun_t f, void *args);
 

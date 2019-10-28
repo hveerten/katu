@@ -138,12 +138,14 @@ static void *tpool_worker(void *args)
 
     pool->num_alive--;
     if(pool->num_alive == 0)
-        pthread_cond_signal(&(pool->work_cond));
+    {
+        pthread_cond_signal(&(pool->working_cond));
+    }
     pthread_mutex_unlock(&(pool->work_mutex));
     return NULL;
 }
 
-void thread_pool_create(thread_pool_t *pool, size_t num)
+void thread_pool_init(thread_pool_t *pool, size_t num)
 {
     unsigned int i;
     pthread_t thread;
@@ -165,11 +167,9 @@ void thread_pool_create(thread_pool_t *pool, size_t num)
         pthread_create(&thread, NULL, tpool_worker, pool);
         pthread_detach(thread);
     }
-
-    thread_pool_wait(pool);
 }
 
-void thread_pool_destroy(thread_pool_t *pool)
+void thread_pool_clear(thread_pool_t *pool)
 {
     thread_pool_work_item_t *item;
     thread_pool_work_item_t *item2;
@@ -198,8 +198,6 @@ void thread_pool_destroy(thread_pool_t *pool)
     pthread_mutex_destroy(&(pool->work_mutex));
     pthread_cond_destroy(&(pool->work_cond));
     pthread_cond_destroy(&(pool->working_cond));
-
-    free(pool);
 }
 
 bool thread_pool_add_work(thread_pool_t *pool, thread_fun_t f, void *args)
@@ -250,9 +248,6 @@ void thread_pool_wait(thread_pool_t *pool)
         else
             break;
     }
+    
     pthread_mutex_unlock(&(pool->work_mutex));
-
-    /*fprintf(stderr,"%zd\n", pool->num_working);*/
-    /*fprintf(stderr,"%p\n", pool->head);*/
-    /*fprintf(stderr,"\n");*/
 }

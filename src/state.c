@@ -174,7 +174,7 @@ void state_init_from_config(state_t *st, config_t *cfg)
         state_init_injection(st, cfg);
 
 #ifdef USE_THREAD_POOL
-    thread_pool_create(&st->thread_pool, 5);
+    thread_pool_init(&st->thread_pool, 5);
 #endif
 }
 
