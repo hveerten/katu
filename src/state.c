@@ -640,7 +640,6 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
         }
 
         case electron:
-        case positron:
         {
             fprintf(temp_file, "# Electron Population:\t%lg\n", calculate_population(&st->electrons));
 
@@ -666,6 +665,36 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->electron_synchrotron.particle_losses[i],
                         st->inverse_compton_electron_losses[i],
                         st->electron_escape.losses[i]);
+            }
+            break;
+        }
+
+        case positron:
+        {
+            fprintf(temp_file, "# Positron Population:\t%lg\n", calculate_population(&st->positrons));
+
+            fprintf(temp_file,
+                    "#Energy\tPopulation\t" \
+                    "External_Injection\t" \
+                    "Acc_gains\t" \
+                    "Pair_production\t" \
+                    "Bethe_Heitler\t" \
+                    "Sync_losses\tIC_Losses\tEscape\n");
+            for(i = 0; i < st->electrons.size; i++)
+            {
+                fprintf(temp_file,"%lg\t%lg\t",
+                        st->positrons.energy[i], st->positrons.population[i]);
+
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
+                        st->external_injection.positrons[i],
+                        st->positron_acceleration.gains[i],
+                        st->pair_production_positron_gains[i],
+                        st->bethe_heitler_positron_gains[i]);
+
+                fprintf(temp_file,"%lg\t%lg\t%lg\n",
+                        st->positron_synchrotron.particle_losses[i],
+                        st->inverse_compton_positron_losses[i],
+                        st->positron_escape.losses[i]);
             }
             break;
         }
