@@ -18,7 +18,44 @@
 
 void step_calculate_processes(state_t *st)
 {
-#if USE_THREADS
+#if USE_THREAD_POOL
+    // NOTE: Idealy we want to add the longest works at the beginning rather
+    // than at the end
+    thread_pool_add_work(&st->thread_pool, inverse_compton_head_on_upscattering_wrapper,   st);
+    thread_pool_add_work(&st->thread_pool, inverse_compton_head_on_downscattering_wrapper, st);
+    thread_pool_add_work(&st->thread_pool, inverse_compton_photon_losses_wrapper,          st);
+    thread_pool_add_work(&st->thread_pool, inverse_compton_electron_losses_wrapper,        st);
+
+    thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_wrapper,               st);
+    thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_hadron_gains_wrapper,  st);
+    thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_hadron_losses_wrapper, st);
+
+    thread_pool_add_work(&st->thread_pool, direct_pion_production_wrapper,               st);
+    thread_pool_add_work(&st->thread_pool, direct_pion_production_hadron_gains_wrapper,  st);
+    thread_pool_add_work(&st->thread_pool, direct_pion_production_hadron_losses_wrapper, st);
+
+    thread_pool_add_work(&st->thread_pool, st->electron_synchrotron.synchrotron_function,            &st->electron_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->proton_synchrotron.synchrotron_function,              &st->proton_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->positive_pion_synchrotron.synchrotron_function,       &st->positive_pion_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->negative_pion_synchrotron.synchrotron_function,       &st->negative_pion_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->positive_left_muon_synchrotron.synchrotron_function,  &st->positive_left_muon_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->positive_right_muon_synchrotron.synchrotron_function, &st->positive_right_muon_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->negative_left_muon_synchrotron.synchrotron_function,  &st->negative_left_muon_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->negative_right_muon_synchrotron.synchrotron_function, &st->negative_right_muon_synchrotron);
+
+    thread_pool_add_work(&st->thread_pool, pair_production_photon_losses_wrapper, st);
+    /*thread_pool_add_work(&st->thread_pool, pair_production_lepton_gains_wrapper,  st);*/
+
+    /*thread_pool_add_work(&st->thread_pool, bethe_heitler_lepton_gains_wrapper, st);*/
+    /*thread_pool_add_work(&st->thread_pool, bethe_heitler_photon_losses_wrapper, st);*/
+    /*thread_pool_add_work(&st->thread_pool, bethe_heitler_proton_losses_wrapper, st);*/
+
+    thread_pool_add_work(&st->thread_pool, muon_decay_wrapper,         st);
+    thread_pool_add_work(&st->thread_pool, charged_pion_decay_wrapper, st);
+
+    thread_pool_wait(&st->thread_pool);
+
+#elif USE_MY_THREADS
     pthread_t electron_synchrotron_thread;
     pthread_t proton_synchrotron_thread;
 
@@ -112,9 +149,6 @@ void step_calculate_processes(state_t *st)
 
     pthread_join(charged_pion_decay_thread, NULL);
     pthread_join(muon_decay_thread,         NULL);
-
-    st->electron_acceleration.acceleration_function(&st->electron_acceleration);
-    /*st->proton_acceleration.acceleration_function(&st->proton_acceleration);*/
 #else
     st->electron_synchrotron.synchrotron_function(&st->electron_synchrotron);
     st->proton_synchrotron.synchrotron_function(&st->proton_synchrotron);
@@ -144,10 +178,10 @@ void step_calculate_processes(state_t *st)
     bethe_heitler_lepton_gains(st);
     /*bethe_heitler_photon_losses(st);*/
     /*bethe_heitler_proton_losses(st);*/
+#endif
 
     st->electron_acceleration.acceleration_function(&st->electron_acceleration);
-    st->proton_acceleration.acceleration_function(&st->proton_acceleration);
-#endif
+    /*st->proton_acceleration.acceleration_function(&st->proton_acceleration);*/
 
     st->photon_escape.escape_function(&st->photon_escape);
     st->electron_escape.escape_function(&st->electron_escape);

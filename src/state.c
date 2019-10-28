@@ -172,6 +172,10 @@ void state_init_from_config(state_t *st, config_t *cfg)
 
     if(cfg->ei.luminosity != 0)
         state_init_injection(st, cfg);
+
+#ifdef USE_THREAD_POOL
+    thread_pool_create(&st->thread_pool, 5);
+#endif
 }
 
 void init_state_synchrotron(state_t *st, double B)

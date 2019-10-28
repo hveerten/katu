@@ -11,6 +11,8 @@
 #include "population.h"
 #include "synchrotron.h"
 
+#include "utils/tpool.h"
+
 #include <stdbool.h>
 
 typedef struct
@@ -222,6 +224,10 @@ typedef struct state_t
         double *muon_neutrinos;
         double *muon_antineutrinos;
     }  external_injection;
+
+#ifdef USE_THREAD_POOL
+    thread_pool_t thread_pool;
+#endif
 
     void (*step_function)(struct state_t *st);
     void (*tentative_step_function)(struct state_t *st, bool try_new_step);
