@@ -539,7 +539,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
 
     FILE *temp_file = fopen(filename, "w");
 
-    fprintf(temp_file, "# %lg\n", st->t);
+    fprintf(temp_file, "# t: %lg\n", st->t);
 
     switch(pt)
     {
