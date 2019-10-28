@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-double R(double x)
+static double R(double x)
 {
     double a = sqrt(1 - 1/x);
 
