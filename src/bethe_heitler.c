@@ -44,12 +44,12 @@ static double rate_bethe_heitler_high(double e)
                pow(mu2, 3) * d;
 }
 
-// TODO: Find the correct factor for each approximation
+// NOTE: Check that the global factor is correct
 static double rate_bethe_heitler(double e)
 {
-    double factor = 1;
-    double factor_low  = factor * 1;
-    double factor_high = factor * 3 / (2 * M_PI);
+    double factor = FINE_STRUCTURE_CONSTANT * (ELECTRON_RADIUS * ELECTRON_RADIUS);
+    double factor_low  = factor * (2 * M_PI) / 3;
+    double factor_high = factor * 1;
 
     if(e < 3.4)
         return factor_low  * rate_bethe_heitler_low(e);
@@ -99,6 +99,7 @@ static double inelasticity_bethe_heitler_high(double e)
 static double inelasticity_bethe_heitler(double e)
 {
     double factor = FINE_STRUCTURE_CONSTANT * ELECTRON_RADIUS * ELECTRON_RADIUS / 2;
+    /*factor *= 1 / PROTON_MASS;*/
     factor *= 1 / ELECTRON_MASS;
 
     if(e < 8.2)
@@ -115,7 +116,7 @@ void bethe_heitler_lepton_gains(state_t *st)
 {
     unsigned int i, j;
 
-    double factor = ELECTRON_MASS * LIGHT_SPEED;
+    double factor = ELECTRON_MASS * LIGHT_SPEED * LIGHT_SPEED * LIGHT_SPEED;
     double dlnx = st->photons.log_energy[1] - st->photons.log_energy[0];
 
     double *proton_interpolated;
@@ -123,19 +124,15 @@ void bethe_heitler_lepton_gains(state_t *st)
     gsl_interp_accel *proton_accelerator  = gsl_interp_accel_alloc();
     gsl_spline_init(proton_spline, st->protons.log_energy, st->protons.log_population, st->protons.size);
 
-    posix_memalign((void *) &proton_interpolated,  32, st->photons.size * sizeof(double));
+    posix_memalign((void *) &proton_interpolated, 32, st->photons.size * sizeof(double));
 
     for(i = 0; i < st->electrons.size; i++)
     {
-        double g = st->electrons.energy[i];
-
         unsigned int index_base = i * st->photons.size;
 
         for(j = 0; j < st->photons.size; j++)
         {
-            double xi = st->bethe_heitler_LUT_inelasticity[index_base + j];
-
-            double g_proton = g / xi * ELECTRON_MASS / PROTON_MASS;
+            double g_proton = st->bethe_heitler_LUT_proton_gamma[index_base + j];
 
             if(g_proton < st->protons.energy[0] ||
                g_proton > st->protons.energy[st->protons.size - 1])
@@ -189,7 +186,7 @@ static double f(double loggp, double ge, double e)
 {
     double gp = exp(loggp);
     /*return gp - ge * ELECTRON_MASS / PROTON_MASS / inelasticity_bethe_heitler(gp * e);*/
-    return loggp - log(ge) - log(ELECTRON_MASS / PROTON_MASS) + log(inelasticity_bethe_heitler(gp * e));
+    return loggp - log(ge - e/2) - log(ELECTRON_MASS / PROTON_MASS) + log(inelasticity_bethe_heitler(gp * e));
 }
 void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
 {
@@ -205,23 +202,48 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
         {
             double e = st->photons.energy[j];
 
-            double logg_proton_min = fmax(st->protons.log_energy[0], log(2 / e));
+            double logg_proton_min = fmax(st->protons.log_energy[0], log(2.001 / e));
+            double logg_proton_mid = log(21.21 / e);
             double logg_proton_max = st->protons.log_energy[st->protons.size - 1];
-            double logg_proton_mid;
 
             double value_min = f(logg_proton_min, g, e);
+            double value_mid = f(logg_proton_mid, g, e);
             double value_max = f(logg_proton_max, g, e);
 
             st->bethe_heitler_LUT_proton_gamma[index_base + j]  = st->protons.energy[0];
             st->bethe_heitler_LUT_inelasticity[index_base + j]  = INFINITY;
             st->bethe_heitler_LUT_reaction_rate[index_base + j] = 0;
 
+            /* Here, mid is the point where the function xi has a maximum,
+             * so it is possible that f also has a maximum or minimum.
+             * This gives the possibility that there are two (?) solutions
+             * but as min and max would have the same sign we would find
+             * neither.
+             * Get at least one of them
+             */
+            if(logg_proton_min < logg_proton_mid &&
+               logg_proton_mid < logg_proton_max)
+            {
+                if(value_min * value_mid > 0)
+                {
+                    logg_proton_min = logg_proton_mid;
+                    value_min = value_mid;
+                }
+                else if(value_mid * value_max > 0)
+                {
+                    logg_proton_max = logg_proton_mid;
+                    value_max = value_mid;
+                }
+                else
+                    break;
+            }
+
             if(logg_proton_min < logg_proton_max && value_min * value_max < 0)
             {
                 while(true)
                 {
                     logg_proton_mid = (logg_proton_min + logg_proton_max) / 2;
-                    double value_mid = f(logg_proton_mid, g, e);
+                    value_mid = f(logg_proton_mid, g, e);
 
                     if(fabs(value_mid) < 1e-4)
                         break;
