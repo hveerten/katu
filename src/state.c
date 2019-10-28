@@ -520,7 +520,7 @@ void state_report_injection_info(state_t *st, config_t *cfg)
 
     fprintf(stderr,"Luminosity:\t%lg\n", cfg->ei.luminosity);
     fprintf(stderr,"Injection density:\t%lg\n", Q_e);
-    fprintf(stderr,"Proton To Electron Ratio:\t%lg\n", st->eta);
+    fprintf(stderr,"Proton To Electron Ratio:\t%lg\n", cfg->ei.eta);
     fprintf(stderr,"Photon Luminosity:\t%lg\n", cfg->ei.photon_luminosity);
 #define FORMAT_ARGUMENTS(X) \
     "\t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\n",  \
