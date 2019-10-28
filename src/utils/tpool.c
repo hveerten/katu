@@ -105,8 +105,6 @@ static void *tpool_worker(void *args)
 
         /* Try to pull work from the queue. */
         item = thread_pool_get_work_item(pool);
-        pool->num_working++;
-        pthread_mutex_unlock(&(pool->work_mutex));
 
         /* Call the work function and let it process.
          *
@@ -114,19 +112,19 @@ static void *tpool_worker(void *args)
          * will wake when there is work, a thread might not get any work. 1
          * piece of work and 2 threads, both will wake but with 1 only work 1
          * will get the work and the other won't.
-         *
-         * num_working has been increment and item could be NULL. While it's
-         * not true there is work processing the thread is considered working
-         * because it's not waiting in the conditional. Pedantic but...
          */
         if(item != NULL)
         {
+            pool->num_working++;
+            pthread_mutex_unlock(&(pool->work_mutex));
+
             item->fun(item->args);
             thread_pool_destroy_work_item(item);
+
+            pthread_mutex_lock(&(pool->work_mutex));
+            pool->num_working--;
         }
 
-        pthread_mutex_lock(&(pool->work_mutex));
-        pool->num_working--;
         /* Since we're in a lock no work can be added or removed form the queue.
          * Also, the working_cnt can't be changed (except the thread holding the lock).
          * At this point if there isn't any work processing and if there is no work
@@ -138,10 +136,9 @@ static void *tpool_worker(void *args)
 
     pool->num_alive--;
     if(pool->num_alive == 0)
-    {
         pthread_cond_signal(&(pool->working_cond));
-    }
     pthread_mutex_unlock(&(pool->work_mutex));
+
     return NULL;
 }
 
