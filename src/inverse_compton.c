@@ -280,8 +280,9 @@ void inverse_compton_process_photon_losses(state_t *st)
         {
             double reaction_rate = st->inverse_compton_LUT_losses_reaction_rate[index_base + j];
             double ne = st->electrons.population[j];
+            double np = st->positrons.population[j];
 
-            losses += 2 * ne * reaction_rate;
+            losses += 2 * (ne + np) * reaction_rate;
         }
 
         losses *= dlng;
