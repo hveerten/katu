@@ -285,6 +285,19 @@ void step_update_populations(state_t *st, double dt)
              st->electron_escape.losses[i]);
     }
 
+    for(i = 0; i < st->positrons.size; i++)
+    {
+        st->positrons.tentative_population[i] =
+            st->positrons.population[i] + dt *
+            (st->external_injection.positrons[i] +
+             /*st->pair_production_electron_gains[i] +*/
+             st->positron_synchrotron.particle_losses[i] +
+             /*st->inverse_compton_electron_losses[i] +*/
+             /*st->bethe_heitler_electron_gains[i] +*/
+             st->positron_acceleration.gains[i] +
+             st->positron_escape.losses[i]);
+    }
+
     for(i = 0; i < st->neutral_pions.size; i++)
     {
         st->neutral_pions.tentative_population[i] =
@@ -649,6 +662,74 @@ void step_experimental_update_populations(state_t *st, double dt)
     }
 #endif
 
+#if POSITRON_STEADY_STATE == 0
+{
+    double t_acc = st->positron_acceleration.t;
+    double t_esc = st->positron_escape.t;
+    double S     = st->positron_synchrotron.particle_losses_factor;
+    double IC    = st->inverse_compton_electron_losses_factor;
+
+    double positron_turnover = 1 / (t_acc * (S + IC));
+
+    double positron_aux0[st->positrons.size];
+    double positron_aux1[st->positrons.size];
+    for(i = 0; i < st->positrons.size; i++)
+    {
+        double g     = st->positrons.energy[i];
+
+        positron_aux0[i] = 2 * g * (S + IC) - 1 / t_acc - 1 / t_esc;
+        positron_aux1[i] =     g * (S + IC) - 1 / t_acc;
+    }
+
+    dlng = st->positrons.log_energy[1] - st->positrons.log_energy[0];
+
+    // Acceleration part
+    st->positrons.tentative_population[0] = st->positrons.population[0];
+    {
+        double aux1 = positron_aux1[1];
+        double aux2 = positron_aux0[1];
+
+        double log_new_pop = log(st->positrons.tentative_population[0]);
+
+        log_new_pop = (st->positrons.log_population[1] + st->dt * (aux2 - aux1 * log_new_pop / dlng)) /
+                        (1 - aux1 * st->dt / dlng);
+
+        st->positrons.tentative_population[1] = exp(log_new_pop);
+    }
+    for(i = 2; i < st->positrons.size - 1 && st->positrons.energy[i] < positron_turnover; i++)
+    {
+        double aux1 = positron_aux1[i];
+        double aux2 = positron_aux0[i];
+
+        double log_new_pop = log(st->positrons.tentative_population[i - 1]);
+        double log_old_pop = log(st->positrons.tentative_population[i - 2]);
+
+        log_new_pop = (st->positrons.log_population[i] + st->dt * (aux2 - aux1 * (4*log_new_pop - log_old_pop) / dlng/2)) /
+                        (1 - 3*aux1 * st->dt / dlng/2);
+
+        st->positrons.tentative_population[i] = exp(log_new_pop);
+    }
+
+    // Cooling Part
+    for(i = st->positrons.size - 1; i < st->positrons.size && positron_turnover < st->positrons.energy[i]; i--)
+    {
+        double aux1 = positron_aux1[i];
+        double aux2 = positron_aux0[i];
+
+        double log_new_pop = log(st->positrons.tentative_population[i + 1]);
+        if(i != st->positrons.size - 1)
+        {
+            log_new_pop = (st->positrons.log_population[i] + st->dt * (aux2 + aux1 * log_new_pop / dlng)) /
+                          (1 + aux1 * st->dt / dlng);
+        }
+        else
+            log_new_pop = st->positrons.log_population[i];
+
+        st->positrons.tentative_population[i] = exp(log_new_pop);
+    }
+}
+#endif
+
     for(i = 0; i < st->neutral_pions.size; i++)
     {
         double n = st->neutral_pions.population[i];
@@ -1001,6 +1082,66 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
                         (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
 
         st->electrons.tentative_population[i] = electron_new_pop;
+    }
+}
+#endif
+
+#if POSITRON_STEADY_STATE == 0
+{
+    double t_acc = st->positron_acceleration.t;
+    double t_esc = st->positron_escape.t;
+    double S     = st->positron_synchrotron.particle_losses_factor;
+    double IC    = st->inverse_compton_electron_losses_factor;
+
+    double positron_turnover = 1 / (t_acc * (S + IC));
+
+    double aux1[st->positrons.size];
+    double aux2[st->positrons.size];
+    for(i = 0; i < st->positrons.size; i++)
+    {
+        double g = st->positrons.energy[i];
+
+        aux1[i] =     g * (S + IC) - 1 / t_acc;
+        aux2[i] = 2 * g * (S + IC) - 1 / t_acc - 1 / t_esc;
+    }
+
+    dlng = st->positrons.log_energy[1] - st->positrons.log_energy[0];
+
+    // Heating part
+    double positron_log_new_pop = log(st->positrons.population[0] + st->dt * st->external_injection.positrons[0]);
+    st->positrons.tentative_population[0] = exp(positron_log_new_pop);
+
+    for(i = 1; i < st->positrons.size && st->positrons.energy[i] < positron_turnover; i++)
+    {
+        double  n = st->positrons.population[i];
+        double ln = st->positrons.log_population[i];
+
+        double Q = st->external_injection.positrons[i] +
+                   st->pair_production_electron_gains[i] +
+                   st->bethe_heitler_electron_gains[i];
+
+        positron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * positron_log_new_pop / dlng)) /
+                        (1 - aux1[i] * st->dt / dlng);
+
+        st->positrons.tentative_population[i] = exp(positron_log_new_pop);
+    }
+
+    // Cooling part
+    double positron_new_pop = st->positrons.population[st->positrons.size - 1];
+    st->positrons.tentative_population[st->positrons.size - 1] = positron_new_pop;
+
+    for(i = st->positrons.size - 2; i < st->positrons.size && positron_turnover < st->positrons.energy[i]; i--)
+    {
+        double n = st->positrons.population[i];
+
+        double Q = st->external_injection.positrons[i] +
+                   st->pair_production_electron_gains[i] +
+                   st->bethe_heitler_electron_gains[i];
+
+        positron_new_pop = (n + st->dt * (Q + aux1[i] * positron_new_pop / dlng)) /
+                        (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
+
+        st->positrons.tentative_population[i] = positron_new_pop;
     }
 }
 #endif
