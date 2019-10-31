@@ -35,6 +35,7 @@ void step_calculate_processes(state_t *st)
     thread_pool_add_work(&st->thread_pool, direct_pion_production_hadron_losses_wrapper, st);
 
     thread_pool_add_work(&st->thread_pool, st->electron_synchrotron.synchrotron_function,            &st->electron_synchrotron);
+    thread_pool_add_work(&st->thread_pool, st->positron_synchrotron.synchrotron_function,            &st->positron_synchrotron);
     thread_pool_add_work(&st->thread_pool, st->proton_synchrotron.synchrotron_function,              &st->proton_synchrotron);
     thread_pool_add_work(&st->thread_pool, st->positive_pion_synchrotron.synchrotron_function,       &st->positive_pion_synchrotron);
     thread_pool_add_work(&st->thread_pool, st->negative_pion_synchrotron.synchrotron_function,       &st->negative_pion_synchrotron);
@@ -57,6 +58,7 @@ void step_calculate_processes(state_t *st)
 
 #elif USE_MY_THREADS
     pthread_t electron_synchrotron_thread;
+    pthread_t positron_synchrotron_thread;
     pthread_t proton_synchrotron_thread;
 
     pthread_t positive_pion_synchrotron_thread;
@@ -91,6 +93,7 @@ void step_calculate_processes(state_t *st)
     pthread_t charged_pion_decay_thread;
 
     pthread_create(&electron_synchrotron_thread,            NULL, st->electron_synchrotron.synchrotron_function,            &st->electron_synchrotron);
+    pthread_create(&positron_synchrotron_thread,            NULL, st->positron_synchrotron.synchrotron_function,            &st->positron_synchrotron);
     pthread_create(&proton_synchrotron_thread,              NULL, st->proton_synchrotron.synchrotron_function,              &st->proton_synchrotron);
     pthread_create(&positive_pion_synchrotron_thread,       NULL, st->positive_pion_synchrotron.synchrotron_function,       &st->positive_pion_synchrotron);
     pthread_create(&negative_pion_synchrotron_thread,       NULL, st->negative_pion_synchrotron.synchrotron_function,       &st->negative_pion_synchrotron);
@@ -123,6 +126,7 @@ void step_calculate_processes(state_t *st)
     pthread_create(&charged_pion_decay_thread, NULL, charged_pion_decay_wrapper, st);
 
     pthread_join(electron_synchrotron_thread,            NULL);
+    pthread_join(positron_synchrotron_thread,            NULL);
     pthread_join(proton_synchrotron_thread,              NULL);
     pthread_join(positive_pion_synchrotron_thread,       NULL);
     pthread_join(negative_pion_synchrotron_thread,       NULL);
@@ -151,6 +155,7 @@ void step_calculate_processes(state_t *st)
     pthread_join(muon_decay_thread,         NULL);
 #else
     st->electron_synchrotron.synchrotron_function(&st->electron_synchrotron);
+    st->positron_synchrotron.synchrotron_function(&st->positron_synchrotron);
     st->proton_synchrotron.synchrotron_function(&st->proton_synchrotron);
     st->positive_pion_synchrotron.synchrotron_function(&st->positive_pion_synchrotron);
     st->negative_pion_synchrotron.synchrotron_function(&st->negative_pion_synchrotron);
@@ -180,11 +185,13 @@ void step_calculate_processes(state_t *st)
     /*bethe_heitler_proton_losses(st);*/
 #endif
 
+    st->positron_acceleration.acceleration_function(&st->positron_acceleration);
     st->electron_acceleration.acceleration_function(&st->electron_acceleration);
     /*st->proton_acceleration.acceleration_function(&st->proton_acceleration);*/
 
     st->photon_escape.escape_function(&st->photon_escape);
     st->electron_escape.escape_function(&st->electron_escape);
+    st->positron_escape.escape_function(&st->positron_escape);
     st->proton_escape.escape_function(&st->proton_escape);
     st->neutron_decay_and_escape.losses_function(&st->neutron_decay_and_escape);
 
