@@ -25,6 +25,7 @@ void init_acceleration(state_t *st, acceleration_t *acc, enum particle_type pt, 
     switch(pt)
     {
         case electron:      acc->particles = &st->electrons;      break;
+        case positron:      acc->particles = &st->positrons;      break;
         case photon:        acc->particles = &st->photons;        break;
         case proton:        acc->particles = &st->protons;        break;
         case neutron:       acc->particles = &st->neutrons;       break;

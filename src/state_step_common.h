@@ -12,6 +12,12 @@
 #define APPLY_TO_ELECTRONS
 #endif
 
+#if POSITRON_STEADY_STATE == 0
+#define APPLY_TO_POSITRONS STEP_INTERNAL_FUNCTION(positrons)
+#else
+#define APPLY_TO_POSITRONS
+#endif
+
 #if PROTON_STEADY_STATE == 0
 #define APPLY_TO_PROTONS STEP_INTERNAL_FUNCTION(protons)
 #else
@@ -21,6 +27,7 @@
 #define APPLY_STEP_INTERNAL_FUNCTION_TO_PARTICLES   \
     STEP_INTERNAL_FUNCTION(photons)                 \
     APPLY_TO_ELECTRONS \
+    APPLY_TO_POSITRONS \
     APPLY_TO_PROTONS \
     STEP_INTERNAL_FUNCTION(neutrons)                \
                                                     \

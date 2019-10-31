@@ -20,6 +20,7 @@ void init_escape(struct state_t *st, escape_t *esc, enum particle_type pt, doubl
     switch(pt)
     {
         case electron:      esc->particles = &st->electrons;      break;
+        case positron:      esc->particles = &st->positrons;      break;
         case photon:        esc->particles = &st->photons;        break;
         case proton:        esc->particles = &st->protons;        break;
         case neutron:       esc->particles = &st->neutrons;       break;

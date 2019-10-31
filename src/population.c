@@ -13,6 +13,7 @@ void init_population(population_t *p, enum particle_type pt,
  *    {
  *        case photon:        p = &st->photons;        break;
  *        case electron:      p = &st->electrons;      break;
+ *        case positron:      p = &st->positrons;      break;
  *        case proton:        p = &st->protons;        break;
  *        case neutron:       p = &st->neutrons;       break;
  *        case neutral_pion:  p = &st->neutral_pions;  break;
@@ -27,6 +28,7 @@ void init_population(population_t *p, enum particle_type pt,
     {
         case photon:        p->mass = ELECTRON_MASS; break;
         case electron:      p->mass = ELECTRON_MASS; break;
+        case positron:      p->mass = ELECTRON_MASS; break;
         case proton:        p->mass = PROTON_MASS;   break;
         case neutron:       p->mass = PROTON_MASS;   break; // <----------
         case neutral_pion:  p->mass = PION_MASS;     break;

@@ -45,6 +45,7 @@ void init_synchrotron(state_t *st, synchrotron_t *synchro, enum particle_type pt
     switch(pt)
     {
         case electron:      synchro->particles = &st->electrons;      break;
+        case positron:      synchro->particles = &st->positrons;      break;
         case proton:        synchro->particles = &st->protons;        break;
         case positive_pion: synchro->particles = &st->positive_pions; break;
         case negative_pion: synchro->particles = &st->negative_pions; break;
