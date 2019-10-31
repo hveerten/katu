@@ -45,9 +45,9 @@ void step_calculate_processes(state_t *st)
     thread_pool_add_work(&st->thread_pool, st->negative_right_muon_synchrotron.synchrotron_function, &st->negative_right_muon_synchrotron);
 
     thread_pool_add_work(&st->thread_pool, pair_production_photon_losses_wrapper, st);
-    /*thread_pool_add_work(&st->thread_pool, pair_production_lepton_gains_wrapper,  st);*/
+    thread_pool_add_work(&st->thread_pool, pair_production_lepton_gains_wrapper,  st);
 
-    /*thread_pool_add_work(&st->thread_pool, bethe_heitler_lepton_gains_wrapper, st);*/
+    thread_pool_add_work(&st->thread_pool, bethe_heitler_lepton_gains_wrapper, st);
     /*thread_pool_add_work(&st->thread_pool, bethe_heitler_photon_losses_wrapper, st);*/
     /*thread_pool_add_work(&st->thread_pool, bethe_heitler_proton_losses_wrapper, st);*/
 
@@ -86,8 +86,8 @@ void step_calculate_processes(state_t *st)
     pthread_t direct_pion_production_hadron_gains_thread;
 
     pthread_t bethe_heitler_lepton_gains_thread;
-    /*pthread_t bethe_heitler_photon_losses_thread;*/
-    /*pthread_t bethe_heitler_proton_losses_thread;*/
+    pthread_t bethe_heitler_photon_losses_thread;
+    pthread_t bethe_heitler_proton_losses_thread;
 
     pthread_t muon_decay_thread;
     pthread_t charged_pion_decay_thread;
@@ -150,6 +150,10 @@ void step_calculate_processes(state_t *st)
     pthread_join(direct_pion_production_thread,               NULL);
     pthread_join(direct_pion_production_hadron_gains_thread,  NULL);
     pthread_join(direct_pion_production_hadron_losses_thread, NULL);
+
+    pthread_join(bethe_heitler_lepton_gains_thread,  NULL);
+    /*pthread_join(bethe_heitler_photon_losses_thread, NULL);*/
+    /*pthread_join(bethe_heitler_proton_losses_thread, NULL);*/
 
     pthread_join(charged_pion_decay_thread, NULL);
     pthread_join(muon_decay_thread,         NULL);
