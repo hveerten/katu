@@ -112,7 +112,7 @@ static double inelasticity_bethe_heitler(double e)
 
 
 // TODO: Make sure that the global factor is correct
-void bethe_heitler_lepton_gains(state_t *st)
+void bethe_heitler_process_lepton_gains(state_t *st)
 {
     unsigned int i, j;
 
@@ -163,8 +163,7 @@ void bethe_heitler_lepton_gains(state_t *st)
 
         gains *= dlnx / 2;
 
-        st->bethe_heitler_electron_gains[i] = factor * gains;
-        st->bethe_heitler_positron_gains[i] = factor * gains;
+        st->bethe_heitler_lepton_gains[i] = factor * gains;
     }
 
     free(proton_interpolated);

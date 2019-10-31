@@ -184,7 +184,7 @@ void step_calculate_processes(state_t *st)
 
     direct_pion_production(st);
 
-    bethe_heitler_lepton_gains(st);
+    bethe_heitler_process_lepton_gains(st);
     /*bethe_heitler_photon_losses(st);*/
     /*bethe_heitler_proton_losses(st);*/
 #endif
@@ -284,7 +284,7 @@ void step_update_populations(state_t *st, double dt)
              st->pair_production_lepton_gains[i] +
              st->electron_synchrotron.particle_losses[i] +
              st->inverse_compton_electron_losses[i] +
-             st->bethe_heitler_electron_gains[i] +
+             st->bethe_heitler_lepton_gains[i] +
              st->electron_acceleration.gains[i] +
              st->electron_escape.losses[i]);
     }
@@ -1038,7 +1038,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_electron_gains[i];
+                   st->bethe_heitler_lepton_gains[i];
 
         electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * electron_log_new_pop / dlng)) /
                         (1 - aux1[i] * st->dt / dlng);
@@ -1080,7 +1080,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_electron_gains[i];
+                   st->bethe_heitler_lepton_gains[i];
 
         electron_new_pop = (n + st->dt * (Q + aux1[i] * electron_new_pop / dlng)) /
                         (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
@@ -1122,7 +1122,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_electron_gains[i];
+                   st->bethe_heitler_lepton_gains[i];
 
         positron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * positron_log_new_pop / dlng)) /
                         (1 - aux1[i] * st->dt / dlng);
@@ -1140,7 +1140,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_electron_gains[i];
+                   st->bethe_heitler_lepton_gains[i];
 
         positron_new_pop = (n + st->dt * (Q + aux1[i] * positron_new_pop / dlng)) /
                         (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
@@ -1456,7 +1456,7 @@ void step_report_population_update(state_t *st, enum particle_type pt)
                 fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->electron_acceleration.gains[i],
                         st->pair_production_lepton_gains[i],
-                        st->bethe_heitler_electron_gains[i],
+                        st->bethe_heitler_lepton_gains[i],
                         st->electron_synchrotron.particle_losses[i],
                         st->inverse_compton_electron_losses[i],
                         st->electron_escape.losses[i]);

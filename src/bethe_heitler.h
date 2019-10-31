@@ -4,7 +4,7 @@
 
 #include "state.h"
 
-void bethe_heitler_lepton_gains(state_t *st);
+void bethe_heitler_process_lepton_gains(state_t *st);
 
 void init_bethe_heitler_LUT_lepton_gains(state_t *st);
 
@@ -16,7 +16,7 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st);
 static inline void *bethe_heitler_lepton_gains_wrapper(void *args)
 {
     state_t *st = (state_t *)args;
-    bethe_heitler_lepton_gains(st);
+    bethe_heitler_process_lepton_gains(st);
     return NULL;
 }
 
