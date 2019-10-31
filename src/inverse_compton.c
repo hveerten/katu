@@ -73,12 +73,15 @@ void inverse_compton_process_head_on(state_t *st)
             st->inverse_compton_inner_downscattering[j] *= dlne / 2;
         }
 
-        downscattering += st->electrons.population[0] * st->inverse_compton_inner_downscattering[0];
-        downscattering += st->electrons.population[st->electrons.size - 1] * st->inverse_compton_inner_downscattering[st->electrons.size - 1];
+        downscattering += (st->electrons.population[0] + st->positrons.population[0]) * st->inverse_compton_inner_downscattering[0];
+        downscattering += (st->electrons.population[st->electrons.size - 1] + st->positrons.population[st->positrons.size - 1]) * st->inverse_compton_inner_downscattering[st->electrons.size - 1];
 
         for(j = 1; j < st->electrons.size - 1; j++)
         {
-            downscattering += 2 * st->electrons.population[j] * st->inverse_compton_inner_downscattering[j];
+            double ne = st->electrons.population[j];
+            double np = st->positrons.population[j];
+
+            downscattering += 2 * (ne + np) * st->inverse_compton_inner_downscattering[j];
         }
 
         st->inverse_compton_photon_gains[i] = factor * downscattering * dlng / 2;
@@ -126,12 +129,15 @@ void inverse_compton_process_head_on(state_t *st)
             /*fprintf(stderr,"AAA%u:\t%lg\n", j, st->inverse_compton_inner_upscattering[j]);*/
         }
 
-        upscattering += st->electrons.population[index_g_min] * st->inverse_compton_inner_upscattering[index_g_min];
-        upscattering += st->electrons.population[index_g_max] * st->inverse_compton_inner_upscattering[index_g_max];
+        upscattering += (st->electrons.population[index_g_min] + st->positrons.population[index_g_min]) * st->inverse_compton_inner_upscattering[index_g_min];
+        upscattering += (st->electrons.population[index_g_max] + st->positrons.population[index_g_max]) * st->inverse_compton_inner_upscattering[index_g_max];
 
         for(j = index_g_min + 1; j < index_g_max; j++)
         {
-            upscattering += 2 * st->electrons.population[j] * st->inverse_compton_inner_upscattering[j];
+            double ne = st->electrons.population[j];
+            double np = st->positrons.population[j];
+
+            upscattering += 2 * (ne + np) * st->inverse_compton_inner_upscattering[j];
         }
 
         st->inverse_compton_photon_gains[i] += factor * upscattering * dlng / 2;
@@ -184,12 +190,15 @@ void inverse_compton_process_head_on_downscattering(state_t *st)
         }
 
         double downscattering = 0;
-        downscattering += st->electrons.population[0] * st->inverse_compton_inner_downscattering[0];
-        downscattering += st->electrons.population[st->electrons.size - 1] * st->inverse_compton_inner_downscattering[st->electrons.size - 1];
+        downscattering += (st->electrons.population[0] + st->positrons.population[0]) * st->inverse_compton_inner_downscattering[0];
+        downscattering += (st->electrons.population[st->electrons.size - 1] + st->positrons.population[st->positrons.size - 1]) * st->inverse_compton_inner_downscattering[st->electrons.size - 1];
 
         for(j = 1; j < st->electrons.size - 1; j++)
         {
-            downscattering += 2 * st->electrons.population[j] * st->inverse_compton_inner_downscattering[j];
+            double ne = st->electrons.population[j];
+            double np = st->positrons.population[j];
+
+            downscattering += 2 * (ne + np) * st->inverse_compton_inner_downscattering[j];
         }
 
         st->inverse_compton_photon_gains_downscattering[i] = factor * downscattering * dlng / 2;
@@ -248,12 +257,15 @@ void inverse_compton_process_head_on_upscattering(state_t *st)
         }
 
         double upscattering = 0;
-        upscattering += st->electrons.population[index_g_min] * st->inverse_compton_inner_upscattering[index_g_min];
-        upscattering += st->electrons.population[index_g_max] * st->inverse_compton_inner_upscattering[index_g_max];
+        upscattering += (st->electrons.population[index_g_min] + st->positrons.population[index_g_min]) * st->inverse_compton_inner_upscattering[index_g_min];
+        upscattering += (st->electrons.population[index_g_max] + st->positrons.population[index_g_max]) * st->inverse_compton_inner_upscattering[index_g_max];
 
         for(j = index_g_min + 1; j < index_g_max; j++)
         {
-            upscattering += 2 * st->electrons.population[j] * st->inverse_compton_inner_upscattering[j];
+            double ne = st->electrons.population[j];
+            double np = st->positrons.population[j];
+
+            upscattering += 2 * (ne + np) * st->inverse_compton_inner_upscattering[j];
         }
 
         st->inverse_compton_photon_gains_upscattering[i] = factor * upscattering * dlng / 2;
