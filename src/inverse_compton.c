@@ -290,7 +290,7 @@ void inverse_compton_process_photon_losses(state_t *st)
     }
 }
 
-void inverse_compton_process_electron_losses(state_t *st)
+void inverse_compton_process_lepton_losses(state_t *st)
 {
     unsigned int i;
     double factor;
@@ -301,27 +301,42 @@ void inverse_compton_process_electron_losses(state_t *st)
 
     factor = (4 * LIGHT_SPEED * THOMSON_CROSS_SECTION) / 3 * photon_energy;
     st->photon_energy = photon_energy;
-    st->inverse_compton_electron_losses_factor = factor;
+    st->inverse_compton_lepton_losses_factor = factor;
 
-    double log_n_new = st->electrons.log_population[st->electrons.size - 1];
-    double n_new = exp(log_n_new);
+    double log_ne_new = st->electrons.log_population[st->electrons.size - 1];
+    double     ne_new = st->electrons.population    [st->electrons.size - 1];
+    double log_np_new = st->positrons.log_population[st->positrons.size - 1];
+    double     np_new = st->positrons.population    [st->positrons.size - 1];
+
     for(i = st->electrons.size - 2; i < st->electrons.size; i--)
     {
         double aux1 = st->dt * st->electrons.energy[i] * factor / dlng;
 
-        log_n_new = (st->electrons.log_population[i] + aux1 * (log_n_new + 2 * dlng)) / (1 + aux1);
+        log_ne_new = (st->electrons.log_population[i] + aux1 * (log_ne_new + 2 * dlng)) / (1 + aux1);
+        log_np_new = (st->positrons.log_population[i] + aux1 * (log_np_new + 2 * dlng)) / (1 + aux1);
 
-        if(log_n_new < log(DBL_MIN))
+        if(log_ne_new < log(DBL_MIN))
         {
-            log_n_new = log(DBL_MIN);
-            n_new = DBL_MIN;
+            log_ne_new = log(DBL_MIN);
+            ne_new = DBL_MIN;
         }
         else
-            n_new = exp(log_n_new);
+            ne_new = exp(log_ne_new);
 
-        st->inverse_compton_electron_losses[i] = (n_new - st->electrons.population[i]) / st->dt;
+        if(log_np_new < log(DBL_MIN))
+        {
+            log_np_new = log(DBL_MIN);
+            np_new = DBL_MIN;
+        }
+        else
+            np_new = exp(log_ne_new);
+
+        st->inverse_compton_electron_losses[i] = (ne_new - st->electrons.population[i]) / st->dt;
+        st->inverse_compton_positron_losses[i] = (np_new - st->positrons.population[i]) / st->dt;
     }
+
     st->inverse_compton_electron_losses[st->electrons.size - 1] = 0;
+    st->inverse_compton_positron_losses[st->positrons.size - 1] = 0;
 }
 
 void init_inverse_compton_LUT_g1_g2(state_t *st)

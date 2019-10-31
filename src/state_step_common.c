@@ -24,7 +24,7 @@ void step_calculate_processes(state_t *st)
     thread_pool_add_work(&st->thread_pool, inverse_compton_head_on_upscattering_wrapper,   st);
     thread_pool_add_work(&st->thread_pool, inverse_compton_head_on_downscattering_wrapper, st);
     thread_pool_add_work(&st->thread_pool, inverse_compton_photon_losses_wrapper,          st);
-    thread_pool_add_work(&st->thread_pool, inverse_compton_electron_losses_wrapper,        st);
+    thread_pool_add_work(&st->thread_pool, inverse_compton_lepton_losses_wrapper,        st);
 
     thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_wrapper,               st);
     thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_hadron_gains_wrapper,  st);
@@ -72,7 +72,7 @@ void step_calculate_processes(state_t *st)
     pthread_t inverse_compton_upscattering_thread;
     pthread_t inverse_compton_downscattering_thread;
     pthread_t inverse_compton_photon_losses_thread;
-    pthread_t inverse_compton_electron_losses_thread;
+    pthread_t inverse_compton_lepton_losses_thread;
 
     pthread_t pair_production_photon_losses_thread;
     pthread_t pair_production_lepton_gains_thread;
@@ -102,10 +102,10 @@ void step_calculate_processes(state_t *st)
     pthread_create(&negative_left_muon_synchrotron_thread,  NULL, st->negative_left_muon_synchrotron.synchrotron_function,  &st->negative_left_muon_synchrotron);
     pthread_create(&negative_right_muon_synchrotron_thread, NULL, st->negative_right_muon_synchrotron.synchrotron_function, &st->negative_right_muon_synchrotron);
 
-    pthread_create(&inverse_compton_upscattering_thread,    NULL, inverse_compton_head_on_upscattering_wrapper,   st);
-    pthread_create(&inverse_compton_downscattering_thread,  NULL, inverse_compton_head_on_downscattering_wrapper, st);
-    pthread_create(&inverse_compton_photon_losses_thread,   NULL, inverse_compton_photon_losses_wrapper,          st);
-    pthread_create(&inverse_compton_electron_losses_thread, NULL, inverse_compton_electron_losses_wrapper,        st);
+    pthread_create(&inverse_compton_upscattering_thread,   NULL, inverse_compton_head_on_upscattering_wrapper,   st);
+    pthread_create(&inverse_compton_downscattering_thread, NULL, inverse_compton_head_on_downscattering_wrapper, st);
+    pthread_create(&inverse_compton_photon_losses_thread,  NULL, inverse_compton_photon_losses_wrapper,          st);
+    pthread_create(&inverse_compton_lepton_losses_thread,  NULL, inverse_compton_lepton_losses_wrapper,          st);
 
     pthread_create(&pair_production_photon_losses_thread, NULL, pair_production_photon_losses_wrapper, st);
     pthread_create(&pair_production_lepton_gains_thread,  NULL, pair_production_lepton_gains_wrapper,  st);
@@ -135,10 +135,10 @@ void step_calculate_processes(state_t *st)
     pthread_join(negative_left_muon_synchrotron_thread,  NULL);
     pthread_join(negative_right_muon_synchrotron_thread, NULL);
 
-    pthread_join(inverse_compton_upscattering_thread,    NULL);
-    pthread_join(inverse_compton_downscattering_thread,  NULL);
-    pthread_join(inverse_compton_photon_losses_thread,   NULL);
-    pthread_join(inverse_compton_electron_losses_thread, NULL);
+    pthread_join(inverse_compton_upscattering_thread,   NULL);
+    pthread_join(inverse_compton_downscattering_thread, NULL);
+    pthread_join(inverse_compton_photon_losses_thread,  NULL);
+    pthread_join(inverse_compton_lepton_losses_thread,  NULL);
 
     pthread_join(pair_production_photon_losses_thread, NULL);
     pthread_join(pair_production_lepton_gains_thread,  NULL);
@@ -166,7 +166,7 @@ void step_calculate_processes(state_t *st)
     inverse_compton_process_head_on_upscattering(st);
     inverse_compton_process_head_on_downscattering(st);
     inverse_compton_process_photon_losses(st);
-    inverse_compton_process_electron_losses(st);
+    inverse_compton_process_lepton_losses(st);
     pair_production_process_photon_losses(st);
     pair_production_process_lepton_gains(st);
     multi_resonance_pion_production(st);
@@ -292,7 +292,7 @@ void step_update_populations(state_t *st, double dt)
             (st->external_injection.positrons[i] +
              /*st->pair_production_electron_gains[i] +*/
              st->positron_synchrotron.particle_losses[i] +
-             /*st->inverse_compton_electron_losses[i] +*/
+             st->inverse_compton_positron_losses[i] +
              /*st->bethe_heitler_electron_gains[i] +*/
              st->positron_acceleration.gains[i] +
              st->positron_escape.losses[i]);
@@ -533,14 +533,14 @@ void step_experimental_update_populations(state_t *st, double dt)
     {
         double g     = st->electrons.energy[i];
         double S     = st->electron_synchrotron.particle_losses_factor;
-        double IC    = st->inverse_compton_electron_losses_factor;
+        double IC    = st->inverse_compton_lepton_losses_factor;
         double t_acc = st->electron_acceleration.t;
 
         electron_aux0[i] = 2 * g * (S + IC) - 1 / t_acc;
         electron_aux1[i] =     g * (S + IC) - 1 / t_acc;
     }
 
-    g_turnover = 1 / (st->electron_acceleration.t * (st->electron_synchrotron.particle_losses_factor + st->inverse_compton_electron_losses_factor));
+    g_turnover = 1 / (st->electron_acceleration.t * (st->electron_synchrotron.particle_losses_factor + st->inverse_compton_lepton_losses_factor));
     double g_max = st->electrons.energy[0] * exp(st->t / st->electron_acceleration.t) / (st->electrons.energy[0] / g_turnover * expm1(st->t / st->electron_acceleration.t) + 1);
     dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
@@ -667,7 +667,7 @@ void step_experimental_update_populations(state_t *st, double dt)
     double t_acc = st->positron_acceleration.t;
     double t_esc = st->positron_escape.t;
     double S     = st->positron_synchrotron.particle_losses_factor;
-    double IC    = st->inverse_compton_electron_losses_factor;
+    double IC    = st->inverse_compton_lepton_losses_factor;
 
     double positron_turnover = 1 / (t_acc * (S + IC));
 
@@ -1008,7 +1008,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     double t_acc = st->electron_acceleration.t;
     double t_esc = st->electron_escape.t;
     double S     = st->electron_synchrotron.particle_losses_factor;
-    double IC    = st->inverse_compton_electron_losses_factor;
+    double IC    = st->inverse_compton_lepton_losses_factor;
 
     double electron_turnover = 1 / (t_acc * (S + IC));
 
@@ -1091,7 +1091,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     double t_acc = st->positron_acceleration.t;
     double t_esc = st->positron_escape.t;
     double S     = st->positron_synchrotron.particle_losses_factor;
-    double IC    = st->inverse_compton_electron_losses_factor;
+    double IC    = st->inverse_compton_lepton_losses_factor;
 
     double positron_turnover = 1 / (t_acc * (S + IC));
 

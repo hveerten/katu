@@ -78,7 +78,7 @@ typedef struct state_t
     RK_information_t muon_neutrinos_RK_information;
     RK_information_t muon_antineutrinos_RK_information;
 
-    double inverse_compton_electron_losses_factor;
+    double inverse_compton_lepton_losses_factor;
 
     double *inverse_compton_photon_gains;
     double *inverse_compton_photon_gains_downscattering;
