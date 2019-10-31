@@ -101,8 +101,7 @@ typedef struct state_t
     double *inverse_compton_LUT_losses_reaction_rate;
 
     double *pair_production_photon_losses;
-    double *pair_production_electron_gains;
-    double *pair_production_positron_gains;
+    double *pair_production_lepton_gains;
 
     double *pair_production_LUT_photon_losses_R;
     double *pair_production_LUT_photon_losses_index_e_min;

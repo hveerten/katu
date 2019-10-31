@@ -251,13 +251,11 @@ void pair_production_process_lepton_gains(state_t *st)
         gains += st->photons.population[st->photons.size - 1] * gains_inner[st->photons.size - 1];
 
         for(j = 1; j < st->photons.size - 1; j++)
-        {
             gains += 2 * st->photons.population[j] * gains_inner[j];
-        }
+
         gains *= dlnx / 2;
 
-        st->pair_production_electron_gains[i] = factor * gains;
-        st->pair_production_positron_gains[i] = factor * gains;
+        st->pair_production_lepton_gains[i] = factor * gains;
     }
 }
 

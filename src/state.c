@@ -328,8 +328,7 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->inverse_compton_inner_downscattering, st->electrons.size);
 
     MEM_PREPARE(st->pair_production_photon_losses,  st->photons.size);
-    MEM_PREPARE(st->pair_production_electron_gains, st->electrons.size);
-    MEM_PREPARE(st->pair_production_positron_gains, st->electrons.size);
+    MEM_PREPARE(st->pair_production_lepton_gains, st->electrons.size);
 
     /*MEM_PREPARE(st->bethe_heitler_photon_losses, st->electrons.size);*/
     /*MEM_PREPARE(st->bethe_heitler_proton_losses, st->electrons.size);*/
@@ -658,7 +657,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                 fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
                         st->external_injection.electrons[i],
                         st->electron_acceleration.gains[i],
-                        st->pair_production_electron_gains[i],
+                        st->pair_production_lepton_gains[i],
                         st->bethe_heitler_electron_gains[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\n",
@@ -688,7 +687,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                 fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
                         st->external_injection.positrons[i],
                         st->positron_acceleration.gains[i],
-                        st->pair_production_positron_gains[i],
+                        st->pair_production_lepton_gains[i],
                         st->bethe_heitler_positron_gains[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\n",
