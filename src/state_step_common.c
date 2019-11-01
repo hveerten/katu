@@ -231,6 +231,8 @@ void step_update_populations(state_t *st, double dt)
             (st->external_injection.photons[i] +
              st->electron_synchrotron.photon_gains[i] +
              st->electron_synchrotron.photon_losses[i] +
+             st->positron_synchrotron.photon_gains[i] +
+             st->positron_synchrotron.photon_losses[i] +
              st->proton_synchrotron.photon_gains[i] +
              st->proton_synchrotron.photon_losses[i] +
              st->positive_pion_synchrotron.photon_gains[i] +
@@ -425,6 +427,7 @@ void step_experimental_update_populations(state_t *st, double dt)
     {
         double n = st->photons.population[i];
         double Q = st->electron_synchrotron.photon_gains[i] +
+                   st->positron_synchrotron.photon_gains[i] +
                    st->proton_synchrotron.photon_gains[i] +
                    st->positive_pion_synchrotron.photon_gains[i] +
                    st->negative_pion_synchrotron.photon_gains[i] +
@@ -435,6 +438,7 @@ void step_experimental_update_populations(state_t *st, double dt)
                    st->inverse_compton_photon_gains[i];
 
         double L = (st->electron_synchrotron.photon_losses[i] +
+                    st->positron_synchrotron.photon_losses[i] +
                     st->proton_synchrotron.photon_losses[i] +
                     st->positive_pion_synchrotron.photon_losses[i] +
                     st->negative_pion_synchrotron.photon_losses[i] +
@@ -899,6 +903,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n = st->photons.population[i];
         double Q = st->external_injection.photons[i] +
                    st->electron_synchrotron.photon_gains[i] +
+                   st->positron_synchrotron.photon_gains[i] +
                    st->proton_synchrotron.photon_gains[i] +
                    st->positive_pion_synchrotron.photon_gains[i] +
                    st->negative_pion_synchrotron.photon_gains[i] +
@@ -909,6 +914,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
                    st->inverse_compton_photon_gains[i];
 
         double L = (st->electron_synchrotron.photon_losses[i] +
+                    st->positron_synchrotron.photon_losses[i] +
                     st->proton_synchrotron.photon_losses[i] +
                     st->positive_pion_synchrotron.photon_losses[i] +
                     st->negative_pion_synchrotron.photon_losses[i] +
