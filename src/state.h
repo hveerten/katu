@@ -113,9 +113,10 @@ typedef struct state_t
     double *pair_annihilation_positron_losses;
 
     double *pair_annihilation_LUT_photon_gains_R;
-    unsigned int *pair_annihilation_LUT_g1_min;
-    unsigned int *pair_annihilation_LUT_g2_min;
     double *pair_annihilation_LUT_lepton_losses_R;
+    unsigned int *pair_annihilation_LUT_photon_gains_index_g1_min;
+    unsigned int *pair_annihilation_LUT_photon_gains_index_g2_min;
+    unsigned int *pair_annihilation_LUT_lepton_losses_index_g_min;
 
     double *multi_resonances_neutral_pion_gains;
     double *multi_resonances_positive_pion_gains;
