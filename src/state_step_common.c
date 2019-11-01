@@ -285,6 +285,7 @@ void step_update_populations(state_t *st, double dt)
              st->electron_synchrotron.particle_losses[i] +
              st->inverse_compton_electron_losses[i] +
              st->bethe_heitler_lepton_gains[i] +
+             st->muon_decay_electron_gains[i] +
              st->electron_acceleration.gains[i] +
              st->electron_escape.losses[i]);
     }
@@ -297,7 +298,8 @@ void step_update_populations(state_t *st, double dt)
              st->pair_production_lepton_gains[i] +
              st->positron_synchrotron.particle_losses[i] +
              st->inverse_compton_positron_losses[i] +
-             /*st->bethe_heitler_electron_gains[i] +*/
+             st->bethe_heitler_lepton_gains[i] +
+             st->muon_decay_positron_gains[i] +
              st->positron_acceleration.gains[i] +
              st->positron_escape.losses[i]);
     }
@@ -1038,7 +1040,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_lepton_gains[i];
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_electron_gains[i];
 
         electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * electron_log_new_pop / dlng)) /
                         (1 - aux1[i] * st->dt / dlng);
@@ -1080,7 +1083,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_lepton_gains[i];
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_electron_gains[i];
 
         electron_new_pop = (n + st->dt * (Q + aux1[i] * electron_new_pop / dlng)) /
                         (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
@@ -1122,7 +1126,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_lepton_gains[i];
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_positron_gains[i];
 
         positron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * positron_log_new_pop / dlng)) /
                         (1 - aux1[i] * st->dt / dlng);
@@ -1140,7 +1145,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         double Q = st->external_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_lepton_gains[i];
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_positron_gains[i];
 
         positron_new_pop = (n + st->dt * (Q + aux1[i] * positron_new_pop / dlng)) /
                         (1 - st->dt * aux2[i] + aux1[i] * st->dt / dlng);
