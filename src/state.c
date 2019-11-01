@@ -557,10 +557,10 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
             fprintf(temp_file,
                     "#Energy\tEnergy_erg\tPopulation\t" \
                     "Injection\t" \
-                    "e_sync_gains\tp_sync_gains\tpp_sync_gains\tnp_sync_gains\t" \
+                    "e_sync_gains\tep_sync_gains\tp_sync_gains\tpp_sync_gains\tnp_sync_gains\t" \
                     "plm_sync_gains\tprm_sync_gains\tnlm_sync_gains\tnrm_sync_gains\t" \
                     "IC_gains_up\tIC_gains_down\tPi0_decay\t" \
-                    "e_sync_losses\tp_sync_losses\tpp_sync_losses\tnp_sync_losses\t" \
+                    "e_sync_losses\tep_sync_losses\tp_sync_losses\tpp_sync_losses\tnp_sync_losses\t" \
                     "plm_sync_losses\tprm_sync_losses\tnlm_sync_losses\tnrm_sync_losses\t" \
                     "IC_losses\tPP_losses\tesc_losses\n");
             for(i = 0; i < st->photons.size; i++)
@@ -571,9 +571,10 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->photons.population[i]);
 
                 fprintf(temp_file,
-                        "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t",
+                        "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t",
                         st->external_injection.photons[i],
                         st->electron_synchrotron.photon_gains[i],
+                        st->positron_synchrotron.photon_gains[i],
                         st->proton_synchrotron.photon_gains[i],
                         st->positive_pion_synchrotron.photon_gains[i],
                         st->negative_pion_synchrotron.photon_gains[i],
@@ -586,8 +587,9 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->pion_decay_photon_gains[i]);
 
                 fprintf(temp_file,
-                        "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        "%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->electron_synchrotron.photon_losses[i],
+                        st->positron_synchrotron.photon_losses[i],
                         st->proton_synchrotron.photon_losses[i],
                         st->positive_pion_synchrotron.photon_losses[i],
                         st->negative_pion_synchrotron.photon_losses[i],
