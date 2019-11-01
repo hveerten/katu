@@ -7,6 +7,7 @@
 #include "inverse_compton.h"
 #include "pion_production.h"
 #include "pion_decay.h"
+#include "pair_annihilation.h"
 #include "pair_production.h"
 #include "muon_decay.h"
 #include "bethe_heitler.h"
