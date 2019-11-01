@@ -650,17 +650,19 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "Acc_gains\t" \
                     "Pair_production\t" \
                     "Bethe_Heitler\t" \
+                    "Muon_Decay\t" \
                     "Sync_losses\tIC_Losses\tEscape\n");
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(temp_file,"%lg\t%lg\t",
                         st->electrons.energy[i], st->electrons.population[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t",
                         st->external_injection.electrons[i],
                         st->electron_acceleration.gains[i],
                         st->pair_production_lepton_gains[i],
-                        st->bethe_heitler_lepton_gains[i]);
+                        st->bethe_heitler_lepton_gains[i],
+                        st->muon_decay_electron_gains[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\n",
                         st->electron_synchrotron.particle_losses[i],
@@ -680,17 +682,19 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                     "Acc_gains\t" \
                     "Pair_production\t" \
                     "Bethe_Heitler\t" \
+                    "Muon_Decay\t" \
                     "Sync_losses\tIC_Losses\tEscape\n");
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(temp_file,"%lg\t%lg\t",
                         st->positrons.energy[i], st->positrons.population[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t",
                         st->external_injection.positrons[i],
                         st->positron_acceleration.gains[i],
                         st->pair_production_lepton_gains[i],
-                        st->bethe_heitler_lepton_gains[i]);
+                        st->bethe_heitler_lepton_gains[i],
+                        st->muon_decay_positron_gains[i]);
 
                 fprintf(temp_file,"%lg\t%lg\t%lg\n",
                         st->positron_synchrotron.particle_losses[i],
