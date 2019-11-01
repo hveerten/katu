@@ -163,6 +163,9 @@ typedef struct state_t
 
     double *pion_decay_photon_gains;
 
+    double *muon_decay_electron_gains;
+    double *muon_decay_positron_gains;
+
     double *muon_decay_electron_neutrino_gains;
     double *muon_decay_electron_antineutrino_gains;
     double *muon_decay_muon_neutrino_gains;

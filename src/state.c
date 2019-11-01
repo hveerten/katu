@@ -362,6 +362,9 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->pion_decay_muon_neutrino_gains,     st->muon_neutrinos.size);
     MEM_PREPARE(st->pion_decay_muon_antineutrino_gains, st->muon_antineutrinos.size);
 
+    MEM_PREPARE(st->muon_decay_electron_gains, st->electrons.size);
+    MEM_PREPARE(st->muon_decay_positron_gains, st->positrons.size);
+
     MEM_PREPARE(st->muon_decay_electron_neutrino_gains,     st->electron_neutrinos.size);
     MEM_PREPARE(st->muon_decay_electron_antineutrino_gains, st->electron_antineutrinos.size);
     MEM_PREPARE(st->muon_decay_muon_neutrino_gains,         st->muon_neutrinos.size);

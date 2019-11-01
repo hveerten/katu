@@ -55,28 +55,22 @@ void muon_decay(state_t *st)
         // Again, positive pions and negative pions have the same size
         for(j = 0; j < st->negative_left_muons.size; j++)
         {
-            /*double g_muon = st->negative_left_muons.energy[j];*/
-            /*double x = g_electron * ELECTRON_MASS / (g_muon * MUON_MASS);*/
+            double g_muon = st->negative_left_muons.energy[j];
+            double x = g_electron * ELECTRON_MASS / (g_muon * MUON_MASS);
 
-            /*double n_positive_left_muons  = st->positive_left_muons.population[j];*/
-            /*double n_positive_right_muons = st->positive_right_muons.population[j];*/
-            /*double n_negative_left_muons  = st->negative_left_muons.population[j];*/
-            /*double n_negative_right_muons = st->negative_right_muons.population[j];*/
+            double n_positive_left_muons  = st->positive_left_muons.population[j];
+            double n_positive_right_muons = st->positive_right_muons.population[j];
+            double n_negative_left_muons  = st->negative_left_muons.population[j];
+            double n_negative_right_muons = st->negative_right_muons.population[j];
 
-            // TODO
-            /*
-             *positron_production += 2 * n_positive_left_muons  * f_positive_muon(x, -1) / g_muon;
-             *positron_production += 2 * n_positive_right_muons * f_positive_muon(x,  1) / g_muon;
-             *electron_production += 2 * n_negative_left_muons  * f_positive_muon(x,  1) / g_muon;
-             *electron_production += 2 * n_negative_right_muons * f_positive_muon(x, -1) / g_muon;
-             */
+            positron_production += 2 * n_positive_left_muons  * f_positive_muon(x, -1) / g_muon;
+            positron_production += 2 * n_positive_right_muons * f_positive_muon(x,  1) / g_muon;
+            electron_production += 2 * n_negative_left_muons  * f_positive_muon(x,  1) / g_muon;
+            electron_production += 2 * n_negative_right_muons * f_positive_muon(x, -1) / g_muon;
         }
 
-        // TODO
-        /*
-         *st->muon_decay_electron_gains[i] = electron_production * dlng / (2 * MUON_LIFETIME);
-         *st->muon_decay_positron_gains[i] = positron_production * dlng / (2 * MUON_LIFETIME);
-         */
+        st->muon_decay_electron_gains[i] = electron_production * dlng / (2 * MUON_LIFETIME);
+        st->muon_decay_positron_gains[i] = positron_production * dlng / (2 * MUON_LIFETIME);
     }
 
     // All neutrinos with the same mass
