@@ -14,6 +14,8 @@
 #include "state_step.h"
 #include "state_step_common.h"
 
+#include "utils.h"
+
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -24,14 +26,6 @@
 #include <gsl/gsl_spline.h>
 
 #include <assert.h>
-
-#define MEM_PREPARE(X,S) \
-    do \
-    {\
-        posix_memalign((void **) &(X), 32, sizeof(double) * (S));\
-        memset(X, '\0', sizeof(double) * (S));\
-        \
-    } while(0);
 
 static void state_init_injection(state_t *st, config_t *cfg)
 {
@@ -317,79 +311,79 @@ void init_state_populations(state_t *st,
 
 void init_state_aux_memory(state_t *st)
 {
-    MEM_PREPARE(st->inverse_compton_photon_gains,                st->photons.size);
-    MEM_PREPARE(st->inverse_compton_photon_gains_upscattering,   st->photons.size);
-    MEM_PREPARE(st->inverse_compton_photon_gains_downscattering, st->photons.size);
-    MEM_PREPARE(st->inverse_compton_photon_losses,               st->photons.size);
+    MEM_PREPARE(st->inverse_compton_photon_gains,                st->photons.size, double);
+    MEM_PREPARE(st->inverse_compton_photon_gains_upscattering,   st->photons.size, double);
+    MEM_PREPARE(st->inverse_compton_photon_gains_downscattering, st->photons.size, double);
+    MEM_PREPARE(st->inverse_compton_photon_losses,               st->photons.size, double);
 
-    MEM_PREPARE(st->inverse_compton_electron_losses,      st->electrons.size);
-    MEM_PREPARE(st->inverse_compton_positron_losses,      st->positrons.size);
-    MEM_PREPARE(st->inverse_compton_inner_upscattering,   st->electrons.size);
-    MEM_PREPARE(st->inverse_compton_inner_downscattering, st->electrons.size);
+    MEM_PREPARE(st->inverse_compton_electron_losses,      st->electrons.size, double);
+    MEM_PREPARE(st->inverse_compton_positron_losses,      st->positrons.size, double);
+    MEM_PREPARE(st->inverse_compton_inner_upscattering,   st->electrons.size, double);
+    MEM_PREPARE(st->inverse_compton_inner_downscattering, st->electrons.size, double);
 
-    MEM_PREPARE(st->pair_production_photon_losses,  st->photons.size);
-    MEM_PREPARE(st->pair_production_lepton_gains, st->electrons.size);
+    MEM_PREPARE(st->pair_production_photon_losses,  st->photons.size,   double);
+    MEM_PREPARE(st->pair_production_lepton_gains,   st->electrons.size, double);
 
-    MEM_PREPARE(st->bethe_heitler_lepton_gains, st->electrons.size);
-    /*MEM_PREPARE(st->bethe_heitler_photon_losses, st->electrons.size);*/
-    /*MEM_PREPARE(st->bethe_heitler_proton_losses, st->electrons.size);*/
+    MEM_PREPARE(st->bethe_heitler_lepton_gains,  st->electrons.size, double);
+    /*MEM_PREPARE(st->bethe_heitler_photon_losses, st->electrons.size, double);*/
+    /*MEM_PREPARE(st->bethe_heitler_proton_losses, st->electrons.size, double);*/
 
-    MEM_PREPARE(st->multi_resonances_neutral_pion_gains , st->neutral_pions.size);
-    MEM_PREPARE(st->multi_resonances_positive_pion_gains, st->positive_pions.size);
-    MEM_PREPARE(st->multi_resonances_negative_pion_gains, st->negative_pions.size);
+    MEM_PREPARE(st->multi_resonances_neutral_pion_gains,  st->neutral_pions.size,  double);
+    MEM_PREPARE(st->multi_resonances_positive_pion_gains, st->positive_pions.size, double);
+    MEM_PREPARE(st->multi_resonances_negative_pion_gains, st->negative_pions.size, double);
 
-    MEM_PREPARE(st->multi_resonances_proton_gains,   st->protons.size);
-    MEM_PREPARE(st->multi_resonances_proton_losses,  st->protons.size);
-    MEM_PREPARE(st->multi_resonances_neutron_gains,  st->neutrons.size);
-    MEM_PREPARE(st->multi_resonances_neutron_losses, st->neutrons.size);
+    MEM_PREPARE(st->multi_resonances_proton_gains,   st->protons.size,  double);
+    MEM_PREPARE(st->multi_resonances_proton_losses,  st->protons.size,  double);
+    MEM_PREPARE(st->multi_resonances_neutron_gains,  st->neutrons.size, double);
+    MEM_PREPARE(st->multi_resonances_neutron_losses, st->neutrons.size, double);
 
-    MEM_PREPARE(st->direct_neutral_pion_gains , st->neutral_pions.size);
-    MEM_PREPARE(st->direct_positive_pion_gains, st->positive_pions.size);
-    MEM_PREPARE(st->direct_negative_pion_gains, st->negative_pions.size);
+    MEM_PREPARE(st->direct_neutral_pion_gains,  st->neutral_pions.size,  double);
+    MEM_PREPARE(st->direct_positive_pion_gains, st->positive_pions.size, double);
+    MEM_PREPARE(st->direct_negative_pion_gains, st->negative_pions.size, double);
 
-    MEM_PREPARE(st->direct_pion_production_proton_gains,   st->protons.size);
-    MEM_PREPARE(st->direct_pion_production_proton_losses,  st->protons.size);
-    MEM_PREPARE(st->direct_pion_production_neutron_gains,  st->neutrons.size);
-    MEM_PREPARE(st->direct_pion_production_neutron_losses, st->neutrons.size);
+    MEM_PREPARE(st->direct_pion_production_proton_gains,   st->protons.size,  double);
+    MEM_PREPARE(st->direct_pion_production_proton_losses,  st->protons.size,  double);
+    MEM_PREPARE(st->direct_pion_production_neutron_gains,  st->neutrons.size, double);
+    MEM_PREPARE(st->direct_pion_production_neutron_losses, st->neutrons.size, double);
 
-    MEM_PREPARE(st->pion_decay_positive_left_muon_gains,  st->positive_left_muons.size);
-    MEM_PREPARE(st->pion_decay_positive_right_muon_gains, st->positive_right_muons.size);
-    MEM_PREPARE(st->pion_decay_negative_left_muon_gains,  st->negative_left_muons.size);
-    MEM_PREPARE(st->pion_decay_negative_right_muon_gains, st->negative_right_muons.size);
+    MEM_PREPARE(st->pion_decay_positive_left_muon_gains,  st->positive_left_muons.size,  double);
+    MEM_PREPARE(st->pion_decay_positive_right_muon_gains, st->positive_right_muons.size, double);
+    MEM_PREPARE(st->pion_decay_negative_left_muon_gains,  st->negative_left_muons.size,  double);
+    MEM_PREPARE(st->pion_decay_negative_right_muon_gains, st->negative_right_muons.size, double);
 
-    MEM_PREPARE(st->pion_decay_photon_gains, st->photons.size);
+    MEM_PREPARE(st->pion_decay_photon_gains, st->photons.size, double);
 
-    MEM_PREPARE(st->pion_decay_muon_neutrino_gains,     st->muon_neutrinos.size);
-    MEM_PREPARE(st->pion_decay_muon_antineutrino_gains, st->muon_antineutrinos.size);
+    MEM_PREPARE(st->pion_decay_muon_neutrino_gains,     st->muon_neutrinos.size,     double);
+    MEM_PREPARE(st->pion_decay_muon_antineutrino_gains, st->muon_antineutrinos.size, double);
 
-    MEM_PREPARE(st->muon_decay_electron_gains, st->electrons.size);
-    MEM_PREPARE(st->muon_decay_positron_gains, st->positrons.size);
+    MEM_PREPARE(st->muon_decay_electron_gains, st->electrons.size, double);
+    MEM_PREPARE(st->muon_decay_positron_gains, st->positrons.size, double);
 
-    MEM_PREPARE(st->muon_decay_electron_neutrino_gains,     st->electron_neutrinos.size);
-    MEM_PREPARE(st->muon_decay_electron_antineutrino_gains, st->electron_antineutrinos.size);
-    MEM_PREPARE(st->muon_decay_muon_neutrino_gains,         st->muon_neutrinos.size);
-    MEM_PREPARE(st->muon_decay_muon_antineutrino_gains,     st->muon_antineutrinos.size);
+    MEM_PREPARE(st->muon_decay_electron_neutrino_gains,     st->electron_neutrinos.size,     double);
+    MEM_PREPARE(st->muon_decay_electron_antineutrino_gains, st->electron_antineutrinos.size, double);
+    MEM_PREPARE(st->muon_decay_muon_neutrino_gains,         st->muon_neutrinos.size,         double);
+    MEM_PREPARE(st->muon_decay_muon_antineutrino_gains,     st->muon_antineutrinos.size,     double);
 
     // External Injection
-    MEM_PREPARE(st->external_injection.photons,   st->photons.size);
-    MEM_PREPARE(st->external_injection.electrons, st->electrons.size);
-    MEM_PREPARE(st->external_injection.positrons, st->positrons.size);
-    MEM_PREPARE(st->external_injection.protons,   st->protons.size);
-    MEM_PREPARE(st->external_injection.neutrons,  st->neutrons.size);
+    MEM_PREPARE(st->external_injection.photons,   st->photons.size,   double);
+    MEM_PREPARE(st->external_injection.electrons, st->electrons.size, double);
+    MEM_PREPARE(st->external_injection.positrons, st->positrons.size, double);
+    MEM_PREPARE(st->external_injection.protons,   st->protons.size,   double);
+    MEM_PREPARE(st->external_injection.neutrons,  st->neutrons.size,  double);
 
-    MEM_PREPARE(st->external_injection.positive_pions, st->positive_pions.size);
-    MEM_PREPARE(st->external_injection.neutral_pions,  st->neutral_pions.size);
-    MEM_PREPARE(st->external_injection.negative_pions, st->negative_pions.size);
+    MEM_PREPARE(st->external_injection.positive_pions, st->positive_pions.size, double);
+    MEM_PREPARE(st->external_injection.neutral_pions,  st->neutral_pions.size,  double);
+    MEM_PREPARE(st->external_injection.negative_pions, st->negative_pions.size, double);
 
-    MEM_PREPARE(st->external_injection.negative_left_muons,  st->negative_left_muons.size);
-    MEM_PREPARE(st->external_injection.negative_right_muons, st->negative_right_muons.size);
-    MEM_PREPARE(st->external_injection.positive_left_muons,  st->positive_left_muons.size);
-    MEM_PREPARE(st->external_injection.positive_right_muons, st->positive_right_muons.size);
+    MEM_PREPARE(st->external_injection.negative_left_muons,  st->negative_left_muons.size,  double);
+    MEM_PREPARE(st->external_injection.negative_right_muons, st->negative_right_muons.size, double);
+    MEM_PREPARE(st->external_injection.positive_left_muons,  st->positive_left_muons.size,  double);
+    MEM_PREPARE(st->external_injection.positive_right_muons, st->positive_right_muons.size, double);
 
-    MEM_PREPARE(st->external_injection.electron_neutrinos,     st->electron_neutrinos.size);
-    MEM_PREPARE(st->external_injection.electron_antineutrinos, st->electron_antineutrinos.size);
-    MEM_PREPARE(st->external_injection.muon_neutrinos,         st->muon_neutrinos.size);
-    MEM_PREPARE(st->external_injection.muon_antineutrinos,     st->muon_antineutrinos.size);
+    MEM_PREPARE(st->external_injection.electron_neutrinos,     st->electron_neutrinos.size,     double);
+    MEM_PREPARE(st->external_injection.electron_antineutrinos, st->electron_antineutrinos.size, double);
+    MEM_PREPARE(st->external_injection.muon_neutrinos,         st->muon_neutrinos.size,         double);
+    MEM_PREPARE(st->external_injection.muon_antineutrinos,     st->muon_antineutrinos.size,     double);
 }
 
 void state_init_LUTs(state_t *st)
@@ -401,6 +395,8 @@ void state_init_LUTs(state_t *st)
     init_inverse_compton_LUT_losses_reaction_rate(st);
     init_pair_production_LUT_photon_losses(st);
     init_pair_production_LUT_lepton_gains(st);
+    init_pair_annihilation_LUT_photon_gains(st);
+    init_pair_annihilation_LUT_lepton_losses(st);
     init_muon_decay_LUT_neutrino_functions(st);
     init_pion_decay_LUT_muon_functions(st);
     init_multi_resonances_LUT_pion_gains(st);
@@ -415,6 +411,8 @@ void state_init_LUTs(state_t *st)
     calculate_inverse_compton_LUT_losses_reaction_rate(st);
     calculate_pair_production_LUT_photon_losses(st);
     calculate_pair_production_LUT_lepton_gains(st);
+    calculate_pair_annihilation_LUT_photon_gains(st);
+    calculate_pair_annihilation_LUT_lepton_losses(st);
     calculate_muon_decay_LUT_neutrino_functions(st);
     calculate_pion_decay_LUT_muon_functions(st);
     calculate_multi_resonances_LUT_pion_gains(st);
@@ -429,10 +427,10 @@ void state_init_LUTs(state_t *st)
 void state_init_RK_information(state_t *st)
 {
 #define MEM_PREPARE_EXTRA(X) \
-    MEM_PREPARE(st->X##_RK_information.stage0_population, st->X.size); \
+    MEM_PREPARE(st->X##_RK_information.stage0_population, st->X.size, double); \
     for(unsigned int i = 0; i < 4; i++) \
         MEM_PREPARE(st->X##_RK_information.stage_delta[i], \
-                    st->X.size);
+                    st->X.size, double);
 
     MEM_PREPARE_EXTRA(photons)
     MEM_PREPARE_EXTRA(electrons)
