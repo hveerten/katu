@@ -7,6 +7,7 @@
 #include "pion_production.h"
 #include "pion_decay.h"
 #include "pair_production.h"
+#include "pair_annihilation.h"
 #include "muon_decay.h"
 #include "bethe_heitler.h"
 
@@ -47,6 +48,9 @@ void step_calculate_processes(state_t *st)
     thread_pool_add_work(&st->thread_pool, pair_production_photon_losses_wrapper, st);
     thread_pool_add_work(&st->thread_pool, pair_production_lepton_gains_wrapper,  st);
 
+    thread_pool_add_work(&st->thread_pool, pair_annihilation_photon_gains_wrapper,  st);
+    /*thread_pool_add_work(&st->thread_pool, pair_annihilation_lepton_losses_wrapper, st);*/
+
     thread_pool_add_work(&st->thread_pool, bethe_heitler_lepton_gains_wrapper, st);
     /*thread_pool_add_work(&st->thread_pool, bethe_heitler_photon_losses_wrapper, st);*/
     /*thread_pool_add_work(&st->thread_pool, bethe_heitler_proton_losses_wrapper, st);*/
@@ -76,6 +80,9 @@ void step_calculate_processes(state_t *st)
 
     pthread_t pair_production_photon_losses_thread;
     pthread_t pair_production_lepton_gains_thread;
+
+    pthread_t pair_annihilation_photon_gains_thread;
+    /*pthread_t pair_annihilation_lepton_losses_thread;*/
 
     pthread_t multi_resonance_pion_production_thread;
     pthread_t multi_resonance_pion_production_hadron_losses_thread;
@@ -110,6 +117,9 @@ void step_calculate_processes(state_t *st)
     pthread_create(&pair_production_photon_losses_thread, NULL, pair_production_photon_losses_wrapper, st);
     pthread_create(&pair_production_lepton_gains_thread,  NULL, pair_production_lepton_gains_wrapper,  st);
 
+    pthread_create(&pair_annihilation_photon_gains_thread,  NULL, pair_annihilation_photon_gains_wrapper,  st);
+    /*pthread_create(&pair_annihilation_lepton_losses_thread, NULL, pair_annihilation_lepton_losses_wrapper, st);*/
+
     pthread_create(&multi_resonance_pion_production_thread,               NULL, multi_resonance_pion_production_wrapper,               st);
     pthread_create(&multi_resonance_pion_production_hadron_gains_thread,  NULL, multi_resonance_pion_production_hadron_gains_wrapper,  st);
     pthread_create(&multi_resonance_pion_production_hadron_losses_thread, NULL, multi_resonance_pion_production_hadron_losses_wrapper, st);
@@ -143,6 +153,9 @@ void step_calculate_processes(state_t *st)
     pthread_join(pair_production_photon_losses_thread, NULL);
     pthread_join(pair_production_lepton_gains_thread,  NULL);
 
+    pthread_join(pair_annihilation_photon_gains_thread,  NULL);
+    /*pthread_join(pair_annihilation_lepton_losses_thread, NULL);*/
+
     pthread_join(multi_resonance_pion_production_thread,               NULL);
     pthread_join(multi_resonance_pion_production_hadron_gains_thread,  NULL);
     pthread_join(multi_resonance_pion_production_hadron_losses_thread, NULL);
@@ -173,6 +186,10 @@ void step_calculate_processes(state_t *st)
     inverse_compton_process_lepton_losses(st);
     pair_production_process_photon_losses(st);
     pair_production_process_lepton_gains(st);
+
+    pair_annihilation_process_photon_gains(st);
+    /*pair_annihilation_process_lepton_losses(st)*/;
+
     multi_resonance_pion_production(st);
     charged_pion_decay(st);
     muon_decay(st);
@@ -248,7 +265,7 @@ void step_update_populations(state_t *st, double dt)
              st->negative_right_muon_synchrotron.photon_gains[i] +
              st->negative_right_muon_synchrotron.photon_losses[i] +
              st->inverse_compton_photon_gains[i] + st->inverse_compton_photon_losses[i] +
-             st->pair_production_photon_losses[i] +
+             st->pair_production_photon_losses[i] + st->pair_annihilation_photon_gains[i] +
              st->photon_escape.losses[i]);
     }
 
@@ -435,7 +452,8 @@ void step_experimental_update_populations(state_t *st, double dt)
                    st->positive_right_muon_synchrotron.photon_gains[i] +
                    st->negative_left_muon_synchrotron.photon_gains[i] +
                    st->negative_right_muon_synchrotron.photon_gains[i] +
-                   st->inverse_compton_photon_gains[i];
+                   st->inverse_compton_photon_gains[i] +
+                   st->pair_annihilation_photon_gains[i];
 
         double L = (st->electron_synchrotron.photon_losses[i] +
                     st->positron_synchrotron.photon_losses[i] +
@@ -911,7 +929,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
                    st->positive_right_muon_synchrotron.photon_gains[i] +
                    st->negative_left_muon_synchrotron.photon_gains[i] +
                    st->negative_right_muon_synchrotron.photon_gains[i] +
-                   st->inverse_compton_photon_gains[i];
+                   st->inverse_compton_photon_gains[i] +
+                   st->pair_annihilation_photon_gains[i];
 
         double L = (st->electron_synchrotron.photon_losses[i] +
                     st->positron_synchrotron.photon_losses[i] +
