@@ -1,6 +1,8 @@
 #include "bethe_heitler.h"
 #include "constants.h"
 
+#include "utils.h"
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -176,9 +178,9 @@ void init_bethe_heitler_LUT_lepton_gains(state_t *st)
 {
     size_t size1 = st->electrons.size * st->photons.size;
 
-    posix_memalign((void **) &st->bethe_heitler_LUT_proton_gamma,  32, sizeof(double) * size1);
-    posix_memalign((void **) &st->bethe_heitler_LUT_inelasticity,  32, sizeof(double) * size1);
-    posix_memalign((void **) &st->bethe_heitler_LUT_reaction_rate, 32, sizeof(double) * size1);
+    MEM_PREPARE(st->bethe_heitler_LUT_proton_gamma,  size1, double);
+    MEM_PREPARE(st->bethe_heitler_LUT_inelasticity,  size1, double);
+    MEM_PREPARE(st->bethe_heitler_LUT_reaction_rate, size1, double);
 }
 
 static double f(double loggp, double ge, double e)
