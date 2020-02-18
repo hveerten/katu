@@ -10,6 +10,8 @@
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>
 
+#include <stdio.h>
+
 static double rate_bethe_heitler_low(double e)
 {
     double eta = (e - 2) / (e + 2);
@@ -266,6 +268,15 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
                 st->bethe_heitler_LUT_proton_gamma[index_base + j]  = g_proton_mid;
                 st->bethe_heitler_LUT_inelasticity[index_base + j]  = inelasticity_bethe_heitler(g_proton_mid * e);
                 st->bethe_heitler_LUT_reaction_rate[index_base + j] = rate_bethe_heitler(g_proton_mid * e);
+
+                double r  = st->bethe_heitler_LUT_reaction_rate[index_base + j];
+                double xi = inelasticity_bethe_heitler(g_proton_mid * e);
+
+                if(!isnormal(r) || r < 0 || !isnormal(xi) || xi <= 0)
+                {
+                    fprintf(stderr,"%u %u %lg %lg\n", i, j, r ,xi);
+                    break;
+                }
             }
         }
     }
