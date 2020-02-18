@@ -150,9 +150,9 @@ void bethe_heitler_process_lepton_gains(state_t *st)
 
         double gains = 0;
         gains += proton_interpolated[index_photon_min] * st->photons.population[index_photon_min] * st->photons.energy[index_photon_min] *
-                    st->bethe_heitler_LUT_reaction_rate[index_photon_min] / st->bethe_heitler_LUT_inelasticity[index_photon_min];
+                    st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_min] / st->bethe_heitler_LUT_inelasticity[index_base + index_photon_min];
         gains += proton_interpolated[index_photon_max] * st->photons.population[index_photon_max] * st->photons.energy[index_photon_max] *
-                    st->bethe_heitler_LUT_reaction_rate[index_photon_max] / st->bethe_heitler_LUT_inelasticity[index_photon_max];
+                    st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_max] / st->bethe_heitler_LUT_inelasticity[index_base + index_photon_max];
 
         for(j = 1; j < st->photons.size - 1; j++)
         {
@@ -238,7 +238,7 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
                     value_max = value_mid;
                 }
                 else
-                    break;
+                    continue;
             }
 
             if(logg_proton_min < logg_proton_max && value_min * value_max < 0)
