@@ -867,20 +867,7 @@ void step_experimental_update_populations(state_t *st, double dt)
 }
 
     // Neutrino Updater
-{
-    double en_new_pop = st->electron_neutrinos.population    [st->electron_neutrinos.size - 1];
-    double ea_new_pop = st->electron_antineutrinos.population[st->electron_antineutrinos.size - 1];
-    double mn_new_pop = st->muon_neutrinos.population        [st->muon_neutrinos.size - 1];
-    double ma_new_pop = st->muon_antineutrinos.population    [st->muon_antineutrinos.size - 1];
-
-    st->electron_neutrinos.tentative_population    [st->electron_neutrinos.size - 1]     = en_new_pop;
-    st->electron_antineutrinos.tentative_population[st->electron_antineutrinos.size - 1] = ea_new_pop;
-    st->muon_neutrinos.tentative_population        [st->muon_neutrinos.size - 1]         = mn_new_pop;
-    st->muon_antineutrinos.tentative_population    [st->muon_antineutrinos.size - 1]     = ma_new_pop;
-
-    dlng = st->electron_neutrinos.log_energy[1] - st->electron_neutrinos.log_energy[0];
-
-    for(i = st->electron_neutrinos.size - 2; i < st->electron_neutrinos.size; i--)
+    for(i = 0; i < st->electron_neutrinos.size; i++)
     {
         double n_en = st->electron_neutrinos.population[i];
         double n_ea = st->electron_antineutrinos.population[i];
@@ -898,17 +885,16 @@ void step_experimental_update_populations(state_t *st, double dt)
         double aux0 = exp(L * st->dt);
         double aux1 = expm1(L * st->dt) / L;
 
-        en_new_pop = n_en * aux0 + Q_en * aux1;
-        ea_new_pop = n_ea * aux0 + Q_ea * aux1;
-        mn_new_pop = n_mn * aux0 + Q_mn * aux1;
-        ma_new_pop = n_ma * aux0 + Q_ma * aux1;
+        double en_new_pop = n_en * aux0 + Q_en * aux1;
+        double ea_new_pop = n_ea * aux0 + Q_ea * aux1;
+        double mn_new_pop = n_mn * aux0 + Q_mn * aux1;
+        double ma_new_pop = n_ma * aux0 + Q_ma * aux1;
 
         st->electron_neutrinos.tentative_population[i]     = en_new_pop;
         st->electron_antineutrinos.tentative_population[i] = ea_new_pop;
         st->muon_neutrinos.tentative_population[i]         = mn_new_pop;
         st->muon_antineutrinos.tentative_population[i]     = ma_new_pop;
     }
-}
 }
 
 void step_experimental_update_populations_injection(state_t *st, double dt)
@@ -1292,21 +1278,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     }
 }
 
-    // Neutrino Updater
-{
-    double en_new_pop = st->electron_neutrinos.population    [st->electron_neutrinos.size - 1];
-    double ea_new_pop = st->electron_antineutrinos.population[st->electron_antineutrinos.size - 1];
-    double mn_new_pop = st->muon_neutrinos.population        [st->muon_neutrinos.size - 1];
-    double ma_new_pop = st->muon_antineutrinos.population    [st->muon_antineutrinos.size - 1];
-
-    st->electron_neutrinos.tentative_population    [st->electron_neutrinos.size - 1]     = en_new_pop;
-    st->electron_antineutrinos.tentative_population[st->electron_antineutrinos.size - 1] = ea_new_pop;
-    st->muon_neutrinos.tentative_population        [st->muon_neutrinos.size - 1]         = mn_new_pop;
-    st->muon_antineutrinos.tentative_population    [st->muon_antineutrinos.size - 1]     = ma_new_pop;
-
-    dlng = st->electron_neutrinos.log_energy[1] - st->electron_neutrinos.log_energy[0];
-
-    for(i = st->electron_neutrinos.size - 2; i < st->electron_neutrinos.size; i--)
+    for(i = 0; i < st->electron_neutrinos.size; i++)
     {
         double n_en = st->electron_neutrinos.population[i];
         double n_ea = st->electron_antineutrinos.population[i];
@@ -1329,17 +1301,16 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double aux0 = exp(L * st->dt);
         double aux1 = expm1(L * st->dt) / L;
 
-        en_new_pop = n_en * aux0 + Q_en * aux1;
-        ea_new_pop = n_ea * aux0 + Q_ea * aux1;
-        mn_new_pop = n_mn * aux0 + Q_mn * aux1;
-        ma_new_pop = n_ma * aux0 + Q_ma * aux1;
+        double en_new_pop = n_en * aux0 + Q_en * aux1;
+        double ea_new_pop = n_ea * aux0 + Q_ea * aux1;
+        double mn_new_pop = n_mn * aux0 + Q_mn * aux1;
+        double ma_new_pop = n_ma * aux0 + Q_ma * aux1;
 
         st->electron_neutrinos.tentative_population[i]     = en_new_pop;
         st->electron_antineutrinos.tentative_population[i] = ea_new_pop;
         st->muon_neutrinos.tentative_population[i]         = mn_new_pop;
         st->muon_antineutrinos.tentative_population[i]     = ma_new_pop;
     }
-}
 }
 
 /* Check that the new populations are sensible.
