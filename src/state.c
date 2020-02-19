@@ -612,6 +612,7 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
 
             fprintf(temp_file,
                     "#Energy\tP_Population\tN_Population\t" \
+                    "P_injection\t" \
                     "MR_P_gains\tD_P_gains\tMR_N_gains\tD_N_gains\t" \
                     "MR_P_losses\tD_P_losses\tMR_N_losses\tD_N_losses\t" \
                     "P_escape\tN_escape\tN_decay\n");
@@ -624,7 +625,8 @@ void state_print_data_to_file(state_t *st, enum particle_type pt, char *filename
                         st->protons.population[i],
                         st->neutrons.population[i]);
 
-                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t",
+                fprintf(temp_file,"%lg\t%lg\t%lg\t%lg\t%lg\t",
+                        st->external_injection.protons[i],
                         st->multi_resonances_proton_gains[i],
                         st->direct_pion_production_proton_gains[i],
                         st->multi_resonances_neutron_gains[i],
