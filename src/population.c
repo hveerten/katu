@@ -66,6 +66,8 @@ void init_population(population_t *p, enum particle_type pt,
         p->log_population[i] = log(DBL_MIN);
     for(unsigned i = 0; i < size; i++)
         p->population[i] = DBL_MIN;
+    for(unsigned i = 0; i < size; i++)
+        p->tentative_population[i] = DBL_MIN;
 }
 
 void free_population(population_t *p)
