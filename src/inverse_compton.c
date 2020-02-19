@@ -223,6 +223,9 @@ void inverse_compton_process_head_on_upscattering(state_t *st)
         unsigned int index_g_min = st->inverse_compton_LUT_upscattering_g_min_index[i];
         unsigned int index_g_max = st->electrons.size - 1;
 
+        if(index_g_min > index_g_max)
+            continue;
+
         for(j = index_g_min; j < index_g_max + 1; j++)
         {
             // double g = st->electrons.energy[j];
