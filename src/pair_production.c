@@ -285,11 +285,19 @@ void calculate_pair_production_LUT_photon_losses(state_t *st)
 
     for(i = 0; i < st->photons.size; i++)
     {
-        double e = st->photons.energy[i];
+        double e  = st->photons.energy[i];
+        double le = st->photons.log_energy[i];
 
         unsigned int index_e_min = 0;
 
-        for(; index_e_min < st->photons.size && st->photons.energy[index_e_min] < 1 / e; index_e_min++)
+        // Note: All three loops are the same.
+        // The second avoids the lack of precision of the division of the first one
+        // The last one goes to log space (which is more precise for us) and
+        // seets a low cutoff for e*ee at 1+23*10^-7
+
+        /*for(; index_e_min < st->photons.size && st->photons.energy[index_e_min] < 1 / e; index_e_min++)*/
+        /*for(; index_e_min < st->photons.size && st->photons.energy[index_e_min] * e < 1; index_e_min++)*/
+        for(; index_e_min < st->photons.size && st->photons.log_energy[index_e_min] + le <= 1e-7; index_e_min++)
         {
         }
 
