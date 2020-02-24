@@ -230,9 +230,10 @@ void pair_production_process_lepton_gains(state_t *st)
             unsigned int index_e_min = st->pair_production_LUT_lepton_gains_index_e_min[index_base1 + j];
             unsigned int index_e_max = st->photons.size - 1;
 
+            gains_inner[j] = 0;
+
             if(index_e_min >= index_e_max) continue;
 
-            gains_inner[j] = 0;
             gains_inner[j] += st->photons.population[index_e_min] * st->pair_production_LUT_lepton_gains_R[index_base2 + index_e_min];
             gains_inner[j] += st->photons.population[index_e_max] * st->pair_production_LUT_lepton_gains_R[index_base2 + index_e_max];
 
