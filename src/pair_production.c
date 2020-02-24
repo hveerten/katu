@@ -295,7 +295,7 @@ void calculate_pair_production_LUT_photon_losses(state_t *st)
 
         st->pair_production_LUT_photon_losses_index_e_min[i] = index_e_min;
 
-        for(j = 0; j < st->photons.size; j++)
+        for(j = index_e_min; j < st->photons.size; j++)
         {
             unsigned int index_base = i * st->photons.size;
 
