@@ -6,6 +6,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <stdio.h>
+
 static double R(double x)
 {
     double a = sqrt(1 - 1/x);
@@ -299,7 +301,15 @@ void calculate_pair_production_LUT_photon_losses(state_t *st)
 
             double ee = st->photons.energy[j];
 
-            st->pair_production_LUT_photon_losses_R[index_base + j] = R(e * ee) * ee;
+            double r = R(e * ee) * ee;
+
+            st->pair_production_LUT_photon_losses_R[index_base + j] = r;
+
+            if(!isnormal(r) || r < 0)
+            {
+                fprintf(stderr,"%u %u %lg\n", i, j, r);
+                break;
+            }
         }
     }
 }
