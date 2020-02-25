@@ -105,7 +105,6 @@ void generate_power_law_with_exponential_cutoff(double *population, double *ener
 {
     unsigned int i;
     double energy_min = energy[0];
-    double energy_max = energy[size - 1];
 
     double norm = pow(e, 1 - p) * gsl_sf_gamma_inc(1 - p, energy_min / e);
 
@@ -223,8 +222,7 @@ double distribution_average(distribution_metadata_t *dm)
             return broken_power_law_average(dm->min, dm->max, dm->gc, dm->p1, dm->p2);
 
         case power_law_with_exponential_cutoff:
-            assert(0);
-            break;
+            return power_law_with_exponential_cutoff_average(dm->min, dm->p, dm->e);
 
         case hybrid:
             assert(0);
@@ -302,4 +300,13 @@ double broken_power_law_average(double energy_min, double energy_max,
     double norm = 1/(norm1 + aux * norm2);
 
     return norm * (avg1 + aux * avg2);
+}
+
+double power_law_with_exponential_cutoff_average(
+        double energy_min, double p, double e)
+{
+    double norm    = pow(e, 1 - p) * gsl_sf_gamma_inc(1 - p, energy_min / e);
+    double average = pow(e, 2 - p) * gsl_sf_gamma_inc(2 - p, energy_min / e);
+
+    return average * norm;
 }

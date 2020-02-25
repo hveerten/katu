@@ -46,5 +46,7 @@ double maxwell_juttner_average(double theta);
 double power_law_average(double energy_min, double energy_max, double p);
 double broken_power_law_average(double energy_min, double energy_max,
         double energy_break, double p1, double p2);
+double power_law_with_exponential_cutoff_average(
+        double energy_min, double p, double e);
 
 #endif /* end of include guard: DISTRIBUTION_H */
