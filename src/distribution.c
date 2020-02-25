@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_integration.h>
 
 void generate_distribution(double *population, double *energy,
@@ -106,19 +107,10 @@ void generate_power_law_with_exponential_cutoff(double *population, double *ener
     double energy_min = energy[0];
     double energy_max = energy[size - 1];
 
-    if(p == 1)
-    {
-        double norm = log(energy_min / energy_max);
+    double norm = pow(e, 1 - p) * gsl_sf_gamma_inc(1 - p, energy_min / e);
 
-        for(i = 0; i < size; i++)
-            population[i] = norm / energy[i] * exp(-energy[i] / e);
-    }
-    else
-    {
-        double norm = (1 - p) / (pow(energy_max, 1-p) - pow(energy_min, 1-p));
-        for(i = 0; i < size; i++)
-            population[i] = norm * pow(energy[i], -p) * exp(-energy[i] / e);
-    }
+    for(i = 0; i < size; i++)
+        population[i] = norm * pow(energy[i], -p) * exp(-energy[i] / e);
 }
 
 struct hybrid_norm_mj_params { double theta; };
