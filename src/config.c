@@ -41,6 +41,7 @@ static void config_read_distribution_type(
         }
 
         if(strcmp(dist_type, "maxwell_juttner") == 0)                    dm->dt = maxwell_juttner;
+        if(strcmp(dist_type, "black_body") == 0)                         dm->dt = black_body;
         if(strcmp(dist_type, "power_law") == 0)                          dm->dt = power_law;
         if(strcmp(dist_type, "broken_power_law") == 0)                   dm->dt = broken_power_law;
         if(strcmp(dist_type, "power_law_with_exponential_cutoff") == 0)  dm->dt = power_law_with_exponential_cutoff;
@@ -71,6 +72,10 @@ static void config_read_distribution_type(
     switch(dm->dt)
     {
         case maxwell_juttner:
+            TOML_READ_DOUBLE(part_table, "temperature", dm->t, "temperature", 0.5)
+            break;
+
+        case black_body:
             TOML_READ_DOUBLE(part_table, "temperature", dm->t, "temperature", 0.5)
             break;
 
