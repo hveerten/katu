@@ -15,6 +15,10 @@ void generate_distribution(double *population, double *energy,
             generate_maxwell_juttner(population, energy, dm->t, size);
             break;
 
+        case black_body:
+            generate_black_body(population, energy, dm->t, size);
+            break;
+
         case power_law:
             generate_power_law(population, energy, dm->p, size);
             break;
@@ -51,6 +55,20 @@ void generate_maxwell_juttner(double *population, double *energy,
         double aux0 = energy[i] * sqrt(energy[i] * energy[i] - 1);
 
         population[i] = aux0 * norm * exp(-energy[i] / theta);
+    }
+}
+
+void generate_black_body(double *population, double *energy,
+        double theta, unsigned int size)
+{
+    unsigned int i;
+    double norm = 1 / (theta *  theta * 2.40411380631918); // zeta(3) * Gamma(3)
+
+    for(i = 0; i < size; i++)
+    {
+        double aux0 = energy[i] * energy[i];
+
+        population[i] = aux0 * norm / expm1(energy[i] / theta);
     }
 }
 
@@ -215,6 +233,9 @@ double distribution_average(distribution_metadata_t *dm)
         case maxwell_juttner:
             return maxwell_juttner_average(dm->t);
 
+        case black_body:
+            return black_body_average(dm->t);
+
         case power_law:
             return power_law_average(dm->min, dm->max, dm->p);
 
@@ -262,6 +283,11 @@ double maxwell_juttner_average(double theta)
     gsl_integration_qags(&F, 1, 1e10, 0, 1e-7, 256, w, &average, &e);
 
     return norm * average;
+}
+
+double black_body_average(double theta)
+{
+    return theta * pow(M_PI, 4) / 90 / 2.40411380631918;
 }
 
 double power_law_average(double energy_min, double energy_max, double p)
