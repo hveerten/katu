@@ -98,5 +98,5 @@ size        = 160
     epsilon_min = 1e-12
     epsilon_max = 1e5
 
-    distribution_type = "maxwell_juttner"
+    distribution_type = "black_body"
     temperature = 1
