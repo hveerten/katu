@@ -102,23 +102,27 @@ static double W4(double k, double gm, double d)
 struct W_params { double k; double d; };
 static double _W1(double x, void *params)
 {
+    double xx = exp(x);
     struct W_params p = *(struct W_params *)params;
-    return W1(p.k, x, p.d);
+    return xx * W1(p.k, xx, p.d);
 }
 static double _W2(double x, void *params)
 {
+    double xx = exp(x);
     struct W_params p = *(struct W_params *)params;
-    return W2(p.k, x, p.d);
+    return xx * W2(p.k, xx, p.d);
 }
 static double _W3(double x, void *params)
 {
+    double xx = exp(x);
     struct W_params p = *(struct W_params *)params;
-    return W3(p.k, x, p.d);
+    return xx * W3(p.k, xx, p.d);
 }
 static double _W4(double x, void *params)
 {
+    double xx = exp(x);
     struct W_params p = *(struct W_params *)params;
-    return W4(p.k, x, p.d);
+    return xx * W4(p.k, xx, p.d);
 }
 
 
@@ -147,15 +151,15 @@ static double G(double k, double d)
         double G31 = 0, G32 = 0;
         double G41 = 0, G42 = 0;
 
-        gsl_integration_qags(&F1, lo, hi/2, 0, 1e-7, 256, w, &G11, &e);
-        gsl_integration_qags(&F2, lo, hi/2, 0, 1e-7, 256, w, &G21, &e);
-        gsl_integration_qags(&F3, lo, hi/2, 0, 1e-7, 256, w, &G31, &e);
-        gsl_integration_qags(&F4, lo, hi/2, 0, 1e-7, 256, w, &G41, &e);
+        gsl_integration_qags(&F1, log(lo),   log(hi/2), 0, 1e-4, 256, w, &G11, &e);
+        gsl_integration_qags(&F2, log(lo),   log(hi/2), 0, 1e-4, 256, w, &G21, &e);
+        gsl_integration_qags(&F3, log(lo),   log(hi/2), 0, 1e-4, 256, w, &G31, &e);
+        gsl_integration_qags(&F4, log(lo),   log(hi/2), 0, 1e-4, 256, w, &G41, &e);
 
-        gsl_integration_qags(&F1, hi/2, hi, 0, 1e-7, 256, w, &G12, &e);
-        gsl_integration_qags(&F2, hi/2, hi, 0, 1e-7, 256, w, &G22, &e);
-        gsl_integration_qags(&F3, hi/2, hi, 0, 1e-7, 256, w, &G32, &e);
-        gsl_integration_qags(&F4, hi/2, hi, 0, 1e-7, 256, w, &G42, &e);
+        gsl_integration_qags(&F1, log(hi/2), log(hi),   0, 1e-4, 256, w, &G12, &e);
+        gsl_integration_qags(&F2, log(hi/2), log(hi),   0, 1e-4, 256, w, &G22, &e);
+        gsl_integration_qags(&F3, log(hi/2), log(hi),   0, 1e-4, 256, w, &G32, &e);
+        gsl_integration_qags(&F4, log(hi/2), log(hi),   0, 1e-4, 256, w, &G42, &e);
 
         gsl_integration_workspace_free(w);
         return G11 + G12 + G21 + G22 + G31 + G32 + G41 + G42;
@@ -167,10 +171,10 @@ static double G(double k, double d)
         double G3 = 0;
         double G4 = 0;
 
-        gsl_integration_qags(&F1, lo, hi, 0, 1e-7, 256, w, &G1, &e);
-        gsl_integration_qags(&F2, lo, hi, 0, 1e-7, 256, w, &G2, &e);
-        gsl_integration_qags(&F3, lo, hi, 0, 1e-7, 256, w, &G3, &e);
-        gsl_integration_qags(&F4, lo, hi, 0, 1e-7, 256, w, &G4, &e);
+        gsl_integration_qags(&F1, log(lo), log(hi), 0, 1e-4, 256, w, &G1, &e);
+        gsl_integration_qags(&F2, log(lo), log(hi), 0, 1e-4, 256, w, &G2, &e);
+        gsl_integration_qags(&F3, log(lo), log(hi), 0, 1e-4, 256, w, &G3, &e);
+        gsl_integration_qags(&F4, log(lo), log(hi), 0, 1e-4, 256, w, &G4, &e);
 
         gsl_integration_workspace_free(w);
         return G1 + G2 + G3 + G4;
@@ -180,8 +184,9 @@ static double G(double k, double d)
 struct G_params { double d; };
 static double _G(double x, void *params)
 {
+    double xx = exp(x);
     struct G_params p = *(struct G_params *)params;
-    return G(x, p.d) / (x*x);
+    return G(xx, p.d) / (xx);
 }
 
 static double F(double gp, double ge, double e)
@@ -201,7 +206,7 @@ static double F(double gp, double ge, double e)
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(256);
     gsl_function G = (gsl_function) { .function = &_G, .params = &p };
 
-    gsl_integration_qags(&G, lo, hi, 0, 1e-7, 256, w, &ret, &error);
+    gsl_integration_qags(&G, log(lo), log(hi), 0, 1e-6, 256, w, &ret, &error);
     
     gsl_integration_workspace_free(w);
 
