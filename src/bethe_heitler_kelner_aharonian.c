@@ -29,7 +29,7 @@ static double W1(double k, double gm, double d)
     double aux4 = (pm2 - k*k) / (T2 * d);
     double aux5 = 2 * gp / pm2;
 
-    return sqrt(pp2) * (aux0 * aux1 + aux2 + aux3 + aux4 + aux5);
+    return sqrt(pp2) * (4 * aux0 * aux1 + aux2 + aux3 + aux4 + aux5);
 }
 
 static double W2(double k, double gm, double d)
@@ -43,9 +43,9 @@ static double W2(double k, double gm, double d)
     double pp = sqrt(pp2);
 
     double Y = (gm > 1e6 && gp > 1e6) ?
-                    log((gm * gp + pm * pp + 1) / k)
+                    log(4 * gm * gp * k / (2 *k*k + 1))
             :
-                    log(4 * gm * gp * k / (2 *k*k + 1));
+                    log((gm * gp + pm * pp + 1) / k);
     Y *= 2 / pm2;
 
 
@@ -55,7 +55,7 @@ static double W2(double k, double gm, double d)
     double aux2 = (2*gm*gm*(gm*gm + gp*gp) - 7*gm*gm - 3*gm*gp - gp*gp + 1) / d;
     double aux3 = k * (pm2 - gm*gp);
 
-    return Y / pm * (aux0 * aux1 + aux2 + aux3);
+    return Y / pm * (-2*gm*aux0 * aux1 + aux2 + aux3);
 }
 
 static double W3(double k, double gm, double d)
