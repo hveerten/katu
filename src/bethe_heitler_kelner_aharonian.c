@@ -162,7 +162,17 @@ static double G(double k, double d)
         gsl_integration_qags(&F4, log(hi/2), log(hi),   0, 1e-4, 256, w, &G42, &e);
 
         gsl_integration_workspace_free(w);
-        return G11 + G12 + G21 + G22 + G31 + G32 + G41 + G42;
+
+        double r = G11 + G12 + G21 + G22 + G31 + G32 + G41 + G42;
+
+        if(!isnormal(r) || r < 0)
+        {
+            fprintf(stderr,"%lg\t%lg\n", k, d);
+            fprintf(stderr,"%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                    G11, G12, G21, G22, G31, G32, G41, G42, r);
+        }
+
+        return r;
     }
     else
     {
@@ -177,6 +187,16 @@ static double G(double k, double d)
         gsl_integration_qags(&F4, log(lo), log(hi), 0, 1e-4, 256, w, &G4, &e);
 
         gsl_integration_workspace_free(w);
+
+        double r = G1 + G2 + G3 + G4;
+
+        if(!isnormal(r) || r < 0)
+        {
+            fprintf(stderr,"%lg %lg\n", k, d);
+            fprintf(stderr,"%lg\t%lg\t%lg\t%lg\t%lg\n",
+                    G1, G2, G3, G4, r);
+        }
+
         return G1 + G2 + G3 + G4;
     }
 }
