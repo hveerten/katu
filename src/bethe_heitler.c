@@ -103,8 +103,8 @@ static double inelasticity_bethe_heitler_high(double e)
 static double inelasticity_bethe_heitler(double e)
 {
     double factor = FINE_STRUCTURE_CONSTANT * ELECTRON_RADIUS * ELECTRON_RADIUS / 2;
-    /*factor *= 1 / PROTON_MASS;*/
-    factor *= 1 / ELECTRON_MASS;
+    factor *= 1 / PROTON_MASS;
+    /*factor *= 1 / ELECTRON_MASS;*/
 
     if(e < 8.2)
         return factor * inelasticity_bethe_heitler_low(e);
@@ -120,7 +120,9 @@ void bethe_heitler_process_lepton_gains(state_t *st)
 {
     unsigned int i, j;
 
-    double factor = ELECTRON_MASS * LIGHT_SPEED * LIGHT_SPEED * LIGHT_SPEED;
+    /*double factor = ELECTRON_MASS * LIGHT_SPEED * LIGHT_SPEED * LIGHT_SPEED;*/
+    /*double factor = pow(ELECTRON_MASS, 2) * pow(LIGHT_SPEED, 5);*/
+    double factor = LIGHT_SPEED;
     double dlnx = st->photons.log_energy[1] - st->photons.log_energy[0];
 
     double *proton_interpolated;
@@ -128,11 +130,12 @@ void bethe_heitler_process_lepton_gains(state_t *st)
     gsl_interp_accel *proton_accelerator  = gsl_interp_accel_alloc();
     gsl_spline_init(proton_spline, st->protons.log_energy, st->protons.log_population, st->protons.size);
 
-    posix_memalign((void *) &proton_interpolated, 32, st->photons.size * sizeof(double));
+    posix_memalign((void **) &proton_interpolated, 32, st->photons.size * sizeof(double));
 
     for(i = 0; i < st->electrons.size; i++)
     {
         unsigned int index_base = i * st->photons.size;
+        double ge = st->electrons.energy[i];
 
         for(j = 0; j < st->photons.size; j++)
         {
@@ -149,25 +152,32 @@ void bethe_heitler_process_lepton_gains(state_t *st)
         unsigned int index_photon_max = st->photons.size - 1;
 
         double gains = 0;
+        /*gains += proton_interpolated[index_photon_min] * st->photons.population[index_photon_min] * st->photons.energy[index_photon_min] **/
+                    /*st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_min] / st->bethe_heitler_LUT_inelasticity[index_base + index_photon_min];*/
+        /*gains += proton_interpolated[index_photon_max] * st->photons.population[index_photon_max] * st->photons.energy[index_photon_max] **/
+                    /*st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_max] / st->bethe_heitler_LUT_inelasticity[index_base + index_photon_max];*/
+
         gains += proton_interpolated[index_photon_min] * st->photons.population[index_photon_min] * st->photons.energy[index_photon_min] *
-                    st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_min] / st->bethe_heitler_LUT_inelasticity[index_base + index_photon_min];
+                    st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_min] * st->bethe_heitler_LUT_proton_gamma[index_base + index_photon_min];
         gains += proton_interpolated[index_photon_max] * st->photons.population[index_photon_max] * st->photons.energy[index_photon_max] *
-                    st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_max] / st->bethe_heitler_LUT_inelasticity[index_base + index_photon_max];
+                    st->bethe_heitler_LUT_reaction_rate[index_base + index_photon_max] * st->bethe_heitler_LUT_proton_gamma[index_base + index_photon_max];
 
         for(j = 1; j < st->photons.size - 1; j++)
         {
-            double e     = st->photons.energy[j];
-            double n     = st->photons.population[j];
-            double np    = proton_interpolated[j];
-            double xi    = st->bethe_heitler_LUT_inelasticity[index_base + j];
-            double sigma = st->bethe_heitler_LUT_reaction_rate[index_base + j];
+            double e        = st->photons.energy[j];
+            double n        = st->photons.population[j];
+            double np       = proton_interpolated[j];
+            double g_proton = st->bethe_heitler_LUT_proton_gamma[index_base + j];
+            /*double xi       = st->bethe_heitler_LUT_inelasticity[index_base + j];*/
+            double sigma    = st->bethe_heitler_LUT_reaction_rate[index_base + j];
 
-            gains += 2 * np * n * e * sigma / xi;
+            /*gains += 2 * np * n * e * sigma / xi;*/
+            gains += 2 * np * n * e * sigma * g_proton;
         }
 
         gains *= dlnx / 2;
 
-        st->bethe_heitler_lepton_gains[i] = factor * gains;
+        st->bethe_heitler_lepton_gains[i] = factor * gains / ge;
     }
 
     free(proton_interpolated);
@@ -189,7 +199,7 @@ static double f(double loggp, double ge, double e)
 {
     double gp = exp(loggp);
     /*return gp - ge * ELECTRON_MASS / PROTON_MASS / inelasticity_bethe_heitler(gp * e);*/
-    return loggp - log(ge - e/2) - log(ELECTRON_MASS / PROTON_MASS) + log(inelasticity_bethe_heitler(gp * e));
+    return loggp - log(ge) - log(ELECTRON_MASS / PROTON_MASS) + log(inelasticity_bethe_heitler(gp * e));
 }
 void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
 {
@@ -272,7 +282,7 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
                 double r  = st->bethe_heitler_LUT_reaction_rate[index_base + j];
                 double xi = inelasticity_bethe_heitler(g_proton_mid * e);
 
-                if(!isnormal(r) || r < 0 || !isnormal(xi) || xi <= 0)
+                if(!isnormal(r) || r < 0 || !isnormal(xi) || xi <= 0 || xi > 1)
                 {
                     fprintf(stderr,"%u %u %lg %lg\n", i, j, r ,xi);
                     break;
