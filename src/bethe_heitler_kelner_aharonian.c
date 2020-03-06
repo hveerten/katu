@@ -311,6 +311,12 @@ void calculate_bethe_heitler_ka_LUT_lepton_gains(state_t *st)
                 double r = F(gp, ge, e);
 
                 st->bethe_heitler_ka_LUT_reaction_rate[index_base2 + k] = r;
+
+                if(!isnormal(r) || r < 0)
+                {
+                    fprintf(stderr,"%u %u %u %lg\n", i, j, k, r);
+                    break;
+                }
             }
         }
     }
