@@ -11,6 +11,7 @@
 #include "pair_production.h"
 #include "muon_decay.h"
 #include "bethe_heitler.h"
+#include "bethe_heitler_kelner_aharonian.h"
 
 #include "state_step.h"
 #include "state_step_common.h"
@@ -407,6 +408,7 @@ void state_init_LUTs(state_t *st)
     init_direct_pion_production_LUT_hadron_losses(st);
     init_direct_pion_production_LUT_hadron_gains(st);
     init_bethe_heitler_LUT_lepton_gains(st);
+    init_bethe_heitler_ka_LUT_lepton_gains(st);
 
     calculate_inverse_compton_LUT_g1_g2(st);
     calculate_inverse_compton_LUT_losses_reaction_rate(st);
@@ -423,6 +425,7 @@ void state_init_LUTs(state_t *st)
     calculate_direct_pion_production_LUT_hadron_losses(st);
     calculate_direct_pion_production_LUT_hadron_gains(st);
     calculate_bethe_heitler_LUT_lepton_gains(st);
+    calculate_bethe_heitler_ka_LUT_lepton_gains(st);
 }
 
 void state_init_RK_information(state_t *st)

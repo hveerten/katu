@@ -160,6 +160,9 @@ typedef struct state_t
     double *bethe_heitler_LUT_inelasticity;
     double *bethe_heitler_LUT_reaction_rate;
 
+    unsigned int *bethe_heitler_ka_LUT_e_min_index;
+    double *bethe_heitler_ka_LUT_reaction_rate;
+
     double *pion_decay_positive_left_muon_gains;
     double *pion_decay_positive_right_muon_gains;
     double *pion_decay_negative_left_muon_gains;
