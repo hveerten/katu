@@ -10,6 +10,7 @@
 #include "pair_annihilation.h"
 #include "muon_decay.h"
 #include "bethe_heitler.h"
+#include "bethe_heitler_kelner_aharonian.h"
 
 #include <assert.h>
 #include <float.h>
@@ -26,6 +27,9 @@ void step_calculate_processes(state_t *st)
     thread_pool_add_work(&st->thread_pool, inverse_compton_head_on_downscattering_wrapper, st);
     thread_pool_add_work(&st->thread_pool, inverse_compton_photon_losses_wrapper,          st);
     thread_pool_add_work(&st->thread_pool, inverse_compton_lepton_losses_wrapper,        st);
+
+    /*thread_pool_add_work(&st->thread_pool, bethe_heitler_lepton_gains_wrapper, st);*/
+    thread_pool_add_work(&st->thread_pool, bethe_heitler_ka_lepton_gains_wrapper, st);
 
     thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_wrapper,               st);
     thread_pool_add_work(&st->thread_pool, multi_resonance_pion_production_hadron_gains_wrapper,  st);
@@ -51,7 +55,6 @@ void step_calculate_processes(state_t *st)
     thread_pool_add_work(&st->thread_pool, pair_annihilation_photon_gains_wrapper,  st);
     /*thread_pool_add_work(&st->thread_pool, pair_annihilation_lepton_losses_wrapper, st);*/
 
-    thread_pool_add_work(&st->thread_pool, bethe_heitler_lepton_gains_wrapper, st);
     /*thread_pool_add_work(&st->thread_pool, bethe_heitler_photon_losses_wrapper, st);*/
     /*thread_pool_add_work(&st->thread_pool, bethe_heitler_proton_losses_wrapper, st);*/
 
@@ -128,7 +131,8 @@ void step_calculate_processes(state_t *st)
     pthread_create(&direct_pion_production_hadron_gains_thread,  NULL, direct_pion_production_hadron_gains_wrapper,  st);
     pthread_create(&direct_pion_production_hadron_losses_thread, NULL, direct_pion_production_hadron_losses_wrapper, st);
 
-    pthread_create(&bethe_heitler_lepton_gains_thread,  NULL, bethe_heitler_lepton_gains_wrapper, st);
+    /*pthread_create(&bethe_heitler_lepton_gains_thread,  NULL, bethe_heitler_lepton_gains_wrapper, st);*/
+    pthread_create(&bethe_heitler_lepton_gains_thread,  NULL, bethe_heitler_ka_lepton_gains_wrapper, st);
     /*pthread_create(&bethe_heitler_photon_losses_thread, NULL, bethe_heitler_photon_losses_wrapper, st);*/
     /*pthread_create(&bethe_heitler_proton_losses_thread, NULL, bethe_heitler_proton_losses_wrapper, st);*/
 
@@ -201,7 +205,8 @@ void step_calculate_processes(state_t *st)
 
     direct_pion_production(st);
 
-    bethe_heitler_process_lepton_gains(st);
+    /*bethe_heitler_process_lepton_gains(st);*/
+    bethe_heitler_ka_process_lepton_gains(st);
     /*bethe_heitler_photon_losses(st);*/
     /*bethe_heitler_proton_losses(st);*/
 #endif
