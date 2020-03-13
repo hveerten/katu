@@ -9,6 +9,11 @@
 
 #include <gsl/gsl_integration.h>
 
+#include <gsl/gsl_interp.h>
+#include <gsl/gsl_spline.h>
+#include <gsl/gsl_interp2d.h>
+#include <gsl/gsl_spline2d.h>
+
 #include <stdio.h>
 
 static double W1(double k, double gm, double d)
@@ -65,7 +70,6 @@ static double W3(double k, double gm, double d)
     double pm2 = gm * gm - 1;
     double pp2 = gp * gp - 1;
 
-    double pm = sqrt(pm2);
     double pp = sqrt(pp2);
 
     double T2 = pp2 + 2 * k * d;
@@ -135,6 +139,8 @@ static double G(double k, double d)
 
     double lo = 0.5 * (d + 1/d);
     double hi = k - 1;
+
+    if(lo == 1) lo = 1.0001;
 
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(256);
     gsl_function F1 = (gsl_function) { .function = &_W1, .params = &p };
@@ -227,7 +233,7 @@ static double F(double gp, double ge, double e)
     gsl_function G = (gsl_function) { .function = &_G, .params = &p };
 
     gsl_integration_qags(&G, log(lo), log(hi), 0, 1e-6, 256, w, &ret, &error);
-    
+
     gsl_integration_workspace_free(w);
 
     return factor / d * ret;
@@ -246,7 +252,6 @@ void bethe_heitler_ka_process_lepton_gains(state_t *st)
     for(i = 0; i < st->electrons.size; i++)
     {
         unsigned int index_base1 = i * st->protons.size;
-        double ge = st->electrons.energy[i];
 
         for(j = 0; j < st->protons.size; j++)
         {
@@ -255,7 +260,7 @@ void bethe_heitler_ka_process_lepton_gains(state_t *st)
 
             gains_inner[j] = 0;
 
-            if(index_e_max >= index_e_min) continue;
+            if(index_e_min >= index_e_max) continue;
 
             unsigned int index_base2 = (index_base1 + j) * st->photons.size;
 
@@ -285,7 +290,7 @@ void bethe_heitler_ka_process_lepton_gains(state_t *st)
             double np = st->protons.population[j];
             double gp = st->protons.energy[j];
 
-            gains += np / (gp*gp*gp) * gains_inner[j];
+            gains += np / (gp*gp) * gains_inner[j];
         }
 
         gains *= dlngp / 2;
@@ -306,6 +311,202 @@ void init_bethe_heitler_ka_LUT_lepton_gains(state_t *st)
 void calculate_bethe_heitler_ka_LUT_lepton_gains(state_t *st)
 {
     unsigned int i, j, k;
+
+    /* First, calculate the index of e_min */
+    for(i = 0; i < st->electrons.size; i++)
+    {
+        double ge = st->electrons.energy[i];
+
+        unsigned int index_base1 = i * st->protons.size;
+
+        for(j = 0; j < st->protons.size; j++)
+        {
+            double gp = st->protons.energy[j];
+
+            double delta = ge / gp;
+            double e_min = (0.5 * (delta + 1 / delta) + 1) / (2 * gp);
+
+            for(k = 0; k < st->photons.size && st->photons.energy[k] < e_min; k++)
+            { }
+
+            st->bethe_heitler_ka_LUT_e_min_index[index_base1 + j] = k;
+        }
+    }
+
+    FILE *table;
+
+    table = fopen("./tables/BH_KA_table.tab", "rb");
+
+    if(table != NULL)
+    {
+        unsigned int e_size;
+        unsigned int p_size;
+        unsigned int g_size;
+
+        double *e_energy;
+        double *p_energy;
+        double *g_energy;
+
+        double *reaction_rate;
+
+        fread(&e_size,  sizeof(unsigned int), 1,      table);
+        fread(&p_size,  sizeof(unsigned int), 1,      table);
+        fread(&g_size,  sizeof(unsigned int), 1,      table);
+
+        e_energy = malloc(e_size * sizeof(double));
+        p_energy = malloc(p_size * sizeof(double));
+        g_energy = malloc(g_size * sizeof(double));
+        reaction_rate = calloc(e_size * p_size * g_size, sizeof(double));
+
+        fread(e_energy, sizeof(double),       e_size, table);
+        fread(p_energy, sizeof(double),       p_size, table);
+        fread(g_energy, sizeof(double),       g_size, table);
+
+        fread(reaction_rate, sizeof(double), e_size * p_size * g_size, table);
+
+        fclose(table);
+
+        /* Let us check the original table, just in case */
+        if(0)
+        {
+            for(unsigned int t = 0; t < 5; t++)
+            {
+                i = rand() / (double) RAND_MAX * e_size;
+                j = rand() / (double) RAND_MAX * p_size;
+                k = rand() / (double) RAND_MAX * g_size;
+
+                double ge = exp(e_energy[i]);
+                double gp = exp(p_energy[j]);
+                double e  = exp(g_energy[k]);
+                double r  = exp(reaction_rate[(i * p_size + j) * g_size + k]);
+
+                double delta = ge / gp;
+                double e_min = (0.5 * (delta + 1/delta) + 1) / (2 * gp);
+                fprintf(stderr,"%03u %03u %03u (%lg, %lg, %lg-%lg) %lg <-> %lg\n",
+                        i, j, k, ge, gp, e_min, e, r, F(gp, ge, e));
+            }
+        }
+
+        for(i = 0; i < e_size * p_size * g_size; i++)
+        {
+            if(!isnormal(reaction_rate[i]))
+                reaction_rate[i] = log(DBL_MIN);
+        }
+
+        /* NOTE!!!!
+         *
+         * We will do two interpolations using gsl.
+         * First, a bicubical interpolation in a series of 'layers' until
+         * we get a 'line' and then along this 'line' to obtain the values
+         * we need.
+         *
+         * XXX: Note also that we store our values in a rather different
+         * way as how GSL expects everything to be ordered so we need to be a
+         * bit careful as how we init all interpolation functions for
+         * everything to work.
+         *
+         * we: i*p_size*g_size + j*g_size + k;
+         *
+         * so i is the index for \gamma_e
+         *    j is the index for \gamma_p
+         *    k is the index for \varepsilon
+         *
+         * In GSL, things are sorted as
+         *    j * xsize + i
+         *
+         * so, j=j and i=k
+         */
+
+        gsl_spline2d *spline[e_size];
+        gsl_interp_accel *xacc[e_size];
+        gsl_interp_accel *yacc[e_size];
+
+        gsl_spline       *z_spline;
+        gsl_interp_accel *zacc;
+
+
+        for(i = 0; i < e_size; i++)
+        {
+            /*spline[i] = gsl_spline2d_alloc(gsl_interp2d_bicubic, g_size, p_size);*/
+            spline[i] = gsl_spline2d_alloc(gsl_interp2d_bilinear, g_size, p_size);
+            xacc[i]   = gsl_interp_accel_alloc();
+            yacc[i]   = gsl_interp_accel_alloc();
+        }
+
+        double z_interpolated[e_size];
+        z_spline = gsl_spline_alloc(gsl_interp_steffen, e_size);
+        zacc = gsl_interp_accel_alloc();
+
+        for(i = 0; i < e_size; i++)
+        {
+            gsl_spline2d_init(spline[i], g_energy, p_energy,
+                    reaction_rate + (i * g_size * p_size),
+                    g_size, p_size);
+        }
+
+        for(j = 0; j < st->protons.size; j++)
+        {
+            double lgp = st->protons.log_energy[j];
+
+            for(k = 0; k < st->photons.size; k++)
+            {
+                double le = st->photons.log_energy[k];
+
+                for(i = 0; i < e_size; i++)
+                {
+                    if(le  < g_energy[0] || le  > g_energy[g_size - 1] ||
+                       lgp < p_energy[0] || lgp > p_energy[p_size - 1])
+                        z_interpolated[i] = log(DBL_MIN);
+                    else
+                        z_interpolated[i] = gsl_spline2d_eval(spline[i], le, lgp, xacc[i], yacc[i]);
+                }
+
+                gsl_spline_init(z_spline, e_energy, z_interpolated, e_size);
+
+                for(i = 0; i < st->electrons.size; i++)
+                {
+                    double lge = st->electrons.log_energy[i];
+                    double r;
+
+                    if(lge < e_energy[0] || lge > e_energy[e_size - 1])
+                        r = log(DBL_MIN);
+                    else
+                        r = gsl_spline_eval(z_spline, lge, zacc);
+
+                    // TODO: CHECK THIS WITH A BETTER TABLE
+                    /*if(!isfinite(r))*/
+                        /*r = log(DBL_MIN);*/
+
+                    if(!isfinite(r))
+                    {
+                        fprintf(stderr,"Error interpolating\n");
+                        fprintf(stderr,"%u %u %u %lg\n", i, j, k, r);
+                        break;
+                    }
+
+                    st->bethe_heitler_ka_LUT_reaction_rate[
+                        (i * st->protons.size + j) * st->photons.size + k] = exp(r);
+                }
+            }
+        }
+
+        gsl_spline_free(z_spline);
+        gsl_interp_accel_free(zacc);
+
+        for(i = 0; i < e_size; i++)
+        {
+            gsl_spline2d_free(spline[i]);
+            gsl_interp_accel_free(xacc[i]);
+            gsl_interp_accel_free(yacc[i]);
+        }
+
+        free(e_energy);
+        free(p_energy);
+        free(g_energy);
+        free(reaction_rate);
+
+        return;
+    }
 
     for(i = 0; i < st->electrons.size; i++)
     {
@@ -342,7 +543,12 @@ void calculate_bethe_heitler_ka_LUT_lepton_gains(state_t *st)
                     fprintf(stderr,"%u %u %u %lg\n", i, j, k, r);
                     break;
                 }
+
+                /*fprintf(stderr,"Done %u %u %u %lg %lg %lg\n", i, j, k, ge, gp, e);*/
             }
+            fprintf(stderr,"Done %u %u %lg %lg\n", i, j, ge, gp);
         }
+
+        fprintf(stderr,"Done %u %lg\n", i, ge);
     }
 }
