@@ -43,6 +43,7 @@ dt_max = 1e3
 t_max = 1e7
 eta = 1
 cfe_ratio = 1
+tol = 1e-8
 
 [volume]
 shape = "sphere"
