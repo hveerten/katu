@@ -33,6 +33,8 @@ typedef struct state_t
 
     double eta;
 
+    double tol;
+
     // For now, we won't use this
     /*double *big_chunk_of_memory;*/
 

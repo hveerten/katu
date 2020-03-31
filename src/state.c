@@ -105,6 +105,7 @@ void state_init_from_config(state_t *st, config_t *cfg)
     st->R       = cfg->R;
     st->density = cfg->density;
     st->eta     = cfg->eta;
+    st->tol     = cfg->tol;
 
     switch(cfg->v)
     {
