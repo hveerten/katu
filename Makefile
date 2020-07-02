@@ -17,11 +17,11 @@ CFLAGS+=-DELECTRON_STEADY_STATE=1
 CFLAGS+=-DPROTON_STEADY_STATE=1
 
 EXTERNAL_SOURCES = \
-	./external_libs/toml.c
+	./src/external_libs/toml.c
 EXTERNAL_HEADERS = \
-	./external_libs/toml.h
+	./src/external_libs/toml.h
 EXTERNAL_OBJECTS = \
-	./external_libs/toml.o
+	./src/external_libs/toml.o
 
 UTILS_SOURCES = \
 	./src/utils/tpool.c

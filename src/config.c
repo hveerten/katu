@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #include "config.h"
-#include "../external_libs/toml.h"
+#include "external_libs/toml.h"
 
 #define TOML_READ_DOUBLE(X,Y,Z,A,D)                             \
     raw = toml_raw_in((X), Y);                                  \
