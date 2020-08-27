@@ -466,6 +466,7 @@ void state_report_general_info(state_t *st)
     fprintf(stderr,"Proton To Electron Ratio:\t%lg\n", st->eta);
     fprintf(stderr,"B:\t%lg\n", st->B);
     fprintf(stderr,"dt:\t%lg\n", st->dt);
+    fprintf(stderr,"dt_max:\t%lg\n", st->dt_max);
     fprintf(stderr,"Max time:\t%lg\n", st->t_max);
 #define FORMAT_ARGUMENTS(X) st->X.energy[0], log10(st->X.energy[0]), st->X.energy[st->X.size - 1], log10(st->X.energy[st->X.size - 1]), st->X.size
     fprintf(stderr, "Photons:  \t%11lg (10^%+4.2lf)\t%11lg (10^%+4.2lf)\t(%u)\n", FORMAT_ARGUMENTS(photons));
