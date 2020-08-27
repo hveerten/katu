@@ -122,7 +122,7 @@ void state_init_from_config(state_t *st, config_t *cfg)
     init_state_synchrotron(st, cfg->magnetic_field);
     init_state_aux_memory(st);
 
-    double t_acc = 1e100;
+    double t_acc = cfg->t_acc;
     init_acceleration(st, &st->electron_acceleration, electron, t_acc);
     init_acceleration(st, &st->positron_acceleration, positron, t_acc);
     init_acceleration(st, &st->proton_acceleration,   proton,   t_acc);

@@ -17,6 +17,7 @@ typedef struct
     double dt;
     double dt_max;
     double t_max;
+    double t_acc;
     double eta;
     double cfe_ratio;
     double tol;
