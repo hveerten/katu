@@ -18,6 +18,8 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#include <gsl/gsl_sf_lambert.h>
+
 void step_calculate_processes(state_t *st)
 {
 #if USE_THREAD_POOL
@@ -1036,9 +1038,6 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
     dlng = st->electrons.log_energy[1] - st->electrons.log_energy[0];
 
-    /*double aux1[st->electrons.size];*/
-    /*double aux2[st->electrons.size];*/
-    /*double aux3[st->electrons.size];*/
     double A[st->electrons.size];
     double B[st->electrons.size];
     for(i = 0; i < st->electrons.size; i++)
@@ -1069,6 +1068,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     }
 
 /*
+ *    // Electron Acceleration in logspace for population assuming that
+ *    // Q/n is taken at time t and NOT implicit
  *    double electron_log_new_pop = log(st->electrons.population[0] + st->dt * st->external_injection.electrons[0]);
  *    st->electrons.tentative_population[0] = exp(electron_log_new_pop);
  *
@@ -1082,37 +1083,43 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
  *                   st->bethe_heitler_lepton_gains[i] +
  *                   st->muon_decay_electron_gains[i];
  *
- *        electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] - aux1[i] * electron_log_new_pop / dlng)) /
- *                        (1 - aux1[i] * st->dt / dlng);
+ *        electron_log_new_pop = (ln + st->dt * (Q / n + A[i] - B[i] * electron_log_new_pop / dlng)) /
+ *                        (1 - B[i] * st->dt / dlng);
  *
  *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
  *    }
  */
 
 /*
- *    electron_log_new_pop = log(st->electrons.population[st->electrons.size - 1]);
- *    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+ *    // Electron Acceleration in logspace for population assuming that
+ *    // Q/n is taken at time t+1 and implicit
+ *    // NOTE that it uses the Lambert W-function
+ *    double electron_log_new_pop = log(st->electrons.population[0] + st->dt * st->external_injection.electrons[0]);
+ *    st->electrons.tentative_population[0] = exp(electron_log_new_pop);
  *
- *    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+ *    for(i = 1; i < st->electrons.size && st->electrons.energy[i] < electron_turnover; i++)
  *    {
  *        double  n = st->electrons.population[i];
  *        double ln = st->electrons.log_population[i];
  *
  *        double Q = st->external_injection.electrons[i] +
- *                   st->pair_production_lepton_gains[i];
+ *                   st->pair_production_lepton_gains[i] +
+ *                   st->bethe_heitler_lepton_gains[i] +
+ *                   st->muon_decay_electron_gains[i];
  *
- *        electron_log_new_pop = (ln + st->dt * (Q / n + aux2[i] + aux1[i] * electron_log_new_pop / dlng)) /
- *                        (1 + aux1[i] * st->dt / dlng);
+ *        double aux1 = ln + st->dt * (A[i] - B[i] * electron_log_new_pop / dlng);
+ *        double aux2 = st->dt * Q;
+ *        double aux3 = st->dt / dlng * B[i] - 1;
+ *
+ *        double aux4 = -aux2 / aux3;
+ *        double aux5 =  aux1 / aux3;
+ *
+ *        electron_log_new_pop = aux4 / gsl_sf_lambert_W0(aux4 * exp(aux5));
  *
  *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
- *
- *        if(i == st->electrons.size - 2)
- *        {
- *            fprintf(stderr,"%lg\t%lg\t%lg\n",st->dt, st->electrons.tentative_population[i], electron_log_new_pop);
- *            fprintf(stderr,"%lg\t%lg\t%lg\n", Q/n, aux2[i], aux1[i]);
- *        }
  *    }
  */
+
 
     /* Electron Cooling */
     electron_new_pop = st->electrons.population[st->electrons.size - 1];
@@ -1132,6 +1139,59 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 
         st->electrons.tentative_population[i] = electron_new_pop;
     }
+
+/*
+ *    // Electron Cooling in logspace for population assuming that
+ *    // Q/n is taken at time t and NOT implicit
+ *    double electron_log_new_pop = st->electrons.log_population[st->electrons.size - 1];
+ *    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+ *
+ *    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+ *    {
+ *        double  n = st->electrons.population[i];
+ *        double ln = st->electrons.log_population[i];
+ *
+ *        double Q = st->external_injection.electrons[i] +
+ *                   st->pair_production_lepton_gains[i] +
+ *                   st->bethe_heitler_lepton_gains[i] +
+ *                   st->muon_decay_electron_gains[i];
+ *
+ *        electron_log_new_pop = (ln + st->dt * (Q / n + A[i] + B[i] * electron_log_new_pop / dlng)) /
+ *                        (1 + B[i] * st->dt / dlng);
+ *
+ *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+ *    }
+ */
+
+/*
+ *    // Electron Cooling in logspace for population assuming that
+ *    // Q/n is taken at time t+1 and implicit
+ *    // NOTE that it uses the Lambert W-function
+ *    double electron_log_new_pop = st->electrons.log_population[st->electrons.size - 1];
+ *    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+ *
+ *    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+ *    {
+ *        double  n = st->electrons.population[i];
+ *        double ln = st->electrons.log_population[i];
+ *
+ *        double Q = st->external_injection.electrons[i] +
+ *                   st->pair_production_lepton_gains[i] +
+ *                   st->bethe_heitler_lepton_gains[i] +
+ *                   st->muon_decay_electron_gains[i];
+ *
+ *        double aux1 =  ln + st->dt * (A[i] + B[i] * electron_log_new_pop / dlng);
+ *        double aux2 =  st->dt * Q;
+ *        double aux3 = -st->dt / dlng * B[i] - 1;
+ *
+ *        double aux4 = -aux2 / aux3;
+ *        double aux5 =  aux1 / aux3;
+ *
+ *        electron_log_new_pop = aux4 / gsl_sf_lambert_W0(aux4 * exp(aux5));
+ *
+ *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+ *    }
+ */
 }
 #endif
 
