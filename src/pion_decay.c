@@ -132,7 +132,7 @@ void neutral_pion_decay(state_t *st)
         }
         photon_gains *= dlng;
 
-        st->pion_decay_photon_gains[i] = photon_gains * 4 * M_PI;
+        st->pion_decay_photon_gains[i] = photon_gains ;
     }
 }
 
