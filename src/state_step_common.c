@@ -1291,67 +1291,6 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
 }
 #endif
 
-#if POSITRON_STEADY_STATE == 0
-{
-    double t_acc = st->positron_acceleration.t;
-    double t_esc = st->positron_escape.t;
-    double S     = st->positron_synchrotron.particle_losses_factor;
-    double IC    = st->inverse_compton_lepton_losses_factor;
-
-    double positron_turnover = 1 / (t_acc * (S + IC));
-
-    double A[st->positrons.size];
-    double B[st->positrons.size];
-    for(i = 0; i < st->positrons.size; i++)
-    {
-        double g = st->positrons.energy[i];
-
-        A[i] = -1/t_esc - 1/t_acc + 2*g*(S+IC);
-        B[i] =          - 1/t_acc +   g*(S+IC);
-    }
-
-    dlng = st->positrons.log_energy[1] - st->positrons.log_energy[0];
-
-    /* Positron Acceleration */
-    double positron_new_pop = st->positrons.population[0] * (1 - st->dt / t_esc) + st->dt * st->external_injection.positrons[0];
-    st->positrons.tentative_population[0] = positron_new_pop;
-
-    for(i = 1; i < st->positrons.size && st->positrons.energy[i] < positron_turnover; i++)
-    {
-        double  n = st->positrons.population[i];
-
-        double Q = st->external_injection.positrons[i] +
-                   st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_lepton_gains[i] +
-                   st->muon_decay_positron_gains[i];
-
-        positron_new_pop = (n + st->dt * (Q - B[i] * positron_new_pop / dlng)) /
-                        (1 - st->dt * A[i] - B[i] * st->dt / dlng);
-
-        st->positrons.tentative_population[i] = positron_new_pop;
-    }
-
-    /* Positron Cooling */
-    positron_new_pop = st->positrons.population[st->positrons.size - 1];
-    st->positrons.tentative_population[st->positrons.size - 1] = positron_new_pop;
-
-    for(i = st->positrons.size - 2; i < st->positrons.size && positron_turnover < st->positrons.energy[i]; i--)
-    {
-        double n = st->positrons.population[i];
-
-        double Q = st->external_injection.positrons[i] +
-                   st->pair_production_lepton_gains[i] +
-                   st->bethe_heitler_lepton_gains[i] +
-                   st->muon_decay_positron_gains[i];
-
-        positron_new_pop = (n + st->dt * (Q + B[i] * positron_new_pop / dlng)) /
-                        (1 - st->dt * A[i] + B[i] * st->dt / dlng);
-
-        st->positrons.tentative_population[i] = positron_new_pop;
-    }
-}
-#endif
-
     for(i = 0; i < st->neutral_pions.size; i++)
     {
         double n = st->neutral_pions.population[i];
