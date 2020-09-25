@@ -242,6 +242,8 @@ void step_calculate_processes(state_t *st)
         st->inverse_compton_photon_gains[i] =
             st->inverse_compton_photon_gains_upscattering[i] +
             st->inverse_compton_photon_gains_downscattering[i];
+
+    neutral_pion_decay(st);
 }
 
 void step_update_populations(state_t *st, double dt)
