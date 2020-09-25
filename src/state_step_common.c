@@ -1533,7 +1533,8 @@ void step_report_population_update(state_t *st, enum particle_type pt)
             for(i = 0; i < st->photons.size; i++)
             {
                 fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->photons.population[i], st->photons.tentative_population[i]);
-                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->external_injection.photons[i],
                         st->electron_synchrotron.photon_gains[i],
                         st->proton_synchrotron.photon_gains[i],
                         st->electron_synchrotron.photon_losses[i],
@@ -1549,17 +1550,31 @@ void step_report_population_update(state_t *st, enum particle_type pt)
             for(i = 0; i < st->electrons.size; i++)
             {
                 fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->electrons.population[i], st->electrons.tentative_population[i]);
-                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
                         st->electron_acceleration.gains[i],
                         st->pair_production_lepton_gains[i],
                         st->bethe_heitler_lepton_gains[i],
+                        st->muon_decay_electron_gains[i],
                         st->electron_synchrotron.particle_losses[i],
                         st->inverse_compton_electron_losses[i],
                         st->electron_escape.losses[i]);
             }
             break;
 
-        case positron: assert(1);
+        case positron:
+            for(i = 0; i < st->positrons.size; i++)
+            {
+                fprintf(stderr,"%u:\t%lg\t->\t%lg\t|", i, st->positrons.population[i], st->positrons.tentative_population[i]);
+                fprintf(stderr,"\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\t%lg\n",
+                        st->positron_acceleration.gains[i],
+                        st->pair_production_lepton_gains[i],
+                        st->bethe_heitler_lepton_gains[i],
+                        st->muon_decay_positron_gains[i],
+                        st->positron_synchrotron.particle_losses[i],
+                        st->inverse_compton_positron_losses[i],
+                        st->positron_escape.losses[i]);
+            }
+            break;
 
         case proton:
             for(i = 0; i < st->protons.size; i++)
