@@ -2,8 +2,18 @@ data/**
 config*.toml
 **.pdf
 **.png
+**.tsv
 
 data.dat
 model
 src/model.c
 src/test.c
+
+# ignore results from multinest or emcee
+data_multinest/**
+data_mcmc/**
+*_results/**
+
+# Ignore the program to produce the BH table and the table
+tables/BH_KA_table.tab
+tables/table
