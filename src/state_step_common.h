@@ -6,15 +6,11 @@
 
 #include <stdbool.h>
 
-#if ELECTRON_STEADY_STATE == 0
+#if LEPTON_STEADY_STATE == 0
 #define APPLY_TO_ELECTRONS STEP_INTERNAL_FUNCTION(electrons)
-#else
-#define APPLY_TO_ELECTRONS
-#endif
-
-#if POSITRON_STEADY_STATE == 0
 #define APPLY_TO_POSITRONS STEP_INTERNAL_FUNCTION(positrons)
 #else
+#define APPLY_TO_ELECTRONS
 #define APPLY_TO_POSITRONS
 #endif
 

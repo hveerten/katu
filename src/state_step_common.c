@@ -1032,7 +1032,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         st->neutrons.tentative_population[i] = aux0 * n + aux1 * Q;
     }
 
-#if ELECTRON_STEADY_STATE == 0
+#if LEPTON_STEADY_STATE == 0
 {
     double t_acc = st->electron_acceleration.t;
     double t_esc = st->electron_escape.t;
@@ -1053,150 +1053,241 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         B[i] =          - 1/t_acc +   g*(S+IC);
     }
 
-    /* Electron Acceleration */
+    /* Lepton Acceleration */
     double electron_new_pop = st->electrons.population[0] * (1 - st->dt / t_esc) + st->dt * st->external_injection.electrons[0];
-    st->electrons.tentative_population[0] = electron_new_pop;
+    double positron_new_pop = st->positrons.population[0] * (1 - st->dt / t_esc) + st->dt * st->external_injection.positrons[0];
 
+    st->electrons.tentative_population[0] = electron_new_pop;
+    st->positrons.tentative_population[0] = positron_new_pop;
+
+    // Use the electrons as proxy for size and energy given that for both
+    // leptons are equal
     for(i = 1; i < st->electrons.size && st->electrons.energy[i] < electron_turnover; i++)
     {
-        double n = st->electrons.population[i];
+        double n_e = st->electrons.population[i];
+        double n_p = st->positrons.population[i];
 
-        double Q = st->external_injection.electrons[i] +
+        double Q_e = st->external_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_electron_gains[i];
 
-        electron_new_pop = (n + st->dt * (Q - B[i] * electron_new_pop / dlng)) /
+        double Q_p = st->external_injection.positrons[i] +
+                   st->pair_production_lepton_gains[i] +
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_positron_gains[i];
+
+        electron_new_pop = (n_e + st->dt * (Q_e - B[i] * electron_new_pop / dlng)) /
+                        (1 - st->dt * A[i] - B[i] * st->dt / dlng);
+        positron_new_pop = (n_p + st->dt * (Q_p - B[i] * positron_new_pop / dlng)) /
                         (1 - st->dt * A[i] - B[i] * st->dt / dlng);
 
         st->electrons.tentative_population[i] = electron_new_pop;
+        st->positrons.tentative_population[i] = positron_new_pop;
     }
 
 /*
  *    // Electron Acceleration in logspace for population assuming that
  *    // Q/n is taken at time t and NOT implicit
- *    double electron_log_new_pop = log(st->electrons.population[0] + st->dt * st->external_injection.electrons[0]);
+ *    double electron_log_new_pop = log(st->electrons.population[0] * (1 - st->dt / t_esc) + st->dt * st->external_injection.electrons[0]);
+ *    double positron_log_new_pop = log(st->positrons.population[0] * (1 - st->dt / t_esc) + st->dt * st->external_injection.positrons[0]);
  *    st->electrons.tentative_population[0] = exp(electron_log_new_pop);
+ *    st->positrons.tentative_population[0] = exp(positron_log_new_pop);
  *
+ *    // Use the electrons as proxy for size and energy given that for both
+ *    // leptons are equal
  *    for(i = 1; i < st->electrons.size && st->electrons.energy[i] < electron_turnover; i++)
  *    {
- *        double  n = st->electrons.population[i];
- *        double ln = st->electrons.log_population[i];
+ *        double  n_e = st->electrons.population[i];
+ *        double ln_e = st->electrons.log_population[i];
+ *        double  n_p = st->positrons.population[i];
+ *        double ln_p = st->positrons.log_population[i];
  *
- *        double Q = st->external_injection.electrons[i] +
+ *        double Q_e = st->external_injection.electrons[i] +
  *                   st->pair_production_lepton_gains[i] +
  *                   st->bethe_heitler_lepton_gains[i] +
  *                   st->muon_decay_electron_gains[i];
  *
- *        electron_log_new_pop = (ln + st->dt * (Q / n + A[i] - B[i] * electron_log_new_pop / dlng)) /
+ *        double Q_p = st->external_injection.positrons[i] +
+ *                   st->pair_production_lepton_gains[i] +
+ *                   st->bethe_heitler_lepton_gains[i] +
+ *                   st->muon_decay_positron_gains[i];
+ *
+ *        electron_log_new_pop = (ln_e + st->dt * (Q_e / n_e + A[i] - B[i] * electron_log_new_pop / dlng)) /
+ *                        (1 - B[i] * st->dt / dlng);
+ *        positron_log_new_pop = (ln_p + st->dt * (Q_p / n_p + A[i] - B[i] * positron_log_new_pop / dlng)) /
  *                        (1 - B[i] * st->dt / dlng);
  *
  *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+ *        st->positrons.tentative_population[i] = exp(positron_log_new_pop);
  *    }
  */
 
-/*
- *    // Electron Acceleration in logspace for population assuming that
- *    // Q/n is taken at time t+1 and implicit
- *    // NOTE that it uses the Lambert W-function
- *    double electron_log_new_pop = log(st->electrons.population[0] + st->dt * st->external_injection.electrons[0]);
- *    st->electrons.tentative_population[0] = exp(electron_log_new_pop);
- *
- *    for(i = 1; i < st->electrons.size && st->electrons.energy[i] < electron_turnover; i++)
- *    {
- *        double  n = st->electrons.population[i];
- *        double ln = st->electrons.log_population[i];
- *
- *        double Q = st->external_injection.electrons[i] +
- *                   st->pair_production_lepton_gains[i] +
- *                   st->bethe_heitler_lepton_gains[i] +
- *                   st->muon_decay_electron_gains[i];
- *
- *        double aux1 = ln + st->dt * (A[i] - B[i] * electron_log_new_pop / dlng);
- *        double aux2 = st->dt * Q;
- *        double aux3 = st->dt / dlng * B[i] - 1;
- *
- *        double aux4 = -aux2 / aux3;
- *        double aux5 =  aux1 / aux3;
- *
- *        electron_log_new_pop = aux4 / gsl_sf_lambert_W0(aux4 * exp(aux5));
- *
- *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
- *    }
- */
-
-
-    /* Electron Cooling */
-    electron_new_pop = st->electrons.population[st->electrons.size - 1];
-    st->electrons.tentative_population[st->electrons.size - 1] = electron_new_pop;
-
-    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+    // Start the 'good' algorithm with not 0-like populations
+    if(st->t > 0.5*t_esc)
     {
-        double n = st->electrons.population[i];
+    // Electron Acceleration in logspace for population assuming that
+    // Q/n is taken at time t+1 and implicit
+    // NOTE that it uses the Lambert W-function
+    double electron_log_new_pop = log(st->electrons.population[0] * (1 - st->dt/t_esc) + st->dt * st->external_injection.electrons[0]);
+    double positron_log_new_pop = log(st->positrons.population[0] * (1 - st->dt/t_esc) + st->dt * st->external_injection.positrons[0]);
+    st->electrons.tentative_population[0] = exp(electron_log_new_pop);
+    st->positrons.tentative_population[0] = exp(positron_log_new_pop);
 
-        double Q = st->external_injection.electrons[i] +
+    // Use the electrons as proxy for size and energy given that for both
+    // leptons are equal
+    for(i = 1; i < st->electrons.size && st->electrons.energy[i] < electron_turnover; i++)
+    {
+        double ln_e = st->electrons.log_population[i];
+        double ln_p = st->positrons.log_population[i];
+
+        double Q_e = st->external_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_electron_gains[i];
 
-        electron_new_pop = (n + st->dt * (Q + B[i] * electron_new_pop / dlng)) /
+        double Q_p = st->external_injection.positrons[i] +
+                   st->pair_production_lepton_gains[i] +
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_positron_gains[i];
+
+        double aux1_e = ln_e + st->dt * (A[i] - B[i] * electron_log_new_pop / dlng);
+        double aux2_e = st->dt * Q_e;
+        double aux1_p = ln_p + st->dt * (A[i] - B[i] * positron_log_new_pop / dlng);
+        double aux2_p = st->dt * Q_p;
+
+        double aux3 = st->dt / dlng * B[i] - 1;
+
+        double aux4_e = -aux2_e / aux3;
+        double aux5_e =  aux1_e / aux3;
+        double aux4_p = -aux2_p / aux3;
+        double aux5_p =  aux1_p / aux3;
+
+        electron_log_new_pop = gsl_sf_lambert_W0(aux4_e * exp(aux5_e)) - aux5_e;
+        positron_log_new_pop = gsl_sf_lambert_W0(aux4_p * exp(aux5_p)) - aux5_p;
+
+        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+        st->positrons.tentative_population[i] = exp(positron_log_new_pop);
+    }
+    }
+
+
+    /* Lepton Cooling */
+    electron_new_pop = st->electrons.population[st->electrons.size - 1];
+    positron_new_pop = st->positrons.population[st->positrons.size - 1];
+    st->electrons.tentative_population[st->electrons.size - 1] = electron_new_pop;
+    st->positrons.tentative_population[st->positrons.size - 1] = positron_new_pop;
+
+    // Use the electrons as proxy for size and energy given that for both
+    // leptons are equal
+    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+    {
+        double n_e = st->electrons.population[i];
+        double n_p = st->positrons.population[i];
+
+        double Q_e = st->external_injection.electrons[i] +
+                     st->pair_production_lepton_gains[i] +
+                     st->bethe_heitler_lepton_gains[i] +
+                     st->muon_decay_electron_gains[i];
+
+        double Q_p = st->external_injection.positrons[i] +
+                     st->pair_production_lepton_gains[i] +
+                     st->bethe_heitler_lepton_gains[i] +
+                     st->muon_decay_positron_gains[i];
+
+        electron_new_pop = (n_e + st->dt * (Q_e + B[i] * electron_new_pop / dlng)) /
+                        (1 - st->dt * A[i] + B[i] * st->dt / dlng);
+        positron_new_pop = (n_p + st->dt * (Q_p + B[i] * positron_new_pop / dlng)) /
                         (1 - st->dt * A[i] + B[i] * st->dt / dlng);
 
         st->electrons.tentative_population[i] = electron_new_pop;
+        st->positrons.tentative_population[i] = positron_new_pop;
     }
 
 /*
- *    // Electron Cooling in logspace for population assuming that
+ *    // Lepton Cooling in logspace for population assuming that
  *    // Q/n is taken at time t and NOT implicit
  *    double electron_log_new_pop = st->electrons.log_population[st->electrons.size - 1];
+ *    double positron_log_new_pop = st->positrons.log_population[st->positrons.size - 1];
  *    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+ *    st->positrons.tentative_population[st->positrons.size - 1] = exp(positron_log_new_pop);
  *
+ *    // Use the electrons as proxy for size and energy given that for both
+ *    // leptons are equal
  *    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
  *    {
- *        double  n = st->electrons.population[i];
- *        double ln = st->electrons.log_population[i];
+ *        double  n_e = st->electrons.population[i];
+ *        double ln_e = st->electrons.log_population[i];
+ *        double  n_p = st->positrons.population[i];
+ *        double ln_p = st->positrons.log_population[i];
  *
- *        double Q = st->external_injection.electrons[i] +
+ *        double Q_e = st->external_injection.electrons[i] +
  *                   st->pair_production_lepton_gains[i] +
  *                   st->bethe_heitler_lepton_gains[i] +
  *                   st->muon_decay_electron_gains[i];
  *
- *        electron_log_new_pop = (ln + st->dt * (Q / n + A[i] + B[i] * electron_log_new_pop / dlng)) /
+ *        double Q_p = st->external_injection.positrons[i] +
+ *                   st->pair_production_lepton_gains[i] +
+ *                   st->bethe_heitler_lepton_gains[i] +
+ *                   st->muon_decay_positron_gains[i];
+ *
+ *        electron_log_new_pop = (ln_e + st->dt * (Q_e / n_e + A[i] + B[i] * electron_log_new_pop / dlng)) /
+ *                        (1 + B[i] * st->dt / dlng);
+ *        positron_log_new_pop = (ln_p + st->dt * (Q_p / n_p + A[i] + B[i] * positron_log_new_pop / dlng)) /
  *                        (1 + B[i] * st->dt / dlng);
  *
  *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+ *        st->positrons.tentative_population[i] = exp(positron_log_new_pop);
  *    }
  */
 
-/*
- *    // Electron Cooling in logspace for population assuming that
- *    // Q/n is taken at time t+1 and implicit
- *    // NOTE that it uses the Lambert W-function
- *    double electron_log_new_pop = st->electrons.log_population[st->electrons.size - 1];
- *    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
- *
- *    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
- *    {
- *        double  n = st->electrons.population[i];
- *        double ln = st->electrons.log_population[i];
- *
- *        double Q = st->external_injection.electrons[i] +
- *                   st->pair_production_lepton_gains[i] +
- *                   st->bethe_heitler_lepton_gains[i] +
- *                   st->muon_decay_electron_gains[i];
- *
- *        double aux1 =  ln + st->dt * (A[i] + B[i] * electron_log_new_pop / dlng);
- *        double aux2 =  st->dt * Q;
- *        double aux3 = -st->dt / dlng * B[i] - 1;
- *
- *        double aux4 = -aux2 / aux3;
- *        double aux5 =  aux1 / aux3;
- *
- *        electron_log_new_pop = aux4 / gsl_sf_lambert_W0(aux4 * exp(aux5));
- *
- *        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
- *    }
- */
+    // Start the 'good' algorithm with not 0-like populations
+    if(st->t > 0.5*t_esc)
+    {
+    // Lepton Cooling in logspace for population assuming that
+    // Q/n is taken at time t+1 and implicit
+    // NOTE that it uses the Lambert W-function
+    double electron_log_new_pop = st->electrons.log_population[st->electrons.size - 1];
+    double positron_log_new_pop = st->positrons.log_population[st->positrons.size - 1];
+    st->electrons.tentative_population[st->electrons.size - 1] = exp(electron_log_new_pop);
+    st->positrons.tentative_population[st->positrons.size - 1] = exp(positron_log_new_pop);
+
+    // Use the electrons as proxy for size and energy given that for both
+    // leptons are equal
+    for(i = st->electrons.size - 2; i < st->electrons.size && electron_turnover < st->electrons.energy[i]; i--)
+    {
+        double ln_e = st->electrons.log_population[i];
+        double ln_p = st->positrons.log_population[i];
+
+        double Q_e = st->external_injection.electrons[i] +
+                   st->pair_production_lepton_gains[i] +
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_electron_gains[i];
+
+        double Q_p = st->external_injection.positrons[i] +
+                   st->pair_production_lepton_gains[i] +
+                   st->bethe_heitler_lepton_gains[i] +
+                   st->muon_decay_positron_gains[i];
+
+        double aux1_e =  ln_e + st->dt * (A[i] + B[i] * electron_log_new_pop / dlng);
+        double aux2_e =  st->dt * Q_e;
+        double aux1_p =  ln_p + st->dt * (A[i] + B[i] * positron_log_new_pop / dlng);
+        double aux2_p =  st->dt * Q_p;
+
+        double aux3 = -st->dt / dlng * B[i] - 1;
+
+        double aux4_e = -aux2_e / aux3;
+        double aux5_e =  aux1_e / aux3;
+        double aux4_p = -aux2_p / aux3;
+        double aux5_p =  aux1_p / aux3;
+
+        electron_log_new_pop = gsl_sf_lambert_W0(aux4_e * exp(aux5_e)) - aux5_e;
+        positron_log_new_pop = gsl_sf_lambert_W0(aux4_p * exp(aux5_p)) - aux5_p;
+
+        st->electrons.tentative_population[i] = exp(electron_log_new_pop);
+        st->positrons.tentative_population[i] = exp(positron_log_new_pop);
+    }
+    }
 }
 #endif
 
