@@ -275,6 +275,7 @@ void step_update_populations(state_t *st, double dt)
              st->negative_right_muon_synchrotron.photon_losses[i] +
              st->inverse_compton_photon_gains[i] + st->inverse_compton_photon_losses[i] +
              st->pair_production_photon_losses[i] + st->pair_annihilation_photon_gains[i] +
+             st->pion_decay_photon_gains[i] +
              st->photon_escape.losses[i]);
     }
 
@@ -462,7 +463,8 @@ void step_experimental_update_populations(state_t *st, double dt)
                    st->negative_left_muon_synchrotron.photon_gains[i] +
                    st->negative_right_muon_synchrotron.photon_gains[i] +
                    st->inverse_compton_photon_gains[i] +
-                   st->pair_annihilation_photon_gains[i];
+                   st->pair_annihilation_photon_gains[i] +
+                   st->pion_decay_photon_gains[i];
 
         double L = (st->electron_synchrotron.photon_losses[i] +
                     st->positron_synchrotron.photon_losses[i] +
@@ -925,7 +927,8 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
                    st->negative_left_muon_synchrotron.photon_gains[i] +
                    st->negative_right_muon_synchrotron.photon_gains[i] +
                    st->inverse_compton_photon_gains[i] +
-                   st->pair_annihilation_photon_gains[i];
+                   st->pair_annihilation_photon_gains[i] +
+                   st->pion_decay_photon_gains[i];
 
         double L = (st->electron_synchrotron.photon_losses[i] +
                     st->positron_synchrotron.photon_losses[i] +
