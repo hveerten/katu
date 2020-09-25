@@ -353,6 +353,10 @@ void init_state_aux_memory(state_t *st)
     MEM_PREPARE(st->pair_production_photon_losses,  st->photons.size,   double);
     MEM_PREPARE(st->pair_production_lepton_gains,   st->electrons.size, double);
 
+    MEM_PREPARE(st->pair_annihilation_photon_gains,    st->photons.size,   double);
+    MEM_PREPARE(st->pair_annihilation_electron_losses, st->electrons.size, double);
+    MEM_PREPARE(st->pair_annihilation_positron_losses, st->positrons.size, double);
+
     MEM_PREPARE(st->bethe_heitler_lepton_gains,  st->electrons.size, double);
     /*MEM_PREPARE(st->bethe_heitler_photon_losses, st->electrons.size, double);*/
     /*MEM_PREPARE(st->bethe_heitler_proton_losses, st->electrons.size, double);*/
