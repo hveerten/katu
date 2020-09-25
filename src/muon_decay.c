@@ -3,6 +3,7 @@
 #include "state.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 static double f_positive_muon(double x, double h)
 {
@@ -13,7 +14,9 @@ static double f_positive_muon(double x, double h)
         return 0;
 
     if(h ==  1.0) return 4./3                      - 4 * x * x * x / 3;
-    if(h == -1.0) return 2             - 6 * x * x + 4 * x * x * x;
+    /*if(h == -1.0) return 2             - 6 * x * x + 4 * x * x * x;*/
+
+    if(h == -1.0) return 2 * (1 - x*x * (3 - 2 * x));
 
     double aux1 = 5./3 - 3 * x * x + 4 * x*x*x / 3;
     double aux2 =-1./3 + 3 * x * x - 8 * x*x*x / 3;
@@ -154,6 +157,11 @@ void calculate_muon_decay_LUT_neutrino_functions(state_t *st)
             st->muon_decay_LUT_positive_electron_plus_1 [index_base + j] = f_positive_electron(x,  1) / g_muon * (ELECTRON_MASS / MUON_MASS);
             st->muon_decay_LUT_positive_muon_plus_1     [index_base + j] = f_positive_muon(x,  1)     / g_muon * (ELECTRON_MASS / MUON_MASS);
             st->muon_decay_LUT_positive_muon_minus_1    [index_base + j] = f_positive_muon(x, -1)     / g_muon * (ELECTRON_MASS / MUON_MASS);
+
+            if(f_positive_electron(x, -1) < 0) fprintf(stderr,"ERROR generating tables for muon decay +e -1\n");
+            if(f_positive_electron(x,  1) < 0) fprintf(stderr,"ERROR generating tables for muon decay +e  1\n");
+            if(f_positive_muon(x, -1) < 0)     fprintf(stderr,"ERROR generating tables for muon decay +m -1\n");
+            if(f_positive_muon(x,  1) < 0)     fprintf(stderr,"ERROR generating tables for muon decay +m  1\n");
         }
     }
 }
