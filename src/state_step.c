@@ -282,7 +282,7 @@ void step_heun_tentative(state_t *st, bool try_new_step)
 
     // First step
     step_calculate_processes(st);
-    step_update_populations(st, st->dt);
+    st->update_function(st, st->dt);
 
     if(step_check_tentative_populations(st))
         goto abort1;
