@@ -202,8 +202,8 @@ void multi_resonance_pion_production(state_t *st)
     gsl_interp_accel *neutron_accelerator  = gsl_interp_accel_alloc();
     gsl_spline_init(neutron_spline, st->neutrons.log_energy, st->neutrons.log_population, st->neutrons.size);
 
-    posix_memalign((void *) &proton_interpolated,  32, st->neutral_pions.size * sizeof(double));
-    posix_memalign((void *) &neutron_interpolated, 32, st->neutral_pions.size * sizeof(double));
+    posix_memalign((void **) &proton_interpolated,  32, st->neutral_pions.size * sizeof(double));
+    posix_memalign((void **) &neutron_interpolated, 32, st->neutral_pions.size * sizeof(double));
 
     memset(st->multi_resonances_neutral_pion_gains,  '\0', st->neutral_pions.size  * sizeof(double));
     memset(st->multi_resonances_positive_pion_gains, '\0', st->positive_pions.size * sizeof(double));
@@ -345,8 +345,8 @@ void multi_resonance_pion_production_hadron_gains(state_t *st)
     gsl_interp_accel *neutron_accelerator  = gsl_interp_accel_alloc();
     gsl_spline_init(neutron_spline, st->neutrons.log_energy, st->neutrons.log_population, st->neutrons.size);
 
-    posix_memalign((void *) &proton_interpolated,  32, st->protons.size  * sizeof(double));
-    posix_memalign((void *) &neutron_interpolated, 32, st->neutrons.size * sizeof(double));
+    posix_memalign((void **) &proton_interpolated,  32, st->protons.size  * sizeof(double));
+    posix_memalign((void **) &neutron_interpolated, 32, st->neutrons.size * sizeof(double));
 
     memset(st->multi_resonances_proton_gains,  '\0', st->protons.size  * sizeof(double));
     memset(st->multi_resonances_neutron_gains, '\0', st->neutrons.size * sizeof(double));
@@ -442,8 +442,8 @@ void direct_pion_production(state_t *st)
     gsl_interp_accel *neutron_accelerator  = gsl_interp_accel_alloc();
     gsl_spline_init(neutron_spline, st->neutrons.log_energy, st->neutrons.log_population, st->neutrons.size);
 
-    posix_memalign((void *) &proton_interpolated,  32, st->neutral_pions.size * sizeof(double));
-    posix_memalign((void *) &neutron_interpolated, 32, st->neutral_pions.size * sizeof(double));
+    posix_memalign((void **) &proton_interpolated,  32, st->neutral_pions.size * sizeof(double));
+    posix_memalign((void **) &neutron_interpolated, 32, st->neutral_pions.size * sizeof(double));
 
     memset(st->direct_neutral_pion_gains,  '\0', st->neutral_pions.size  * sizeof(double));
     memset(st->direct_positive_pion_gains, '\0', st->positive_pions.size * sizeof(double));
@@ -585,8 +585,8 @@ void direct_pion_production_hadron_gains(state_t *st)
     gsl_interp_accel *neutron_accelerator  = gsl_interp_accel_alloc();
     gsl_spline_init(neutron_spline, st->neutrons.log_energy, st->neutrons.log_population, st->neutrons.size);
 
-    posix_memalign((void *) &proton_interpolated,  32, st->protons.size  * sizeof(double));
-    posix_memalign((void *) &neutron_interpolated, 32, st->neutrons.size * sizeof(double));
+    posix_memalign((void **) &proton_interpolated,  32, st->protons.size  * sizeof(double));
+    posix_memalign((void **) &neutron_interpolated, 32, st->neutrons.size * sizeof(double));
 
     memset(st->direct_pion_production_proton_gains,  '\0', st->protons.size  * sizeof(double));
     memset(st->direct_pion_production_neutron_gains, '\0', st->neutrons.size * sizeof(double));
