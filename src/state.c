@@ -157,6 +157,9 @@ void state_init_from_config(state_t *st, config_t *cfg)
         case shell:  t_esc = M_PI / 4 * cfg->h / LIGHT_SPEED; break;
         default: break;
     }
+    // Clamp the maximum value of dt so that even if the user goes beyond
+    // t_esc for photons, we are safe
+    st->dt_max = fmin(t_esc, cfg->dt_max);
 
     init_state_escape(st, t_esc, cfg->cfe_ratio);
     init_state_decay_and_escape(st, t_esc);
