@@ -34,11 +34,84 @@ static double H_pm(double g, double g2, double g_aux, double g_aux2, double ge, 
     double I = c > 0 ? 1 / sqrt( c) *  log(g * sqrt( c) + u) :
                        1 / sqrt(-c) * asin(g * sqrt(-c) / g_aux);
 
+    if(g2 == g_aux2)
+        I = c > 0 ? 1 / sqrt( c) * (0.5 * log(g_aux2) + asinh(sqrt( c))) :
+                    1 / sqrt(-c) *                       asin(sqrt(-c));
+
     double aux1 = I * (2 + (1 - g_aux2) / c);
     double aux2 = (1 / g - g / c + g * (2 * c - d) / (2 * g_aux2)) / u;
     double aux3 = g * u / c;
 
+    aux2 = g/u * (g2 + 1/g2 + (g_aux2-1)/c + (2 * c - d) / (2 * g_aux2));
+    aux3 = 0;
+
     return aux1 + aux2 + aux3;
+}
+
+static double J_pm(double g_min2, double g_max2, double g_aux2, double ge, double d, double gg)
+{
+    double c = ge*ge - 1;
+
+    double u_min = sqrt(ge*ge*g_min2 + g_aux2 - g_min2);
+    double u_max = sqrt(ge*ge*g_max2 + g_aux2 - g_max2);
+
+    double g_min = sqrt(g_min2);
+    double g_max = sqrt(g_max2);
+    double g_aux = sqrt(g_aux2);
+
+    double gu_min = g_min / u_min;
+    double gu_max = g_max / u_max;
+
+    double I_min = c > 0 ? 1 / sqrt( c) *  log(g_min * sqrt( c) + u_min) :
+                           1 / sqrt(-c) * asin(g_min * sqrt(-c) / g_aux);
+    double I_max = c > 0 ? 1 / sqrt( c) *  log(g_max * sqrt( c) + u_max) :
+                           1 / sqrt(-c) * asin(g_max * sqrt(-c) / g_aux);
+
+    double aux_max = g_aux2 / (c * g_max2);
+    double aux_min = g_aux2 / (c * g_min2);
+
+    double I_max_min;
+
+    if(g_max2 == g_aux2)
+        gu_max = 1 / fabs(ge);
+    if(g_max2 == g_aux2 && ge == 0)
+        gu_max = 1e200;
+
+    if(g_max2 == g_aux2)
+        aux_max = 1 / c;
+
+    if(c > 0)
+        I_max_min = (0.5 * log(g_max2 / g_min2) + log((1 + sqrt(1 + aux_max)) / (1 + sqrt(1 + aux_min)))) / sqrt(c);
+    else
+    {
+        if(g_max2 == g_aux2)
+            I_max_min = (asin(        sqrt(-c)        ) - asin(g_min * sqrt(-c) / g_aux)) / sqrt(-c);
+        else
+            I_max_min = (asin(g_max * sqrt(-c) / g_aux) - asin(g_min * sqrt(-c) / g_aux)) / sqrt(-c);
+    }
+
+    if(fabs(aux_min) < 1e-5)
+        gu_min = 1 / (sqrt(c) * (1 + aux_min / 2));
+
+
+    double aux01 = (2 + (1 - g_aux2) / c);
+    double aux02 = I_max_min;
+
+    double aux11 = gu_max * (g_max2 + 1/g_max2 - 0.5);
+    double aux12 = gu_min * (g_min2 + 1/g_min2 - 0.5);
+
+    double aux21 = gu_max - gu_min;
+    double aux22 = (g_aux2 - 1) / c - 1 / (2 * g_aux2);
+
+    double aux3 = aux21 * (c - gg)/(2 * g_aux2);
+
+    if(fabs(aux_min) < 1e-5 && fabs(aux_max) < 1e5)
+        aux3 = 1/(4*sqrt(c)) * (g_min2 - g_max2) / (g_min2*g_max2) / (sqrt(1 + aux_max) * sqrt(1 + aux_min)) * (1 - gg/c);
+
+    if(gu_max - gu_min < 1e-5)
+        aux21 = (g_max*u_min - g_min*u_max) / (u_min * u_max);
+
+    return aux01 * aux02 + aux11 - aux12 + aux21 * aux22 + aux3;
 }
 
 static double rate_photon_gains(double g1, double g2, double e)
@@ -48,6 +121,9 @@ static double rate_photon_gains(double g1, double g2, double e)
 
     double g_max2_aux = (1 + g1*g2 * (1 + b1*b2)) / 2;
     double g_min2_aux = (1 + g1*g2 * (1 - b1*b2)) / 2;
+
+    if(b1*b2 > 1-1e-10)
+        g_min2_aux = (1 + 0.5*(g1/g2 + g2/g1))/2;
 
     /*double cp = pow(g2 - e, 2) - 1;*/
     /*double cm = pow(g1 - e, 2) - 1;*/
@@ -67,12 +143,11 @@ static double rate_photon_gains(double g1, double g2, double e)
     double g_min = sqrt(g_min2);
     double g_aux = sqrt(g_aux2);
 
-    /*fprintf(stderr,"g_max %lg\n", g_max);*/
-    /*fprintf(stderr,"g_min %lg\n", g_min);*/
+    if(g_min > g_max) return 0;
 
     double aux1_max = sqrt(pow(g1 + g2, 2) - 4 * g_max2);
     /*double aux1_min = sqrt(pow(g1 + g2, 2) - 4 * g_min2);*/
-    double aux1_min = fabs(b1*g1 - b2*g2);
+    double aux1_min = b1*g1 + b2*g2;
 
     double aux2_max = fabs(g2 - e) != 1 ? H_pm(g_max, g_max2, g_aux, g_aux2, g2 - e, dp) : H_0(g_max, g_max2, g_aux, g_aux2, dp);
     double aux2_min = fabs(g2 - e) != 1 ? H_pm(g_min, g_min2, g_aux, g_aux2, g2 - e, dp) : H_0(g_min, g_min2, g_aux, g_aux2, dp);
@@ -80,12 +155,41 @@ static double rate_photon_gains(double g1, double g2, double e)
     double aux3_max = fabs(g1 - e) != 1 ? H_pm(g_max, g_max2, g_aux, g_aux2, g1 - e, dm) : H_0(g_max, g_max2, g_aux, g_aux2, dm);
     double aux3_min = fabs(g1 - e) != 1 ? H_pm(g_min, g_min2, g_aux, g_aux2, g1 - e, dm) : H_0(g_min, g_min2, g_aux, g_aux2, dm);
 
-    if(g_max2 == g_aux2)
-        aux1_max = fabs(b1*g1 + b2*g2);
+    if(fabs(g2 - e) != 1)
+    {
+        aux2_max = J_pm(g_min2, g_max2, g_aux2, g2 - e, dp, g1*g2);
+        aux2_min = 0;
+    }
 
-    /*fprintf(stderr,"1 %lg - %lg %lg\n", aux1_max, aux1_min, aux1_max - aux1_min);*/
-    /*fprintf(stderr,"2 %lg - %lg %lg\n", aux2_max, aux2_min, aux2_max - aux2_min);*/
-    /*fprintf(stderr,"3 %lg - %lg %lg\n", aux3_max, aux3_min, aux3_max - aux3_min);*/
+    if(fabs(g1 - e) != 1)
+    {
+        aux3_max = J_pm(g_min2, g_max2, g_aux2, g1 - e, dm, g1*g2);
+        aux3_min = 0;
+    }
+
+    if(g_max2 == g_max2_aux)
+    {
+        /*aux1_max = fabs(b1*g1 - b2*g2);*/
+
+        if(b1*g1 > b2*g2)
+        {
+            aux1_max = -2 * b2*g2;
+            aux1_min = 0;
+        }
+        else
+        {
+            aux1_max = -2 * b1*g1;
+            aux1_min = 0;
+        }
+    }
+    else if(4*g_aux2 / ((g1+g2)*(g1+g2)) < 1e-5)
+    {
+        double aa = g1 > 1e5 ? 1 / (2*g1) : g1 * (1 - b1);
+        double bb = g2 > 1e5 ? 1 / (2*g2) : g2 * (1 - b2);
+
+        aux1_max = aa + bb;
+        aux1_min = 2 * g_aux2 / (g1 + g2);
+    }
 
     return (aux1_max - aux1_min + aux2_max - aux2_min + aux3_max - aux3_min) / (b1*b2*g1*g2);
 }
@@ -101,21 +205,24 @@ void pair_annihilation_process_photon_gains(state_t *st)
 
     for(i = 0; i < st->photons.size; i++)
     {
-        unsigned int index_base1 = i * st->photons.size;
+        unsigned int index_base1 = i * st->electrons.size;
 
-        unsigned int index_g1_min = st->pair_annihilation_LUT_photon_gains_index_g1_min[index_base1 + j];
+        unsigned int index_g1_min = st->pair_annihilation_LUT_photon_gains_index_g1_min[i];
         unsigned int index_g1_max = st->electrons.size - 1;
+
+        if(index_g1_min >= index_g1_max) continue;
 
         for(j = index_g1_min; j < st->electrons.size; j++)
         {
             unsigned int index_base2 = (index_base1 + j) * st->electrons.size;
 
-            unsigned int index_g2_min = st->pair_annihilation_LUT_photon_gains_index_g1_min[index_base1 + j];
+            unsigned int index_g2_min = st->pair_annihilation_LUT_photon_gains_index_g2_min[index_base1 + j];
             unsigned int index_g2_max = st->positrons.size - 1;
+
+            gains_inner[j] = 0;
 
             if(index_g2_min >= index_g2_max) continue;
 
-            gains_inner[j] = 0;
             gains_inner[j] += st->positrons.population[index_g2_min] * st->pair_annihilation_LUT_photon_gains_R[index_base2 + index_g2_min];
             gains_inner[j] += st->positrons.population[index_g2_max] * st->pair_annihilation_LUT_photon_gains_R[index_base2 + index_g2_max];
 
@@ -172,7 +279,7 @@ void calculate_pair_annihilation_LUT_photon_gains(state_t *st)
 
     for(i = 0; i < st->photons.size; i++)
     {
-        unsigned int index_base1 = i * st->photons.size;
+        unsigned int index_base1 = i * st->electrons.size;
 
         double e = st->photons.energy[i];
 
@@ -198,6 +305,14 @@ void calculate_pair_annihilation_LUT_photon_gains(state_t *st)
             double F_plus  = 2 * e - g1 * (1 + b1);
             double F_minus = 2 * e - g1 * (1 - b1);
 
+            if(e == g1)
+                F_plus = e * (1 - b1);
+            if(e == g1 && g1 > 1e5)
+                F_plus = 1 / (2 * e);
+
+            if(g1 > 1e5)
+                F_minus = 2*e - 0.5 * (1/g1 + 0.25*1/(g1*g1*g1));
+
             double g2_min = 1;
             unsigned int index_g2_min = 0;
 
@@ -205,13 +320,16 @@ void calculate_pair_annihilation_LUT_photon_gains(state_t *st)
             else if(g1 <  gb && e >= 1.0) g2_min = 0.5 * (F_plus  + 1/F_plus);
             else                          g2_min = 0.5 * (F_minus + 1/F_minus);
 
+            /* NOTE: Be careful with the case that g2_min ~ a value of the grid */
+            g2_min *= 1 + 1e-7;
+
             for(index_g2_min = 0;
                     index_g2_min < st->electrons.size &&
                     st->electrons.energy[index_g2_min] < g2_min;
                 index_g2_min++)
             { }
 
-            st->pair_annihilation_LUT_photon_gains_index_g1_min[index_base1 + j] = index_g2_min;
+            st->pair_annihilation_LUT_photon_gains_index_g2_min[index_base1 + j] = index_g2_min;
 
             unsigned int index_base2 = (index_base1 + j) * st->electrons.size;
 
@@ -225,10 +343,9 @@ void calculate_pair_annihilation_LUT_photon_gains(state_t *st)
 
                 st->pair_annihilation_LUT_photon_gains_R[index] = r;
 
-                if(!isnormal(r))
+                if(!isfinite(r) || r < 0)
                 {
-                    fprintf(stderr,"%u %u %u %lg\n", i, j, k, r);
-                    break;
+                    fprintf(stderr,"Error in Pair Annihilation LUT: %u %u %u %lg\n", i, j, k, r);
                 }
             }
         }
