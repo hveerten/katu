@@ -35,19 +35,26 @@ static void state_init_injection(state_t *st, config_t *cfg)
 
     population_t electron_aux_pop;
     population_t proton_aux_pop;
+    population_t photon_aux_pop;
 
     init_population(&electron_aux_pop, electron, cfg->ei.electron_distribution.min, cfg->ei.electron_distribution.max, st->electrons.size);
     init_population(&proton_aux_pop,   proton,   cfg->ei.proton_distribution.min,   cfg->ei.proton_distribution.max,   st->protons.size);
+    init_population(&photon_aux_pop,   proton,   cfg->ei.photon_distribution.min,   cfg->ei.photon_distribution.max,   st->photons.size);
 
     generate_population(&electron_aux_pop, &cfg->ei.electron_distribution);
     generate_population(&proton_aux_pop,   &cfg->ei.proton_distribution);
+    generate_population(&photon_aux_pop,   &cfg->ei.photon_distribution);
 
     double electron_energy_average = distribution_average(&cfg->ei.electron_distribution);
     double proton_energy_average   = distribution_average(&cfg->ei.proton_distribution);
+    double photon_energy_average   = distribution_average(&cfg->ei.photon_distribution);
 
     double Q_e = cfg->ei.luminosity / st->volume /
                     (electron_energy_average * ELECTRON_ENERGY +
                      proton_energy_average   * PROTON_ENERGY * cfg->ei.eta);
+
+    double Q_p = cfg->ei.photon_luminosity / st->volume /
+                     (photon_energy_average * ELECTRON_ENERGY);
 
     gsl_spline       *electron_spline      = gsl_spline_alloc(gsl_interp_steffen, electron_aux_pop.size);
     gsl_interp_accel *electron_accelerator = gsl_interp_accel_alloc();
@@ -56,6 +63,10 @@ static void state_init_injection(state_t *st, config_t *cfg)
     gsl_spline       *proton_spline      = gsl_spline_alloc(gsl_interp_steffen, proton_aux_pop.size);
     gsl_interp_accel *proton_accelerator = gsl_interp_accel_alloc();
     gsl_spline_init(proton_spline, proton_aux_pop.log_energy, proton_aux_pop.log_population, proton_aux_pop.size);
+
+    gsl_spline       *photon_spline      = gsl_spline_alloc(gsl_interp_steffen, photon_aux_pop.size);
+    gsl_interp_accel *photon_accelerator = gsl_interp_accel_alloc();
+    gsl_spline_init(photon_spline, photon_aux_pop.log_energy, photon_aux_pop.log_population, photon_aux_pop.size);
 
     for(i = 0; i < st->electrons.size; i++)
     {
@@ -78,6 +89,18 @@ static void state_init_injection(state_t *st, config_t *cfg)
         else
             st->external_injection.protons[i] =
                 cfg->ei.eta * Q_e * exp(gsl_spline_eval(proton_spline, log(g_proton), proton_accelerator));
+    }
+
+    for(i = 0; i < st->photons.size; i++)
+    {
+        double g_photon = st->photons.energy[i];
+
+        if(g_photon < photon_aux_pop.energy[0] ||
+           g_photon > photon_aux_pop.energy[photon_aux_pop.size - 1])
+            st->external_injection.photons[i] = 0.0;
+        else
+            st->external_injection.photons[i] =
+                Q_p * exp(gsl_spline_eval(photon_spline, log(g_photon), photon_accelerator));
     }
 
     st->update_function = &step_experimental_update_populations_injection;
