@@ -910,6 +910,7 @@ void state_save_state_to_file(state_t *st, char *filename)
 
     WRITE_POPULATION(photons)
     WRITE_POPULATION(electrons)
+    WRITE_POPULATION(positrons)
     WRITE_POPULATION(protons)
     WRITE_POPULATION(neutrons)
 
@@ -966,6 +967,7 @@ void state_load_state_from_file(state_t *st, char *filename)
 
     READ_POPULATION(photons)
     READ_POPULATION(electrons)
+    READ_POPULATION(positrons)
     READ_POPULATION(protons)
     READ_POPULATION(neutrons)
 
