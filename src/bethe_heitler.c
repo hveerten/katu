@@ -242,13 +242,11 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
                     logg_proton_min = logg_proton_mid;
                     value_min = value_mid;
                 }
-                else if(value_mid * value_max > 0)
+                else
                 {
                     logg_proton_max = logg_proton_mid;
                     value_max = value_mid;
                 }
-                else
-                    continue;
             }
 
             if(logg_proton_min < logg_proton_max && value_min * value_max < 0)
@@ -258,7 +256,7 @@ void calculate_bethe_heitler_LUT_lepton_gains(state_t *st)
                     logg_proton_mid = (logg_proton_min + logg_proton_max) / 2;
                     value_mid = f(logg_proton_mid, g, e);
 
-                    if(fabs(value_mid) < 1e-4)
+                    if(fabs(value_mid) < 1e-6)
                         break;
 
                     if(value_min * value_mid > 0)
