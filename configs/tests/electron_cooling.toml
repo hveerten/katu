@@ -1,0 +1,88 @@
+# Tests for electron cooling
+#
+# The escape timescale (t_esc) for an sphere goes as
+# 3/4 * R / c, so for R = 1e16 we have
+# t_esc ~ 250173s
+#
+# The cooling factor for synchrotron cooling (S) goes as
+# 4/3 * c * Sigma_T * B^2 / 8*pi / m_e c^2
+# ~ 1.29e-9 * B^2
+#
+# And the equilibrium Gamma between acceleration and cooling (g_eq) goes as
+# 1 / t_acc S
+#
+# The point between fast and slow cooling in an injection is around
+# g ~ 1 / (p - 1) S t_esc
+#
+#
+# We choose a value of the magnetic field of 0.1, and a value for the
+# acceleration timescale of 1e128 which allows for all electrons to be
+# cooled quickly
+#
+# In this regime, we expect that below the lowest energy where we inject
+# the electron population behaves as a power law with
+# n_e * A * \gamma^(-2)
+
+# Note that we set eta = 1e-10 so that the population of protons is very low
+
+[general]
+density = 1e-38
+#magnetic_field = 0.1
+#magnetic_field = 0.25
+#magnetic_field = 0.5
+#magnetic_field = 1
+#magnetic_field = 1.5
+magnetic_field = 2
+
+dt = 0.01
+dt_max = 1e5
+t_max = 1e7
+
+t_acc = 1e128
+
+eta = 1e-10
+cfe_ratio = 1
+tol = 1e-8
+
+[volume]
+shape = "sphere"
+R = 1e16
+
+[electrons]
+gamma_min = 1e1
+gamma_max = 1e8
+size      = 256
+
+distribution_type = "power_law"
+slope = 2.00
+
+[protons]
+gamma_min = 10
+gamma_max = 1e5
+size      = 256
+
+distribution_type = "power_law"
+slope = 2
+
+[photons]
+epsilon_min = 1e-12
+epsilon_max = 1e8
+size        = 160
+
+[external_injection]
+    luminosity = 1e30
+    eta        = 1e-10
+
+    [external_injection.electrons]
+    gamma_min = 1e4
+    gamma_max = 1e8
+
+    distribution_type = "power_law"
+    slope = 2.30
+
+    [external_injection.protons]
+    gamma_min = 10
+    gamma_max = 1e5
+
+    distribution_type = "power_law"
+    slope = 2

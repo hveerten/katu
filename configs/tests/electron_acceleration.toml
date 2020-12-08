@@ -1,0 +1,85 @@
+# Tests for electron acceleration
+#
+# The escape timescale (t_esc) for an sphere goes as
+# 3/4 * R / c, so for R = 1e16 we have
+# t_esc ~ 250173s
+#
+# The cooling factor for synchrotron cooling (S) goes as
+# 4/3 * c * Sigma_T * B^2 / 8*pi / m_e c^2
+# ~ 1.29e-9 * B^2
+#
+# And the equilibrium Gamma between acceleration and cooling (g_eq) goes as
+# 1 / t_acc S
+#
+#
+# We choose a value of the magnetic field of 0.001, which gives an equilibrium
+# energy of ~ 3.1e9. High enough for allowing the system to freely accelerate
+# and low enough to not generate enough synchrotron photons that change
+# substantially the equilibrium energy through Inverse Compton cooling
+#
+# In this regime, we expect that beyond the highest energy where we inject
+# the electron population behaves as a power law with
+# n_e * A * \gamma^(-1 - t_acc / t_esc) (MK95)
+
+# Note that we set eta = 1e-10 so that the population of protons is very low
+
+[general]
+density = 1e-38
+magnetic_field = 0.0001
+
+dt = 0.01
+dt_max = 1e4
+t_max = 1e7
+
+#t_acc = 1000692    # -4    -3
+#t_acc = 500346     # -3     -1
+#t_acc = 375259.5   # -2.5   -2.5
+t_acc = 250173     #  -2      -2
+#t_acc = 125086.5   # -1.5    -1.5
+
+eta = 1e-10
+cfe_ratio = 1
+tol = 1e-8
+
+[volume]
+shape = "sphere"
+R = 1e16
+
+[electrons]
+gamma_min = 1e1
+gamma_max = 1e8
+size      = 256
+
+distribution_type = "power_law"
+slope = 2.00
+
+[protons]
+gamma_min = 10
+gamma_max = 1e5
+size      = 256
+
+distribution_type = "power_law"
+slope = 2
+
+[photons]
+epsilon_min = 1e-12
+epsilon_max = 1e8
+size        = 160
+
+[external_injection]
+    luminosity = 1e30
+    eta        = 1e-10
+
+    [external_injection.electrons]
+    gamma_min = 1e1
+    gamma_max = 1e2
+
+    distribution_type = "power_law"
+    slope = 2.30
+
+    [external_injection.protons]
+    gamma_min = 10
+    gamma_max = 1e5
+
+    distribution_type = "power_law"
+    slope = 2
