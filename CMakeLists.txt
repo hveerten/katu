@@ -30,4 +30,5 @@ add_definitions(-DLEPTON_STEADY_STATE=0)
 add_definitions(-DPROTON_STEADY_STATE=0)
 
 add_subdirectory(src)
+add_subdirectory(tables)
 add_subdirectory(examples)
