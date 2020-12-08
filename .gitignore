@@ -1,8 +1,15 @@
+build/**
 data/**
 config*.toml
 **.pdf
 **.png
 **.tsv
+
+Object_Data/**
+config/**
+
+Makefile
+MK2.*
 
 data.dat
 model
