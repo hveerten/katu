@@ -6,7 +6,7 @@ config*.toml
 **.tsv
 
 Object_Data/**
-config/**
+configs/**
 
 Makefile
 MK2.*
