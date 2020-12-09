@@ -1,9 +1,3 @@
-macro(prepare_executable target source)
-    add_executable(${target} ${source})
-    target_link_libraries(${target} m gsl gslcblas pthread model_static)
-    target_include_directories(${target} PUBLIC ${MODEL_STATIC_INCLUDE_DIR})
-endmacro(prepare_executable)
-
 prepare_executable(example_simple   example_simple.c)
 prepare_executable(example_data     example_data.c)
 prepare_executable(example_graphics example_graphics.c)

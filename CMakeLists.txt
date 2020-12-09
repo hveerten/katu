@@ -22,6 +22,15 @@ if(COMPILER_SUPPORTS_MARCH_NATIVE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 endif()
 
+macro(prepare_executable target source)
+    add_executable(${target} ${source})
+    target_link_libraries(${target} m gsl gslcblas pthread model_static)
+    target_include_directories(${target} PUBLIC ${MODEL_STATIC_INCLUDE_DIR})
+    if(IPO_SUPPORTED)
+        set_property(TARGET ${target} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
+endmacro(prepare_executable)
+
 add_definitions(-DUSE_THREADS)
 add_definitions(-DUSE_THREAD_POOL)
 
