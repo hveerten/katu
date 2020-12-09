@@ -1,5 +1,4 @@
 #include "state.h"
-#include "fast_start.h"
 #include "state_step.h"
 #include "synchrotron.h"
 #include "inverse_compton.h"

@@ -10,7 +10,6 @@ add_library(
 	distribution.c
 	decay_and_escape.c
 	escape.c
-	fast_start.c
 	inverse_compton.c
 	muon_decay.c
 	pair_production.c
