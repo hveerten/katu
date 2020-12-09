@@ -9,9 +9,9 @@ find_package(Threads REQUIRED)
 
 # Only set up to -O2 in release mode as -O3 may break
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG"
-    CACHE STRING "Flags used by the compiler during release builds." FORCE)                            
+    CACHE STRING "Flags used by the compiler during release builds." FORCE)
 set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG"
-    CACHE STRING "Flags used by the compiler during release builds." FORCE)                            
+    CACHE STRING "Flags used by the compiler during release builds." FORCE)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Wall -Wextra -pedantic -fno-omit-frame-pointer")
