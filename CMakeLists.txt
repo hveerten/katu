@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.2)
 project(Gatete)
 
 set(CMAKE_BUILD_TYPE Release)
@@ -20,6 +20,14 @@ include(CheckCCompilerFlag)
 CHECK_C_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
+endif()
+
+if(${CMAKE_VERSION} VERSION_LESS "3.9.0")
+    set(IPO_SUPPORTED 0)
+else()
+    cmake_policy(SET CMP0069 NEW)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT IPO_SUPPORTED)
 endif()
 
 macro(prepare_executable target source)
