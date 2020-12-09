@@ -28,8 +28,8 @@ target_include_directories(model_static PUBLIC "./utils")
 target_include_directories(model_static PUBLIC ".")
 
 target_link_libraries(model_static m)
-target_link_libraries(model_static cblas)
 target_link_libraries(model_static gsl)
+target_link_libraries(model_static gslcblas)
 target_link_libraries(model_static pthread)
 
 set_property(TARGET model_static PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

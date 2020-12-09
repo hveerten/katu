@@ -4,7 +4,6 @@ project(Gatete)
 set(CMAKE_BUILD_TYPE Release)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(cblas REQUIRED)
 find_package(GSL REQUIRED)
 find_package(Threads REQUIRED)
 
