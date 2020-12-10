@@ -1,13 +1,13 @@
-# Gatete
+# Katu
 
 ## Introduction
 
-Gatete is a library aimed to simulate the interaction of particles in plasma.
+Katu is a library aimed to simulate the interaction of particles in plasma.
 It currently traces protons, neutrons, leptons, pions and neutrinos.
 
 ## Installation
 
-Gatete requires `gsl` with `cblas` support and `pthreads` as dependencies and
+Katu requires `gsl` with `cblas` support and `pthreads` as dependencies and
 `cmake` as a make dependency.
 
 Building the code is very simple and just requires creating a new directory:
@@ -27,13 +27,13 @@ the folder `examples` and a util in the `tables` folder.
 
 ## Usage
 
-Gatete is mainly intended to be used as a library, but the examples can be used
+Katu is mainly intended to be used as a library, but the examples can be used
 right away to produce results. In other cases, you can use them as simple
 templates from where to write your own programs.
 
-Gatete produces a lot of look-up tables (LUTs) and, even if I have tryed hard
+Katu produces a lot of look-up tables (LUTs) and, even if I have tryed hard
 to optimize its creation, in some cases this has been impossible. So, the first
-step to launch any of the examples, or any program that relies on Gatete is to
+step to launch any of the examples, or any program that relies on Katu is to
 create the Bethe-Heitler LUT. For that, you can use the program that should
 have been compiled in the `tables` folder.
 
@@ -63,5 +63,5 @@ particle species every two steps.
 
 ## Configuration
 
-Configuring Gatete is done with the [Toml](https://toml.io/en/) language. An
+Configuring Katu is done with the [Toml](https://toml.io/en/) language. An
 example configuration can be found in the `default.toml` file.
