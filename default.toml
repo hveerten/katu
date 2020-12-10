@@ -13,6 +13,9 @@
 # distribution_type = maxwell_juttner
 # temperature = 0.5
 
+# distribution_type = "black_body"
+# temperature = 1
+
 # distribution_type = power_law
 # slope = 2.3
 
@@ -21,7 +24,7 @@
 # first_slope  = 2.15
 # second_slope = 4.0
 
-# distribution_type = power_law_with_exponential_cuttoff
+# distribution_type = power_law_with_exponential_cutoff
 # slope       = -2.3
 # break_point = 1e4
 
@@ -38,12 +41,14 @@
 [general]
 density = 1e-22
 magnetic_field = 0.1
+eta = 1
+cfe_ratio = 1
+t_acc = 1e100
+
 dt = 0.1
 dt_max = 1e3
 t_max = 1e7
-t_acc = 1e100
-eta = 1
-cfe_ratio = 1
+
 tol = 1e-8
 
 [volume]
