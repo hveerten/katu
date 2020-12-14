@@ -917,6 +917,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     {
         double n = st->photons.population[i];
         double Q = st->external_injection.photons[i] +
+                   st->inter_volume_injection.photons[i] +
                    st->electron_synchrotron.photon_gains[i] +
                    st->positron_synchrotron.photon_gains[i] +
                    st->proton_synchrotron.photon_gains[i] +
@@ -964,6 +965,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     for(i = 1; i < st->protons.size && st->protons.energy[i] < proton_g_turnover; i++)
     {
         double proton_gains = st->external_injection.protons[i] +
+                              st->inter_volume_injection.protons[i] +
                               st->multi_resonances_proton_gains[i] +
                               st->direct_pion_production_proton_gains[i];
 
@@ -992,6 +994,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     for(i = st->protons.size - 2; i < st->protons.size && proton_g_turnover < st->protons.energy[i]; i--)
     {
         double proton_gains = st->external_injection.protons[i] +
+                              st->inter_volume_injection.protons[i] +
                               st->multi_resonances_proton_gains[i] +
                               st->direct_pion_production_proton_gains[i];
 
@@ -1020,6 +1023,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     {
         double n = st->neutrons.population[i];
         double Q = st->external_injection.neutrons[i] +
+                   st->inter_volume_injection.neutrons[i] +
                    st->multi_resonances_neutron_gains[i] +
                    st->direct_pion_production_neutron_gains[i];
         double L = (st->multi_resonances_neutron_losses[i] +
@@ -1068,11 +1072,13 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n_p = st->positrons.population[i];
 
         double Q_e = st->external_injection.electrons[i] +
+                   st->inter_volume_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_electron_gains[i];
 
         double Q_p = st->external_injection.positrons[i] +
+                   st->inter_volume_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_positron_gains[i];
@@ -1142,11 +1148,13 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double ln_p = st->positrons.log_population[i];
 
         double Q_e = st->external_injection.electrons[i] +
+                   st->inter_volume_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_electron_gains[i];
 
         double Q_p = st->external_injection.positrons[i] +
+                   st->inter_volume_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_positron_gains[i];
@@ -1186,11 +1194,13 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n_p = st->positrons.population[i];
 
         double Q_e = st->external_injection.electrons[i] +
+                     st->inter_volume_injection.electrons[i] +
                      st->pair_production_lepton_gains[i] +
                      st->bethe_heitler_lepton_gains[i] +
                      st->muon_decay_electron_gains[i];
 
         double Q_p = st->external_injection.positrons[i] +
+                     st->inter_volume_injection.positrons[i] +
                      st->pair_production_lepton_gains[i] +
                      st->bethe_heitler_lepton_gains[i] +
                      st->muon_decay_positron_gains[i];
@@ -1260,11 +1270,13 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double ln_p = st->positrons.log_population[i];
 
         double Q_e = st->external_injection.electrons[i] +
+                   st->inter_volume_injection.electrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_electron_gains[i];
 
         double Q_p = st->external_injection.positrons[i] +
+                   st->inter_volume_injection.positrons[i] +
                    st->pair_production_lepton_gains[i] +
                    st->bethe_heitler_lepton_gains[i] +
                    st->muon_decay_positron_gains[i];
@@ -1295,6 +1307,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
     {
         double n = st->neutral_pions.population[i];
         double Q = st->external_injection.neutral_pions[i] +
+                   st->inter_volume_injection.neutral_pions[i] +
                    st->multi_resonances_neutral_pion_gains[i] +
                    st->direct_neutral_pion_gains[i];
         double L = -st->neutral_pion_decay_and_escape.t[i];
@@ -1320,6 +1333,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n = st->positive_pions.population[i];
 
         double Q = st->external_injection.positive_pions[i] +
+                   st->inter_volume_injection.positive_pions[i] +
                    st->multi_resonances_positive_pion_gains[i] +
                    st->direct_positive_pion_gains[i];
 
@@ -1345,6 +1359,7 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n = st->negative_pions.population[i];
 
         double Q = st->external_injection.negative_pions[i] +
+                   st->inter_volume_injection.negative_pions[i] +
                    st->multi_resonances_negative_pion_gains[i] +
                    st->direct_negative_pion_gains[i];
 
@@ -1383,10 +1398,18 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n_nlm = st->negative_left_muons.population[i];
         double n_nrm = st->negative_right_muons.population[i];
 
-        double Q_plm = st->external_injection.positive_left_muons[i]  + st->pion_decay_positive_left_muon_gains[i];
-        double Q_prm = st->external_injection.positive_right_muons[i] + st->pion_decay_positive_right_muon_gains[i];
-        double Q_nlm = st->external_injection.negative_left_muons[i]  + st->pion_decay_negative_left_muon_gains[i];
-        double Q_nrm = st->external_injection.negative_right_muons[i] + st->pion_decay_negative_right_muon_gains[i];
+        double Q_plm = st->external_injection.positive_left_muons[i] +
+                       st->inter_volume_injection.positive_left_muons[i] +
+                       st->pion_decay_positive_left_muon_gains[i];
+        double Q_prm = st->external_injection.positive_right_muons[i] +
+                       st->inter_volume_injection.positive_right_muons[i] +
+                       st->pion_decay_positive_right_muon_gains[i];
+        double Q_nlm = st->external_injection.negative_left_muons[i] +
+                       st->inter_volume_injection.negative_left_muons[i] +
+                       st->pion_decay_negative_left_muon_gains[i];
+        double Q_nrm = st->external_injection.negative_right_muons[i] +
+                       st->inter_volume_injection.negative_right_muons[i] +
+                       st->pion_decay_negative_right_muon_gains[i];
 
         double L = 2 * g * S - 1 / tau;
 
@@ -1410,13 +1433,17 @@ void step_experimental_update_populations_injection(state_t *st, double dt)
         double n_ma = st->muon_antineutrinos.population[i];
 
         double Q_en = st->external_injection.electron_neutrinos[i] +
+                      st->inter_volume_injection.electron_neutrinos[i] +
                       st->muon_decay_electron_neutrino_gains[i];
         double Q_ea = st->external_injection.electron_antineutrinos[i] +
+                      st->inter_volume_injection.electron_antineutrinos[i] +
                       st->muon_decay_electron_antineutrino_gains[i];
         double Q_mn = st->external_injection.muon_neutrinos[i] +
+                      st->inter_volume_injection.muon_neutrinos[i] +
                       st->pion_decay_muon_neutrino_gains[i] +
                       st->muon_decay_muon_neutrino_gains[i];
         double Q_ma = st->external_injection.muon_antineutrinos[i] +
+                      st->inter_volume_injection.muon_antineutrinos[i] +
                       st->pion_decay_muon_antineutrino_gains[i] +
                       st->muon_decay_muon_antineutrino_gains[i];
 
