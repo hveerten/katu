@@ -246,7 +246,7 @@ typedef struct state_t
         double *electron_antineutrinos;
         double *muon_neutrinos;
         double *muon_antineutrinos;
-    }  external_injection;
+    } external_injection, inter_volume_injection;
 
 #ifdef USE_THREAD_POOL
     thread_pool_t thread_pool;
