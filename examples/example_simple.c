@@ -162,13 +162,18 @@ int main(int argc, char *argv[])
     state_t st;
     config_t cfg;
 
+    if(argc != 2)
+    {
+        fprintf(stderr,"Please, pass as first argument a valid config file\n");
+        fprintf(stderr,"Usage: %s <config_file>\n", argv[0]);
+
+        return 1;
+    }
+
     config_read_file(&cfg, "default.toml");
     config_read_file(&cfg, argv[1]);
 
-    if(1)
-        state_init_from_config(&st, &cfg);
-    else
-        state_load_state_from_file(&st, "./data/state.st");
+    state_init_from_config(&st, &cfg);
 
     state_report_general_info(&st);
     if(cfg.ei.luminosity != 0)
@@ -179,7 +184,7 @@ int main(int argc, char *argv[])
 
     bool out = false;
 
-    st.t = 0; i = 0;
+    i = 0;
     while(true)
     {
         st.tentative_step_function(&st, i % 2 == 0);

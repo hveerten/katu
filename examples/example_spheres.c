@@ -217,6 +217,14 @@ int main(int argc, char *argv[])
     config_t cfg_inner;
     config_t cfg_outer;
 
+    if(argc != 3)
+    {
+        fprintf(stderr,"Please, pass as first and second arguments valid config files\n");
+        fprintf(stderr,"Usage: %s <config_file_inner> <config_file_outer\n", argv[0]);
+
+        return 1;
+    }
+
     config_read_file(&cfg_inner, "default.toml");
     config_read_file(&cfg_inner, argv[1]);
     config_read_file(&cfg_outer, "default.toml");
