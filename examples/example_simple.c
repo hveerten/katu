@@ -187,6 +187,9 @@ int main(int argc, char *argv[])
         if(i % 20 == 0)
             out = state_check_steady_state(&st, i, tol);
 
+        if(st.t > st.t_max)
+            out = true;
+
         if(out || i == i_max) break;
 
         i++;

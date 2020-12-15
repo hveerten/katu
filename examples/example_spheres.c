@@ -294,6 +294,9 @@ int main(int argc, char *argv[])
             out &= state_check_steady_state(&st_inner, i, st_inner.tol);
         }
 
+        if(st_inner.t > st_inner.t_max)
+            out = true;
+
         if(out || i == i_max) break;
 
         i++;

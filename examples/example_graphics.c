@@ -388,6 +388,10 @@ int main(int argc, char *argv[])
             state_print_data_to_file(&st, positive_left_muon, muon_temp_file_filename);
             state_print_data_to_file(&st, electron_neutrino,  neutrino_temp_file_filename);
         }
+
+        if(st.t > st.t_max)
+            out = true;
+
         if(out || i == i_max) break;
 
         i++;
