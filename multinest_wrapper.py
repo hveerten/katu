@@ -46,13 +46,10 @@ utils = import_module(utils_module)
 
 ndim          = getattr(utils, 'ndim')
 labels        = getattr(utils, 'labels')
-initial_theta = getattr(utils, 'initial_theta')
 
 lnprior = getattr(utils, 'lnprior')
 
 theta_to_config = getattr(utils, 'theta_to_config')
-theta_to_params = getattr(utils, 'theta_to_params')
-params_to_theta = getattr(utils, 'params_to_theta')
 
 get_gamma = getattr(utils, 'get_gamma')
 get_R     = getattr(utils, 'get_R')
