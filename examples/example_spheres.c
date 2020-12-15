@@ -71,7 +71,7 @@ static bool state_check_steady_state(state_t *st, unsigned int step, double tol)
                    - 1 / st->photon_escape.t;
 
         double prd3 =
-            (st->external_injection.photons[i] + st->pion_decay_photon_gains[i] 
+            (st->external_injection.photons[i] + st->pion_decay_photon_gains[i]
              - tn / st->photon_escape.t) +
 
              (st->electron_synchrotron.photon_gains[i] + st->electron_synchrotron.photon_losses[i]) +
@@ -222,9 +222,6 @@ int main(int argc, char *argv[])
     config_read_file(&cfg_outer, "default.toml");
     config_read_file(&cfg_outer, argv[2]);
 
-    // Make sure that the luminosity of the inner sphere is 0;
-    cfg_inner.ei.luminosity = 0;
-
     // Make sure that both volumes are spheres and that the inner one is
     // smaller than the outer one
     assert(cfg_inner.v == sphere);
@@ -232,15 +229,31 @@ int main(int argc, char *argv[])
     assert(cfg_inner.R <= cfg_outer.R);
 
     // Make sure that all the bin sizes are equal
-    assert(cfg_inner.photon_size == cfg_outer.photon_size);
-    assert(cfg_inner.electron_size == cfg_outer.electron_size);
-    assert(cfg_inner.proton_size == cfg_outer.proton_size);
+    cfg_inner.photon_size = fmax(cfg_inner.photon_size, cfg_outer.photon_size);
+    cfg_outer.photon_size = cfg_inner.photon_size;
+    cfg_inner.electron_size = fmax(cfg_inner.electron_size, cfg_outer.electron_size);
+    cfg_outer.electron_size = cfg_inner.electron_size;
+    cfg_inner.proton_size = fmax(cfg_inner.proton_size, cfg_outer.proton_size);
+    cfg_outer.proton_size = cfg_inner.proton_size;
+
+    // Make sure that all the times are equal
+    cfg_inner.dt = fmin(cfg_inner.dt, cfg_outer.dt);
+    cfg_outer.dt = cfg_inner.dt;
+    cfg_inner.t_max = fmin(cfg_inner.t_max, cfg_outer.t_max);
+    cfg_outer.t_max = cfg_inner.t_max;
 
     state_init_from_config(&st_inner, &cfg_inner);
     state_init_from_config(&st_outer, &cfg_outer);
 
+    // dt_max is clamped by the escape timescale so we need to equalize it
+    // AFTER initing the states
+    cfg_inner.dt_max = fmin(cfg_inner.dt_max, cfg_outer.dt_max);
+    cfg_outer.dt_max = cfg_inner.dt_max;
+
     fprintf(stderr, "Inner Sphere Info\n");
     state_report_general_info(&st_inner);
+    if(cfg_inner.ei.luminosity != 0)
+        state_report_injection_info(&st_inner, &cfg_inner);
 
     fprintf(stderr, "Outer Sphere Info\n");
     state_report_general_info(&st_outer);
