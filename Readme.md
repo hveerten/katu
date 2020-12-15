@@ -151,6 +151,8 @@ supports the following options, along with the corresponding keys:
 
 ## Wrappers
 
+### Introduction
+
 Katu comes with two wrappers to allow it to work with two common packages to
 do bayesian analysis: `emcee` and `multinest`.
 
@@ -164,9 +166,13 @@ and implements Nested Sampling analysis. The interface we employ for this is
 the python package [`pymultinest`](https://github.com/JohannesBuchner/PyMultiNest) by
 Johannes Buchner.
 
-In the case of using `emcee` the corresponding package has to be installed by doing
+In the case of using `emcee` the corresponding package and that of `corner`
+have to be installed by doing
 
-`pip install --user emcee`
+```
+pip install --user emcee
+pip install --user corner
+```
 
 In the case of using `multinest`, then multinest itself must be installed from
 the distribution's repositories or from multinest's [source](https://github.com/rjw57/MultiNest)
@@ -177,28 +183,125 @@ and `pymultinest` must be installed:
 Note that in some cases, manual setting of the path to the multinest library
 must be done.
 
+### Usage - Preparation
 
 The usage of the wrappers is a bit complex because the user is expected to
 choose and write the model and the functions that go from the analyzed space
 to a Katu configuration file. Some examples can be seen in the
 `wrapper_utils/utils_{shell,sphere}_{steady_state,injection}.py` files.
 
-In particular, the user must supply the variables:
+In particular, the user must supply the variables and functions:
 
 * `ndim`: The number of dimensions of the space
 * `labels`: A list with the names of the variables
 * `lnprior`: A function that returns the a priori probability for the chosen point
+* `theta_to_config`: A function that returns an string with the a valid configuration
+    associated with a point
 * `get_gamma`: A function that returns the value of Gamma from a point in space
 * `get_R`: A function that returns the value of R from a point in space
 
-For `emcee`, the user must supply this aditional variable:
+For `emcee`, the user must supply the aditional variables:
 
 * `initial_theta`: A 3D array with `ndim` entries that sets the spread (0,2) and
-    the central value (1) for the variables to start from.
+    the central value (1) for the variables to start from
+* `walkers`: The number of walkers to use. Note that it **must** be higher than
+    `2 * (ndim + 1)`
 
 For `multinest`, the user must supply the aditional function:
 
-* `prior`: A function that transforms from the unit cube to the space coordinates.
+* `prior`: A function that transforms from the unit cube to the space coordinates
+
+In both cases, the user must supply the corresponding data to compare the
+results with. This data must be situated inside a directory called
+`Object_Data`, the name is left to the user, but must be edited in the
+variable called `Object_data_file`. The variable `Object` is _not_ used by the
+wrappers except for setting the corresponding resulting directories, so the
+user is encouraged to give it a meaningful value.
+
+The object data file is required to have two variables:
+
+* `z`: The redshift of the object
+* `data`: A 3D array with the following entries:
+    * Energy of the observations, in [eV]
+    * Flux of the observations, in [erg/cm2/s]
+    * Error in the flux of the observations, in [erg/cm2/s]
+
+Finally, the user is required to choose and set the variables:
+
+* `volume`: Either `shell` or `sphere`
+* `model`: Either `steady_state` or `injection`
+
+A compiled version of `Katu` must be located in the same folder as the wrapper
+and must be able to receive a configuration file as first argument, and must
+print to stdout the energy and the population of photons. The `example_simple.c`
+code is a good start and the user will mostly need to remove the lines where
+the function `state_check_steady_state` print its report, the functions that
+show a report of the general and injection info of the model and the lines
+that announce the completion of the simulation.
+
+### Usage - Running
+
+After having prepared the wrapper and the corresponding utils file and having
+an appropiate Katu executable, the simulations can be run simply by launching
+the wrappers:
+
+`python3 multinest_wrapper.py`
+
+or
+
+`python3 emcee_wrapper.py`
+
+### Usage - Output
+
+The output of both wrappers is very different and is defined mostly by how
+the wrappers handle the simulation process.
+
+In the case of `multinest`, all the data handling is done by `multinest` itself
+and it will be stored at `<Object>_results/multinest_<volume>_<model>/` where
+`Object`, `volume` and `model` are the variables that are set at the
+Preparation step. The user is encouraged to check the output files in the
+documentation of `multinest` to understand its contents.
+
+Additionally, `multinest` will print to the terminal some status lines so that
+the user can check that it still is working.
+
+In the case of `emcee`, all the data handling is done by the wrapper, which
+means that we have a much better control over what happens. Its output will be
+located at `<Object>_results/emcee_<volume>_<model>/` where `Object`, `volume`
+and `model` are the variables that are set at the Preparation step. The output
+will consist of a `corner` plot and a data dump for every update step.
+Additionally, every update steps will print to the terminal the median and 16,
+84 percentiles and best point found so far, along with its log likelihood.
+
+The update steps come in three versions. First the wrapper works one MCMC step
+at a time. This allows the user to quickly check if the simulation is working
+the way it is expected to with regards to the behaviour of the log likelihood.
+It can also be used to quickly find a good starting point to feed back to the
+wrapper.
+
+Second, the wrapper does 20 steps of ten MCMC steps where it checks if any
+of the walkers is stuck at a log likelihood that is `25` times worse than
+the best and in that case it relaunches it. This is done to avoid cases where
+one walker might be stuck in a local minima with very low probability of
+getting out.
+
+Third, the wrapper does steps of 20 MCMC steps until the end.
+
+### Usage - Ending
+
+Both wrappers can be stopped at any point, and additionally, the `multinest`
+allows relaunching as the underlying library handles it.  Unfortunatelly,
+`emcee` does not support relaunching and the user would need to code that in
+themselves.
+
+If the user does not stop manually the wrappers, both would continue until
+their termination criteria is met. In the case of `multinest`, this is handled
+by the library and is set to the moment where additional steps would only
+improve the log evidence by 0.5. `emcee` relies on the constantness of the
+final distribution of the walkers finishes if the median and 16, 84 percentiles
+of the last two blocks of 50 updates have not changed.
+
+### Usage - Analysis
 
 ## Publications
 
