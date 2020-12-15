@@ -22,7 +22,7 @@ and making:
 
 `make`
 
-This will compile a static library in the folder `src`, three examples in
+This will compile a static library in the folder `src`, four examples in
 the folder `examples` and a util in the `tables` folder.
 
 ## Usage
@@ -61,6 +61,11 @@ the photon population at the end. `example_data` will also create a folder
 called `data` where it will dump information about every particle species
 every 10 steps. `example_graphics` will also use gnuplot to plot the resulting
 particle species every two steps.
+
+`example_spheres` is a bit different as it requires two configuration files
+to represent concentric spheres. This example will simulate two blobs, one
+inside the other and will output the photon population of the outer one
+at the end
 
 ## Configuration
 
@@ -142,6 +147,58 @@ supports the following options, along with the corresponding keys:
     * `temperature`: The temperature of the distribution, in terms of the rest
                      mass energy
     * `slope`: The value of the exponent of the power law
+
+
+## Wrappers
+
+Katu comes with two wrappers to allow it to work with two common packages to
+do bayesian analysis: `emcee` and `multinest`.
+
+`emcee` is described in [`emcee: the MCMC Hammer`](https://arxiv.org/abs/1202.3665)
+and implements Markov Chain Monte Carlo analysis with Affine Invariant ensembles.
+The interface we employ for this is the python package [`emcee`](https://github.com/dfm/emcee) 
+by Dan Foreman-Mackey.
+
+`multinest` is described in [`Importance Nested Sampling and the MultiNest Algorithm`](http://arxiv.org/abs/1306.2144)
+and implements Nested Sampling analysis. The interface we employ for this is
+the python package [`pymultinest`](https://github.com/JohannesBuchner/PyMultiNest) by
+Johannes Buchner.
+
+In the case of using `emcee` the corresponding package has to be installed by doing
+
+`pip install --user emcee`
+
+In the case of using `multinest`, then multinest itself must be installed from
+the distribution's repositories or from multinest's [source](https://github.com/rjw57/MultiNest)
+and `pymultinest` must be installed:
+
+`pip install --user pymultinest`
+
+Note that in some cases, manual setting of the path to the multinest library
+must be done.
+
+
+The usage of the wrappers is a bit complex because the user is expected to
+choose and write the model and the functions that go from the analyzed space
+to a Katu configuration file. Some examples can be seen in the
+`wrapper_utils/utils_{shell,sphere}_{steady_state,injection}.py` files.
+
+In particular, the user must supply the variables:
+
+* `ndim`: The number of dimensions of the space
+* `labels`: A list with the names of the variables
+* `lnprior`: A function that returns the a priori probability for the chosen point
+* `get_gamma`: A function that returns the value of Gamma from a point in space
+* `get_R`: A function that returns the value of R from a point in space
+
+For `emcee`, the user must supply this aditional variable:
+
+* `initial_theta`: A 3D array with `ndim` entries that sets the spread (0,2) and
+    the central value (1) for the variables to start from.
+
+For `multinest`, the user must supply the aditional function:
+
+* `prior`: A function that transforms from the unit cube to the space coordinates.
 
 ## Publications
 
