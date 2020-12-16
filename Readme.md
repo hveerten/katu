@@ -166,13 +166,19 @@ and implements Nested Sampling analysis. The interface we employ for this is
 the python package [`pymultinest`](https://github.com/JohannesBuchner/PyMultiNest) by
 Johannes Buchner.
 
-In the case of using `emcee` the corresponding package and that of `corner`
+Common dependencies for both wrappers are: `numpy`, `scipy` and `matplotlib`,
+which can be easily installed from the corresponding distribution repositories;
+
+In the case of using `emcee` the `2.2.1` version package and that of `corner`
 have to be installed by doing
 
 ```
-pip install --user emcee
+pip install --user emcee=2.2.1
 pip install --user corner
 ```
+
+Note that version `2.2.1` of `emcee` **must** be used, as version `3.0.0` breaks
+the wrapper interface with `emcee`.
 
 In the case of using `multinest`, then multinest itself must be installed from
 the distribution's repositories or from multinest's [source](https://github.com/rjw57/MultiNest)
