@@ -32,9 +32,8 @@ prefix = "{}/data_".format(path)
 metadata_filename = directory + '.' + sub_directory + '.metadata'
 metadata_imports = import_module(metadata_filename)
 
+labels          = getattr(metadata_imports, 'labels')
 theta_to_config = getattr(metadata_imports, 'theta_to_config')
-
-labels = json.load(open(prefix + 'params.json'))
 
 data_filename = "{}.txt".format(prefix)
 data = np.loadtxt(data_filename)
@@ -68,6 +67,7 @@ for i in range(n_dim):
         quantile_84[i] - median[i],
         median[i] - quantile_16[i]))
 
+print()
 best_parameters    = parameters[loglikelihood    == np.max(loglikelihood)][0]
 best_loglikelihood = loglikelihood[loglikelihood == np.max(loglikelihood)]
 print("Best Parameters:\t{}".format(best_parameters))
