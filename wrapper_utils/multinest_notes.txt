@@ -1,0 +1,51 @@
+This is my set of notes for multinest's output, extracted and corrected from
+their documentation. The intention is to use these notes for being able to
+check multinest's 'opaque' output.
+
+Updated every n_iter replacements (default for pymultinest = 100)
+
+* [root]ev.dat: File with the set of replaced points
+    - [n_par columns]: parameters for the loglikelihood function
+    - [1]: log likelihood
+    - [1]: log prior mass [log( (exp(n-1 / n_live) - exp(n+1 / n_live)) / 2)]
+    - [1]: cluster
+
+* [root]live.dat: File with the set of alive points (hypercube version)
+    - [n_par columns]: parameters for the loglikelihood function
+    - [1]: log likelihood
+    - [1]: cluster
+
+* [root]phys_live.dat: File with the set of alive points
+    - [n_par columns]: parameters for the loglikelihood function
+    - [1]: log likelihood
+    - [1]: cluster
+
+Updated every 10*n_iter replacements (default for pymultinest = 1000)
+
+* [root].txt: File with points where the sample probability > log_zero
+        (default for pymultinest 1e-100)
+    - [1]: sample probability [prior mass * likelihood / evidence]
+    - [1]: -2 * log likelihood
+    - [n_par columns]: parameters for the loglikelihood function
+
+    NOTE: the last n_live points have garbage as the sample probability
+            (the prior mass is not really defined for them)
+    NOTE2: the sample probability is the likelihood NOT the loglikelihood
+            multiplied by the sample probability divided by the evidence NOT
+            the log evidence.
+    NOTE3: The extension is txt NOT dat
+
+* [root]stats.dat: File with the global and local log evidence and its error.
+        It also contains the parameter means and their errors along with the
+        best fit parameters
+
+* [root]summary.dat: File with the data for each mode (if multimode)
+    Each row contains:
+        - [n_par columns]: mean parameter values
+        - [n_par columns]: mean parameter errors
+        - [n_par columns]: best parameter values
+        - [n_par columns]: Maximum A Posteriori parameter values
+        - [1]: local log evidence
+        - [1]: maximum loglikelihood
+
+    NOTE: The first row also contains the INS log evidence and its error

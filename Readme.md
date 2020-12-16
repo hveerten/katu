@@ -277,7 +277,9 @@ In the case of `multinest`, all the data handling is done by `multinest` itself
 and it will be stored at `<Object>_results/multinest_<volume>_<model>/` where
 `Object`, `volume` and `model` are the variables that are set at the
 Preparation step. The user is encouraged to check the output files in the
-documentation of `multinest` to understand its contents.
+documentation of `multinest` to understand its contents. Alternatively, I
+have provided my own set of notes about `multinest`'s output in
+`wrapper_utils/multinest_notes.txt`, which the user can check.
 
 Additionally, `multinest` will print to the terminal some status lines so that
 the user can check that it still is working.
