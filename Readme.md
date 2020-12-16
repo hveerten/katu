@@ -344,6 +344,19 @@ author of pymultinest, has in the github page for [`pymultinest`](https://github
 The examples are called `multinest_marginals.py`, `multinest_marginals_corner.py`
 and `multinest_marginals_fancy.py`
 
+For `emcee`, we also provide a `emcee_analyzer.py` script which will do a
+similar job as the `multinest` one. It must be noted that due to the nature of
+MCMC, it is expected that the first data points are composed by `burn-in` data
+points. In this case, a variable `discarded_data` can be set in the `metadata`
+file in order to discard that many steps from the beginning.
+
+
+Note that both scripts are *very* simple and might not be what the end user needs
+for their analysis. In that case, they can use them as a starting point for
+their own scripts. Additionally, in `wrapper_utils/analyzer_utils.py` there
+are some utilities that might be useful for adding functionality to the
+wrappers.
+
 ## Publications
 
 Non-eshaustive list of publications that use Katu in any form:
