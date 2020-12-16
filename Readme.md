@@ -28,7 +28,7 @@ and making:
 make
 ```
 
-This will compile a static library in the folder `src`, four examples in
+This will compile a static library in the folder `src`, five examples in
 the folder `examples` and a util in the `tables` folder.
 
 ## Usage
@@ -66,7 +66,8 @@ configuration file, to be explained later) as first argument.
 the photon population at the end. `example_data` will also create a folder
 called `data` where it will dump information about every particle species
 every 10 steps. `example_graphics` will also use gnuplot to plot the resulting
-particle species every two steps.
+particle species every two steps. `example_wrapper` is a program ready to
+be used with the wrappers provided.
 
 `example_spheres` is a bit different as it requires two configuration files
 to represent concentric spheres. This example will simulate two blobs, one
@@ -247,11 +248,9 @@ Finally, the user is required to choose and set the variables:
 
 A compiled version of `Katu` must be located in the same folder as the wrapper
 and must be able to receive a configuration file as first argument, and must
-print to stdout the energy and the population of photons. The `example_simple.c`
-code is a good start and the user will mostly need to remove the lines where
-the function `state_check_steady_state` print its report, the functions that
-show a report of the general and injection info of the model and the lines
-that announce the completion of the simulation.
+print to stdout the energy and the population of photons. The `example_wrapper`
+executable should be readily available for the user to use if they want a
+basic version of `Katu`.
 
 ### Usage - Running
 
