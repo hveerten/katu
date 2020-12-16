@@ -12,15 +12,21 @@ Katu requires `gsl` with `cblas` support and `pthreads` as dependencies and
 
 Building the code is very simple and just requires creating a new directory:
 
-`mkdir build`
+```
+mkdir build
+```
 
 configuring using cmake:
 
-`cd build && cmake ..`
+```
+cd build && cmake ..
+```
 
 and making:
 
-`make`
+```
+make
+```
 
 This will compile a static library in the folder `src`, four examples in
 the folder `examples` and a util in the `tables` folder.
@@ -184,7 +190,9 @@ In the case of using `multinest`, then multinest itself must be installed from
 the distribution's repositories or from multinest's [source](https://github.com/rjw57/MultiNest)
 and `pymultinest` must be installed:
 
-`pip install --user pymultinest`
+```
+pip install --user pymultinest
+```
 
 Note that in some cases, manual setting of the path to the multinest library
 must be done.
@@ -251,11 +259,15 @@ After having prepared the wrapper and the corresponding utils file and having
 an appropiate Katu executable, the simulations can be run simply by launching
 the wrappers:
 
-`python3 multinest_wrapper.py`
+```
+python3 multinest_wrapper.py
+```
 
 or
 
-`python3 emcee_wrapper.py`
+```
+python3 emcee_wrapper.py
+```
 
 ### Usage - Output
 
