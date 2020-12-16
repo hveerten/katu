@@ -322,6 +322,28 @@ of the last two blocks of 50 updates have not changed.
 
 ### Usage - Analysis
 
+Along with both wrappers, we also provide two small utilities that should aid
+in the analysis of the final data. In both cases, the variables `Object`,
+`volume` and `model` have to be edited to be the same as the wrapper that
+produced the data. Additionally, the utils file that was used should be
+moved inside the data directory and renamed `metadata.py` so that the
+analyzer can access the utilities that were used when creating the data.
+
+In the case of `multinest`, we provide `multinest_analyzer.py` which will
+simply print each of the dimensions of the problem with the label and
+the median value along with the 16 and 84 percentiles. After that, the best
+parameters and the best log likelihood will be printed and a configuration
+file ready for its usage with `Katu` will be written. Finally, a corner
+plot of the parameters will be created.
+
+Remember that, if the user is interested in the evidence and its error, they
+can be read in one of the files that `multinest` created.
+
+The user is also encouraged to check the examples that Johannes Buchner, the
+author of pymultinest, has in the github page for [`pymultinest`](https://github.com/JohannesBuchner/PyMultiNest).
+The examples are called `multinest_marginals.py`, `multinest_marginals_corner.py`
+and `multinest_marginals_fancy.py`
+
 ## Publications
 
 Non-eshaustive list of publications that use Katu in any form:
