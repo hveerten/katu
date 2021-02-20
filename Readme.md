@@ -180,7 +180,7 @@ In the case of using `emcee` the `2.2.1` version package and that of `corner`
 have to be installed by doing
 
 ```
-pip install --user emcee=2.2.1
+pip install --user emcee==2.2.1
 pip install --user corner
 ```
 
