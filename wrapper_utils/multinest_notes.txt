@@ -49,3 +49,12 @@ Updated every 10*n_iter replacements (default for pymultinest = 1000)
         - [1]: maximum loglikelihood
 
     NOTE: The first row also contains the INS log evidence and its error
+
+
+Produced at the end?
+
+* [root]IS.points: File in fortran format with all the points that multinest
+         has tried
+    - [n_par columns]: parameters for the loglikelihood function
+    - [1]: log likelihood
+    - [1]: cluster
