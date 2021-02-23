@@ -134,7 +134,7 @@ lnprobs = None
 rstate = None
 sampler = emcee.EnsembleSampler(walkers, ndim, lnprob, threads=1)
 
-print("Percent\t", labels.join("\t"))
+print("Percent\t", "\t".join(labels))
 total_iterations = 0
 
 try:
@@ -151,7 +151,7 @@ try:
 
         print_medians(i, samples, ndim)
         print_best(i, best_pos, best_lnprob)
-        create_corner("{}{}.png".format(corner_prefix,i), samples)
+        create_corner("{}{}.png".format(corner_prefix,i), samples, labels, best_pos)
         save_data("{}{:03d}".format(data_prefix,i), sampler.chain, sampler.lnprobability)
 
         total_iterations += 1
@@ -170,7 +170,7 @@ try:
 
         print_medians(i, samples, ndim)
         print_best(i, best_pos, best_lnprob)
-        create_corner("{}{}.png".format(corner_prefix,i), samples)
+        create_corner("{}{}.png".format(corner_prefix,i), samples, labels, best_pos)
         save_data("{}{:03d}".format(data_prefix,i), sampler.chain, sampler.lnprobability)
 
         for j in range(walkers):
@@ -200,8 +200,8 @@ try:
         best_pos    = pos[lnprobs_max_index]
 
         print_medians(i, samples, ndim)
-        print_best(i, best_pos, best_lnprob, best_blob[1])
-        create_corner("{}{}.png".format(corner_prefix,i), samples)
+        print_best(i, best_pos, best_lnprob)
+        create_corner("{}{}.png".format(corner_prefix,i), samples, labels, best_pos)
         save_data("{}{:03d}".format(data_prefix,i), sampler.chain, sampler.lnprobability)
 
         total_iterations += 10
@@ -229,5 +229,5 @@ except KeyboardInterrupt as e:
 
 samples = sampler.chain[:,:,:].reshape((-1,ndim))
 
-create_corner("{}final.png".format(corner_prefix), samples)
+create_corner("{}final.png".format(corner_prefix), samples, labels, initial_theta[1])
 save_data("{}final".format(data_prefix), sampler.chain, sampler.lnprobability)
