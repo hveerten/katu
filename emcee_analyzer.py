@@ -1,11 +1,13 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import corner
+import sys
+
 from importlib import import_module
 
-import sys
-import time
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+import corner
+
 
 from wrapper_utils.analyzer_utils import  \
     plot_bin_evolution,     \
@@ -38,13 +40,12 @@ path          = directory + '/' + sub_directory
 prefix = "{}/data_".format(path)
 
 metadata_filename = directory + '.' + sub_directory + '.metadata'
-metadata_imports = import_module(metadata_filename)
 
 data_filename = "{}final.npz".format(prefix)
 data = np.load(data_filename)
 
 # Load things from Metadata
-metadata = import_module(metadata_module)
+metadata = import_module(metadata_filename)
 
 discarded_data     = getattr(metadata, 'discarded_data', 0)
 labels             = getattr(metadata, 'labels')
@@ -52,7 +53,7 @@ theta_to_config    = getattr(metadata, 'theta_to_config')
 
 
 # Load data
-full_data = np.load(raw_data_file)
+full_data = np.load(data_filename)
 raw_data = full_data['data']
 lnprobs  = full_data['lnprobs']
 
@@ -86,4 +87,4 @@ create_corner(raw_data_samples, labels, best_theta, levels, prefix + 'final.png'
 print()
 create_report(raw_data_samples, labels, best_theta)
 
-write_config_file(best_theta, config_file)
+write_config_file(best_theta, "{}best_parameters.toml".format(prefix))
