@@ -1,14 +1,14 @@
+import sys
+
 from importlib import import_module
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import os
 
 import corner
 
 import toml
-import json
 
 def write_config_file(theta, config_filename):
     config = theta_to_config(theta)
@@ -34,6 +34,7 @@ metadata_imports = import_module(metadata_filename)
 
 labels          = getattr(metadata_imports, 'labels')
 theta_to_config = getattr(metadata_imports, 'theta_to_config')
+
 
 data_filename = "{}.txt".format(prefix)
 data = np.loadtxt(data_filename)
