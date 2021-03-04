@@ -1,5 +1,7 @@
 import subprocess
 import os
+from io import StringIO
+
 
 import scipy.integrate as integ
 import numpy as np
@@ -34,14 +36,13 @@ def generate_sim_data(theta):
     config_filename = "config_{}.toml".format(os.getpid())
 
     write_config_file(theta, config_filename)
-    process = subprocess.Popen(['./model',config_filename],
+    process = subprocess.Popen(['./example_wrapper',config_filename],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
                                universal_newlines=True)
 
     output_data, err = process.communicate()
     data             = np.loadtxt(StringIO(output_data), unpack=True)
-    # energy_injection = np.loadtxt(StringIO(err), unpack=True)
 
     os.remove(config_filename)
 
