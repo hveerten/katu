@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 import corner
 
-from wrapper_utils.general_utils import *
+from utils.general_utils import *
 
 Object = "3C279"
 Object_data_file = "3C279_2014_A"
@@ -46,7 +46,7 @@ z        = getattr(data_imports, 'z')
 obs_data = getattr(data_imports, 'data')
 
 # Import everything from the utils_module
-utils_module = "wrapper_utils.utils_{}_{}".format(volume, model)
+utils_module = "utils.utils_{}_{}".format(volume, model)
 utils = import_module(utils_module)
 
 ndim          = getattr(utils, 'ndim')

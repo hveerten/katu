@@ -203,7 +203,7 @@ must be done.
 The usage of the wrappers is a bit complex because the user is expected to
 choose and write the model and the functions that go from the analyzed space
 to a Katu configuration file. Some examples can be seen in the
-`wrapper_utils/utils_{shell,sphere}_{steady_state,injection}.py` files.
+`utils/utils_{shell,sphere}_{steady_state,injection}.py` files.
 
 In particular, the user must supply the variables and functions:
 
@@ -279,7 +279,7 @@ and it will be stored at `<Object>_results/multinest_<volume>_<model>/` where
 Preparation step. The user is encouraged to check the output files in the
 documentation of `multinest` to understand its contents. Alternatively, I
 have provided my own set of notes about `multinest`'s output in
-`wrapper_utils/multinest_notes.txt`, which the user can check.
+`utils/multinest_notes.txt`, which the user can check.
 
 Additionally, `multinest` will print to the terminal some status lines so that
 the user can check that it still is working.
@@ -353,7 +353,7 @@ file in order to discard that many steps from the beginning.
 
 Note that both scripts are *very* simple and might not be what the end user needs
 for their analysis. In that case, they can use them as a starting point for
-their own scripts. Additionally, in `wrapper_utils/analyzer_utils.py` there
+their own scripts. Additionally, in `utils/analyzer_utils.py` there
 are some utilities that might be useful for adding functionality to the
 wrappers.
 

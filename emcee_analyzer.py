@@ -9,7 +9,7 @@ import os
 import corner
 
 
-from wrapper_utils.analyzer_utils import  \
+from utils.analyzer_utils import  \
     plot_bin_evolution,     \
     plot_lnprob_evolution,  \
     plot_random_walkers,    \
