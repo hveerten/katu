@@ -60,6 +60,16 @@ def general_lnlike(sim_data, obs_data):
 
     return lnlike
 
+# Returns -infinity if any point is above the upper limits given by obs_data
+def general_upper_limit(sim_data, obs_data):
+
+    interp_sim_data = np.exp(np.interp(np.log(obs_data[0]), np.log(sim_data[0]), np.log(sim_data[1])))
+
+    if np.any(interp_sim_data < obs_data[1]):
+        return -np.inf
+
+    return 0
+
 def print_medians(i, samples, ndim):
     print("{:03d}".format(i+1), end='\t')
     for j in range(ndim):
