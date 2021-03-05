@@ -65,7 +65,7 @@ def general_upper_limit(sim_data, obs_data):
 
     interp_sim_data = np.exp(np.interp(np.log(obs_data[0]), np.log(sim_data[0]), np.log(sim_data[1])))
 
-    if np.any(interp_sim_data < obs_data[1]):
+    if np.any(interp_sim_data > obs_data[1]):
         return -np.inf
 
     return 0
