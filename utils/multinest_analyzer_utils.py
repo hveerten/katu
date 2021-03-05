@@ -1,5 +1,8 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+
+import scipy.io
 
 import corner
 
@@ -44,3 +47,35 @@ def create_corner(samples, weights, labels, best, levels, filename, extra = lamb
         extra(fig)
         fig.savefig(filename)
         plt.close(fig)
+
+def extract_points(prefix, ndim, prior):
+    points_filename = "{}IS.points".format(prefix)
+    points = scipy.io.FortranFile(points_filename, 'r')
+
+    # (ndim + 1) doubles + 1 int
+    # parameters + loglikelihood + cluster
+    guesstimated_points = os.stat(points_filename).st_size / (8 * (ndim + 1) + 4)
+
+    parameters_record = "({},)f8".format(n_dim + 1)
+
+    all_points = np.zeros((int(guesstimated_points), ndim + 1))
+
+    i = 0
+    while True:
+        try:
+            pp, _ = points.read_record(parameters_record, 'i4')
+        except Exception as e:
+            break
+
+        if prior is not None:
+            all_points[i] = prior(pp.copy())
+        else:
+            all_points[i] = pp.copy()
+
+        i += 1
+
+        if i % 1000 == 0: print(i)
+
+    all_points.resize((i, n_dim + 1))
+    np.savetxt("{}all_data_physical.tsv".format(prefix), all_points)
+    np.savez("{}all_data_physical.npz".format(prefix), all_points)
