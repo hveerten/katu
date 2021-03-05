@@ -17,6 +17,8 @@ import corner
 
 from utils.general_utils import *
 
+from utils.emcee_utils import *
+
 Object = "3C279"
 Object_data_file = "3C279_2014_A"
 
