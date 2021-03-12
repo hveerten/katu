@@ -10,15 +10,21 @@ Updated every n_iter replacements (default for pymultinest = 100)
     - [1]: log prior mass [log( (exp(n-1 / n_live) - exp(n+1 / n_live)) / 2)]
     - [1]: cluster
 
-* [root]live.dat: File with the set of alive points (hypercube version)
+* [root]live.points: File with the set of alive points (hypercube version)
+    - [n_par columns]: parameters for the loglikelihood function
+    - [1]: log likelihood
+
+* [root]phys_live.points: File with the set of alive points
     - [n_par columns]: parameters for the loglikelihood function
     - [1]: log likelihood
     - [1]: cluster
 
-* [root]phys_live.dat: File with the set of alive points
+* [root]IS.points: File in fortran format with all the points that multinest
+         has tried
     - [n_par columns]: parameters for the loglikelihood function
     - [1]: log likelihood
     - [1]: cluster
+
 
 Updated every 10*n_iter replacements (default for pymultinest = 1000)
 
@@ -33,13 +39,12 @@ Updated every 10*n_iter replacements (default for pymultinest = 1000)
     NOTE2: the sample probability is the likelihood NOT the loglikelihood
             multiplied by the sample probability divided by the evidence NOT
             the log evidence.
-    NOTE3: The extension is txt NOT dat
 
 * [root]stats.dat: File with the global and local log evidence and its error.
         It also contains the parameter means and their errors along with the
         best fit parameters
 
-* [root]summary.dat: File with the data for each mode (if multimode)
+* [root]summary.txt: File with the data for each mode (if multimode)
     Each row contains:
         - [n_par columns]: mean parameter values
         - [n_par columns]: mean parameter errors
@@ -49,12 +54,3 @@ Updated every 10*n_iter replacements (default for pymultinest = 1000)
         - [1]: maximum loglikelihood
 
     NOTE: The first row also contains the INS log evidence and its error
-
-
-Produced at the end?
-
-* [root]IS.points: File in fortran format with all the points that multinest
-         has tried
-    - [n_par columns]: parameters for the loglikelihood function
-    - [1]: log likelihood
-    - [1]: cluster
