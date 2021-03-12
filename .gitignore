@@ -9,7 +9,7 @@ Object_Data/**
 configs/**
 
 Makefile
-MK2.*
+Katu.*
 
 data.dat
 model
@@ -24,3 +24,10 @@ data_mcmc/**
 # Ignore the program to produce the BH table and the table
 tables/BH_KA_table.tab
 tables/table
+
+# Ignore the example executables
+example_data
+example_graphics
+example_simple
+example_spheres
+example_wrapper
