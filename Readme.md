@@ -279,7 +279,7 @@ and it will be stored at `<Object>_results/multinest_<volume>_<model>/` where
 Preparation step. The user is encouraged to check the output files in the
 documentation of `multinest` to understand its contents. Alternatively, I
 have provided my own set of notes about `multinest`'s output in
-`utils/multinest_notes.txt`, which the user can check.
+`doc/multinest_notes.txt`, which the user can check.
 
 Additionally, `multinest` will print to the terminal some status lines so that
 the user can check that it still is working.
