@@ -4,8 +4,8 @@ Here I try to gather some of the questions that you can have while using Katu.
 Hopefully it will be as detailed as possible.
 
 Remember that the issues can/should be left at both:
- - github <add link when available>
- - gitlab <add link when available>
+ - github https://github.com/hveerten/katu/issues
+ - gitlab https://gitlab.com/Noxbru/Katu/-/issues
 
 
 1. Where did Katu came from?
