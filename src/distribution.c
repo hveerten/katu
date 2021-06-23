@@ -281,6 +281,7 @@ double maxwell_juttner_average(double theta)
 
     double average;
     gsl_integration_qags(&F, 1, 1e10, 0, 1e-7, 256, w, &average, &e);
+    gsl_integration_workspace_free(w);
 
     return norm * average;
 }
