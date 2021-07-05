@@ -107,10 +107,13 @@ static void state_init_injection(state_t *st, config_t *cfg)
 
     gsl_spline_free(electron_spline);
     gsl_spline_free(proton_spline);
+    gsl_spline_free(photon_spline);
     gsl_interp_accel_free(electron_accelerator);
     gsl_interp_accel_free(proton_accelerator);
+    gsl_interp_accel_free(photon_accelerator);
     free_population(&electron_aux_pop);
     free_population(&proton_aux_pop);
+    free_population(&photon_aux_pop);
 }
 
 void state_init_from_config(state_t *st, config_t *cfg)
