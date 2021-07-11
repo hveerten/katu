@@ -1,0 +1,93 @@
+# Tests for distributions
+#
+# We use the electron injection to test the different distributions available
+# with the exception of black body, for which we use photons
+
+# Note that we set eta = 1e-10 so that the population of protons is very low
+
+[general]
+density = 1e-38
+magnetic_field = 2
+
+dt = 0.01
+dt_max = 1e5
+t_max = 1e7
+
+t_acc = 1e128
+
+eta = 1e-10
+cfe_ratio = 1
+tol = 1e-8
+
+[volume]
+shape = "sphere"
+R = 1e16
+
+[electrons]
+gamma_min = 2
+gamma_max = 1e8
+size      = 256
+
+distribution_type = "power_law"
+slope = 2.00
+
+[protons]
+gamma_min = 10
+gamma_max = 1e5
+size      = 256
+
+distribution_type = "power_law"
+slope = 2
+
+[photons]
+epsilon_min = 1e-12
+epsilon_max = 1e8
+size        = 160
+
+[external_injection]
+    luminosity = 1e30
+    eta        = 1e-10
+
+    [external_injection.electrons]
+    gamma_min = 2
+    gamma_max = 1e8
+
+    distribution_type = "maxwell_juttner"
+    temperature = 10
+
+    #distribution_type = "hybrid"
+    #temperature = 5
+    #connection_point = 25
+
+    #distribution_type = "power_law"
+    #slope = 2.30
+
+    #distribution_type = "power_law_with_exponential_cutoff"
+    #slope = 2.30
+    #break_point = 1e7
+
+    #distribution_type = "broken_power_law"
+    #first_slope  = 2.30
+    #second_slope = 4.30
+    #break_point = 1e4
+
+    #distribution_type = "connected_power_law"
+    #first_slope  = 2.30
+    #second_slope = 4.30
+    #connection_point = 1e4
+
+    [external_injection.protons]
+    gamma_min = 10
+    gamma_max = 1e5
+
+    distribution_type = "power_law"
+    slope = 2
+
+    #[external_injection.photons]
+    #luminosity = 1e30
+
+    #epsilon_min = 1e-12
+    #epsilon_max = 1e8
+
+    #distribution_type = "black_body"
+    #temperature = 1
