@@ -129,11 +129,19 @@ supports the following options, along with the corresponding keys:
 * `"maxwell_juttner"`: This option gives a thermal distribution of particles
     * `temperature`: The temperature of the distribution, in terms of the rest
                      mass energy
-* `"black_body"`: This option gives a thermal distribution of photons
+* `"hybrid"`: This option gives a thermal distribution of particles at low
+              energies coupled with a power law at higher energies
     * `temperature`: The temperature of the distribution, in terms of the rest
-                     mass energy of an electron
+                     mass energy
+    * `connection_point`: The value of the energy where the Maxwell-Jüttner
+                          distribution becomes a power law
 * `"power_law"`: This option gives a simple power law
     * `slope`: The value of the exponent of the power law
+* `"power_law_with_exponential_cutoff"`: This option gives a power law with an
+                                          exponential cutoff
+    * `slope`: The value of the exponent of the power law
+    * `break_point`: The normalization value for the energy in the exponential
+                     cutoff
 * `"broken_power_law"`: This option gives a broken power law
     * `break_point`: The value of the energy where the the power law changes
                      from the first slope to the second
@@ -144,16 +152,9 @@ supports the following options, along with the corresponding keys:
                      from the first slope to the second
     * `first_slope`: The value of the first exponent of the power law
     * `second_slope`: The value of the second exponent of the power law
-* `"power_law_with_exponential_cutoff"`: This option gives a power law with an
-                                          exponential cutoff
-    * `slope`: The value of the exponent of the power law
-    * `break_point`: The normalization value for the energy in the exponential
-                     cutoff
-* `"hybrid"`: This option gives a thermal distribution of particles at low
-              energies coupled with a power law at higher energies
+* `"black_body"`: This option gives a thermal distribution of photons
     * `temperature`: The temperature of the distribution, in terms of the rest
-                     mass energy
-    * `slope`: The value of the exponent of the power law
+                     mass energy of an electron
 
 
 ## Wrappers
