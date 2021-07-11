@@ -95,8 +95,8 @@ static void config_read_distribution_type(
             break;
 
         case hybrid:
-            TOML_READ_DOUBLE(part_table, "temperature", dm->t, "temperature", 0.5)
-            TOML_READ_DOUBLE(part_table, "slope",       dm->p, "slope", -2.3)
+            TOML_READ_DOUBLE(part_table, "temperature",      dm->t,  "temperature",      0.5)
+            TOML_READ_DOUBLE(part_table, "connection_point", dm->gc, "connection point", 10)
             break;
 
         case connected_power_law:
