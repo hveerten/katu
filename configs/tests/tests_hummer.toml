@@ -1,0 +1,56 @@
+# Tests for the Benchmarks of Hümmer et al. 2010
+#
+# We have 3 different benchmarks, GRB, AGN and BB all with different
+# populations for protons and photons.
+#
+# NOTE: we use some of this machinery to get the populations in an appropiate
+# state, but some code has to be used in order to get the correct populations.
+#
+# Also note that we set eta to 10^10 so that we do not have electrons. And that
+# the normalization constants can be whatever, as we are only interested
+# in the functional form of the results, not their magnitude.
+#
+# Also note that we do not care about the evolution, as we just need the
+# data of the pion production with the initial distributions. Thus, L = 0
+
+
+[general]
+density = 1e-22
+magnetic_field = 0.1
+
+dt = 0.1
+dt_max = 1e3
+t_max = 1e7
+
+eta = 1e10
+
+cfe_ratio = 1
+tol = 1e-8
+
+[volume]
+shape = "sphere"
+R = 1e16
+
+[electrons]
+gamma_min = 1e1
+gamma_max = 1e5
+size      = 160
+
+distribution_type = "power_law"
+slope  = 2.15
+
+[protons]
+gamma_min = 2
+gamma_max = 1e12
+size      = 384
+
+distribution_type = "power_law"
+slope = 2
+
+[photons]
+epsilon_min = 1e-12
+epsilon_max = 1
+size        = 384
+
+distribution_type = "power_law"
+slope = 2

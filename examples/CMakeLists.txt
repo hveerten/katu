@@ -3,6 +3,7 @@ prepare_executable(example_data     example_data.c)
 prepare_executable(example_graphics example_graphics.c)
 prepare_executable(example_spheres  example_spheres.c)
 prepare_executable(example_wrapper  example_wrapper.c)
+prepare_executable(test_hummer      test_hummer.c)
 
 add_custom_command(
         TARGET example_simple POST_BUILD

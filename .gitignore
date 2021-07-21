@@ -31,3 +31,6 @@ example_graphics
 example_simple
 example_spheres
 example_wrapper
+
+# Ignore the test executables
+test_hummer
