@@ -156,7 +156,7 @@ static double f_function_direct_one_pion(double y, double e_min, double e_max)
     if(y < e_min)
         return 0;
 
-    double aux = pow(EPSILON_TO_GEV(y), -2);
+    double aux = pow(EPSILON_TO_GEV(y), -2) / 2;
     double aux1 = I_one_pion(y);
     double aux2 = I_one_pion(e_min);
     double aux3 = I_one_pion(e_max);
@@ -172,7 +172,7 @@ static double f_function_direct_two_pions(double y, double e_min, double e_max)
     if(y < e_min)
         return 0;
 
-    double aux = pow(EPSILON_TO_GEV(y), -2);
+    double aux = pow(EPSILON_TO_GEV(y), -2) / 2;
     double aux1 = I_two_pions(y);
     double aux2 = I_two_pions(e_min);
     double aux3 = I_two_pions(e_max);
