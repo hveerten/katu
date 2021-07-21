@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+/* NOTE: The name 'muon' and 'electron' of these functions come from the kind
+ * of neutrino produced, not from producing muons or electrons */
+
 static double f_positive_muon(double x, double h)
 {
     if(1 < x)
