@@ -210,6 +210,8 @@ void multi_resonance_pion_production(state_t *st)
     memset(st->multi_resonances_negative_pion_gains, '\0', st->negative_pions.size * sizeof(double));
 
     for(process = 0; process < 18; process++)
+    /* for(process =  0; process < 14; process++) // Multi-pion */
+    /* for(process = 14; process < 18; process++) // Resonant */
     {
         unsigned int index_base1 = process * st->neutral_pions.size;
 
